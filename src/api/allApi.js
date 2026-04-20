@@ -1,0 +1,1355 @@
+import axios from "axios";
+import { toast } from "react-toastify";
+
+const BaseUrl = import.meta.env.VITE_BACKEND_API;
+
+const api = axios.create({
+  baseURL: BaseUrl,
+  headers: { "Content-Type": "application/json" },
+});
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+/* ================= USER ================= */
+
+export const handleGetAllUsers = async (params = "") => {
+  try {
+    const url = `/users${params ? `?${params}` : ''}`;
+    const res = await api.get(url);
+
+    if (res.data && typeof res.data === 'object') {
+      if (res.data.data && Array.isArray(res.data.data)) {
+        return {
+          success: true,
+          data: res.data.data,
+          total: res.data.total || res.data.totalCount || res.data.data.length,
+          page: res.data.page || 1,
+          limit: res.data.limit || 10,
+          totalPages: res.data.totalPages || Math.ceil((res.data.total || res.data.data.length) / (res.data.limit || 10))
+        };
+      }
+
+      if (Array.isArray(res.data)) {
+        return {
+          success: true,
+          data: res.data,
+          total: res.data.length,
+          page: 1,
+          limit: res.data.length,
+          totalPages: 1
+        };
+      }
+
+      if (res.data.users && Array.isArray(res.data.users)) {
+        return {
+          success: true,
+          data: res.data.users,
+          total: res.data.total || res.data.users.length,
+          page: res.data.page || 1,
+          limit: res.data.limit || res.data.users.length,
+          totalPages: res.data.totalPages || 1
+        };
+      }
+    }
+
+    return {
+      success: true,
+      data: Array.isArray(res.data) ? res.data : [],
+      total: Array.isArray(res.data) ? res.data.length : 0,
+      page: 1,
+      limit: 10,
+      totalPages: 1
+    };
+
+  } catch (error) {
+    console.error("Get all users error:", error);
+    const message = error.response?.data?.message || "Failed to fetch users";
+    toast.error(message);
+    return {
+      success: false,
+      message,
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 10,
+      totalPages: 1
+    };
+  }
+};
+
+export const handleUpdateUser = async (id, data) => {
+  try {
+    const res = await api.put(`/auth/${id}`, data);
+    toast.success("User updated successfully");
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Update user error:", error);
+    const message = error.response?.data?.message || "Failed to update user";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleDeleteUser = async (id) => {
+  try {
+    const res = await api.delete(`/auth/${id}`)
+    return res.data;
+
+  } catch (error) {
+
+  }
+}
+
+export const handleLgout = async () => {
+  try {
+    const res = await api.post(`api/admin/logout`);
+    return res.data;
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// wallet
+
+export const handleAddBallance = async (data)=>{
+
+  try {
+    const res  = await api.post(`/wallets/debit/${data.userId}`, data);
+
+    return res.data;
+    
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+
+}
+export const handleGetWallet = async (id)=>{
+  try {
+    const res = await api.get(`/wallets/${id}`);
+    return res.data;
+    
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+/* ================= QUIZ ================= */
+
+export const handleCreateMcq = async (data) => {
+  try {
+    const res = await api.post("/quizs", data);
+    toast.success("Quiz created successfully");
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Create quiz error:", error);
+    const message = error.response?.data?.message || "Failed to create quiz";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleCreateQuestions = async (data) => {
+  try {
+
+    const isFormData = data instanceof FormData;
+
+    if (isFormData) {
+      // Single question creation with FormData (from modal)
+      const quizId = data.get('quizId');
+      const response = await api.post(`/quizs/${quizId}/questions`, data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      toast.success("Question created successfully");
+      return { success: true, data: response.data };
+    } else {
+      // Bulk question creation with array (from AddQuiz)
+      // data is array of {quizId, category, count, organizationId}
+      const questionsArray = Array.isArray(data) ? data : [data];
+      if (questionsArray.length === 0) {
+        return { success: true, message: "No questions to create" };
+      }
+
+      const quizId = questionsArray[0].quizId;
+      const response = await api.post(`/quizs/${quizId}/questions/bulk`, {
+        questions: questionsArray
+      });
+      toast.success("Questions created successfully");
+      return { success: true, data: response.data };
+    }
+  } catch (error) {
+    console.error("Create questions error:", error);
+    const message = error.response?.data?.message || "Failed to create questions";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleGetMcq = async (page = 1, limit = 10) => {
+  try {
+    const res = await api.get(`/quizs`);
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Get quizzes error:", error);
+    const message = error.response?.data?.message || "Failed to fetch quizzes";
+    toast.error(message);
+    return { success: false, message, data: { quizzes: [], total: 0 } };
+  }
+};
+
+
+export const handleDeleteQuiz = async (id) => {
+  try {
+    const res = await api.delete(`/quizs/${id}`);
+    toast.success("Quiz deleted successfully");
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Delete quiz error:", error);
+    const message = error.response?.data?.message || "Failed to delete quiz";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+
+export const handleGetQuizQuestions = async (quizId) => {
+  try {
+    const res = await api.get(`/quizs/${quizId}/questions`);
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Get quiz questions error:", error);
+    const message = error.response?.data?.message || "Failed to fetch quiz questions";
+    toast.error(message);
+    return { success: false, message, data: { questions: [], total: 0 } };
+  }
+};
+
+export const handleDeleteQuestion = async (id) => {
+  const res = await api.delete(`/quizs/questions/${id}`);
+  return { success: true, data: res.data };
+}
+
+export const handleUpdateQuestion = async () => {
+
+}
+
+/* ================= COURSE ================= */
+
+export const handleCreateCourse = async (data) => {
+  try {
+    const isFormData = data instanceof FormData;
+    const config = isFormData
+      ? { headers: { "Content-Type": "multipart/form-data" } }
+      : {};
+
+    const res = await api.post("/courses", data, config);
+    toast.success("Course created successfully");
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Create course error:", error);
+    const message = error.response?.data?.message || "Failed to create course";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleUpdateCourse = async (data) => {
+  try {
+    const res = await api.put("/api/course/update-course", data);
+    toast.success("Course updated successfully");
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Update course error:", error);
+    const message = error.response?.data?.message || "Failed to update course";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleDeleteCourse = async (courseId) => {
+  try {
+    const res = await api.delete(`/courses/${courseId}`);
+    toast.success("Course deleted successfully");
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Delete course error:", error);
+    const message = error.response?.data?.message || "Failed to delete course";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleGetCourse = async (courseType) => {
+  try {
+    if (!courseType) {
+      throw new Error("courseType is required");
+    }
+
+    const res = await api.get("/courses", {
+      params: {
+        type: courseType
+      },
+    });
+
+    return {
+      success: true,
+      data: res.data.data,
+    };
+
+  } catch (error) {
+    console.error("Get course error:", error);
+
+    const message =
+      error?.response?.data?.message || error.message || "Failed to fetch courses";
+
+    toast.error(message);
+
+    return {
+      success: false,
+      message,
+      data: [],
+    };
+  }
+};
+
+export const handlePublishCourse = async (id, publish) => {
+  try {
+    const res = await api.patch(`/courses/${id}`, {
+      status: publish
+    });
+
+    return {
+      success: true,
+      data: res.data,
+      message: res.data.message || "Course publish status updated successfully"
+    };
+
+  } catch (error) {
+    console.error("Publish course error:", error);
+
+    return {
+      success: false,
+      message: error?.response?.data?.message || "Failed to update publish status",
+      error: error?.response?.data || error.message
+    };
+  }
+};
+
+export const handleAssignMultipleCourses = async (assignData) => {
+  try {
+    const res = await api.post('/api/course/assign-course', assignData);
+
+    if (res.data) {
+      return {
+        success: true,
+        data: res.data.data || res.data,
+        message: res.data.message || "Courses assigned successfully"
+      };
+    }
+
+    return { success: false, message: "Failed to assign courses" };
+
+  } catch (error) {
+    console.error("Assign multiple courses error:", error);
+    const message = error.response?.data?.message || "Failed to assign courses";
+    return { success: false, message };
+  }
+};
+
+export const handleGetAssignCourse = async () => {
+  try {
+    const res = await api.get('/api/course/get-assign-course');
+    console.log(res.data);
+    return res.data;
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleDeleteAssignCourse = async (courseId, userId) => {
+  try {
+    const res = await api.delete(`/api/course/delete-assign-course?userId=${userId}&courseId=${courseId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Delete assign course error:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to delete assignment"
+    };
+  }
+};
+/* ================= FOLDER ================= */
+
+export const handleGetFolders = async (courseId) => {
+  try {
+    const res = await api.get(`/folders/${courseId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Get folders error:", error);
+    const message = error.response?.data?.message || "Failed to fetch folders";
+    toast.error(message);
+    return { success: false, message, data: [] };
+  }
+};
+
+export const handleCreateFolder = async (data) => {
+  try {
+
+    const res = await api.post("/folders", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    toast.success("Folder created successfully");
+    return res.data;
+  } catch (error) {
+    console.error("Create folder error:", error);
+    const message = error.response?.data?.message || "Failed to create folder";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleUpdateFolder = async (folderId, data) => {
+  try {
+    const res = await api.put(`/folders/${folderId}`, data);
+    toast.success("Folder updated successfully");
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Update folder error:", error);
+    const message = error.response?.data?.message || "Failed to update folder";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleDeleteFolder = async (id) => {
+  console.log(id);
+
+  try {
+    const res = await api.delete(`/folders/${id}`);
+    toast.success("Folder deleted successfully");
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Delete folder error:", error);
+    const message = error.response?.data?.message || "Failed to delete folder";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleCreateFile = async (formData) => {
+  try {
+    const res = await api.post(
+      `/file-contents`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    toast.success(res.data?.message || "Content uploaded successfully");
+
+    return {
+      success: true,
+      data: res.data,
+    };
+  } catch (error) {
+    console.error("Upload content error:", error);
+
+    const message =
+      error.response?.data?.message || "Failed to upload content";
+
+    toast.error(message);
+
+    return {
+      success: false,
+      message,
+      data: null,
+    };
+  }
+};
+
+export const handleDeleteFilecontents = async (id) => {
+  try {
+    const res = await api.delete(`/content/${id}`);
+    toast.success(res.data?.message || "Content deleted successfully");
+    return res.data;
+  } catch (error) {
+    toast.error(message);
+  }
+};
+
+export const handlecreateSuperStream = async (formData) => {
+  try {
+    const res = await api.post("/superstream", formData);
+    return res.data;
+  } catch (error) {
+    console.log("Create Error:", error);
+    throw error;
+  }
+};
+
+export const handleGetSuperStream = async () => {
+  try {
+    const response = await api.get('/superstream');
+    return response.data;
+  } catch (error) {
+    console.log("Fetch Error:", error);
+    return [];
+  }
+};
+
+
+export const handleUpdateSuperStream = async (id, data) => {
+  try {
+    const res = await api.put(`/superstream/${id}`, data);
+    return res.data;
+  } catch (error) {
+    console.log("Update Error:", error);
+    throw error;
+  }
+};
+
+
+export const handleDeleteSuperStream = async (id) => {
+  try {
+    const res = await api.delete(`/superstream/${id}`);
+    return res.data;
+  } catch (error) {
+    console.log("Delete Error:", error);
+    throw error;
+  }
+};
+/* ================= STREAM ================= */
+
+export const handleCreateStream = async (formData) => {
+  try {
+    const res = await api.post("/stream", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    toast.success(res.data?.message || "Stream created successfully");
+
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Create stream error:", error);
+
+    const message =
+      error.response?.data?.message || "Failed to create stream";
+
+    toast.error(message);
+
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleGetStream = async () => {
+  try {
+    const res = await api.get('/stream');
+    return res.data;
+  } catch (error) {
+    console.error("Get streams error:", error);
+
+    const message =
+      error.response?.data?.message || "Failed to fetch streams";
+
+    toast.error(message);
+
+    return { success: false, message, data: [] };
+  }
+};
+
+export const handleDeleteStream = async (id) => {
+  try {
+    const res = await api.delete(`/stream/${id}`);
+
+    toast.success(res.data?.message || "Stream deleted successfully");
+
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Delete stream error:", error);
+
+    const message =
+      error.response?.data?.message || "Failed to delete stream";
+
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleUpdateStream = async (id, formData) => {
+  try {
+    const res = await api.put(`/stream/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    toast.success(res.data?.message || "Stream updated successfully");
+
+    return { success: true, data: res.data };
+  } catch (error) {
+    console.error("Update stream error:", error);
+
+    const message =
+      error.response?.data?.message || "Failed to update stream";
+
+    toast.error(message);
+
+    return { success: false, message, data: null };
+  }
+};
+
+
+// create teacher
+
+export const handleCreateTeacher = async (formData) => {
+  try {
+    const res = await api.post("/teachers", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    toast.success(res.data.message);
+    return res.data;
+  } catch (error) {
+    console.error("Error uploading teacher:", error);
+    toast.error("Failed to create teacher. Please try again.");
+  }
+};
+
+export const handleGetTeacher = async () => {
+  try {
+    const res = await api.get('/teachers');
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleUpdateTeacher = async (id, formData) => {
+  try {
+    const res = await api.put(`/teachers/${id}`, formData);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleDeleteTeacher = async (id) => {
+  try {
+    const res = await api.delete(`/api/teacher/delete-teacher/${id}`);
+    toast.success(res.data.message)
+    return res.data
+
+  } catch (error) {
+
+  }
+}
+// banner
+export const handleCreateBanner = async (formData) => {
+  try {
+    const res = await api.post(`/banners`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+    return res.data;
+  } catch (error) {
+    console.log("Create Banner Error:", error.response?.data || error.message);
+    throw error;
+  }
+}
+
+export const handleGetBanner = async (type = 'banner') => {
+  try {
+    const res = await api.get(`/banners?type=${type}`);
+    return res.data;
+  } catch (error) {
+    console.log("Get Banner Error:", error.response?.data || error.message);
+    throw error;
+  }
+}
+
+export const handlePublishBanner = async (id, publish) => {
+  try {
+    const res = await api.put(`/api/banner/publish-banner/${id}`,
+      { publish }
+    )
+    return res.data;
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleDeleteBanner = async (id) => {
+  try {
+    const res = await api.delete(`/banners/${id}`);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// events
+
+export const handleCreateEvent = async (formData) => {
+  try {
+    const res = await api.post(
+      `/events`,
+      formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      }
+    }
+    );
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    throw error.response?.data || error;
+  }
+};
+
+export const handleGetEvent = async (id) => {
+  try {
+    const res = await api.get(`/events/${id}`)
+    return res.data;
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleGetAllEvent = async () => {
+  try {
+    const res = await api.get('/events');
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleDeleteEvent = async (id) => {
+  try {
+    const res = api.delete(`/events/${id}`)
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleUpdateEvent = async (id, formData) => {
+  try {
+    const res = await api.put(`/api/event/update-event/${id}`, formData);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleCreateAttachment = async (formData) => {
+  try {
+    const res = await api.post(`/api/event/create-attachment`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Create attachment error:", error);
+    throw error;
+  }
+};
+
+export const handleGetAttachment = async (id) => {
+  try {
+    const res = await api.get(`/api/event/get-attachment/${id}`);
+    return res.data;
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleUpdateAttachment = async (id, formData) => {
+  try {
+    const res = await api.put(`/api/event/update-attachment/${id}`, formData);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleDeleteAttachment = async (id) => {
+  try {
+    const res = api.delete(`/api/event/delete-attachment/${id}`)
+    return res.data;
+  } catch (error) {
+
+  }
+}
+
+export const handleCreateSocialMedia = async (formData) => {
+  try {
+    const res = await api.post(`/social-media`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    toast.success(res.data.message)
+    return res.data;
+  } catch (error) {
+    console.error("Create social media error:", error);
+  }
+};
+
+export const handleUpdateSocialMedia = async (id, formData) => {
+  try {
+    const res = await api.put(`/social-media/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Update social media error:", error);
+  }
+};
+
+export const handleGetSocialMedia = async () => {
+  try {
+    const res = await api.get('/social-media');
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleDeleteSocialMedia = async (id) => {
+  try {
+    const res = await api.delete(`/social-media/${id}`);
+    toast.success(res.data.message)
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// top teachers
+
+export const handleCreateTopTeacher = async (formData) => {
+  try {
+    const res = await api.post(`/topteacher`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleGetTopTeacher = async () => {
+  try {
+    const res = await api.get('/topteacher');
+    return res.data;
+  } catch (error) {
+    console.error('Error decrypting top teachers:', error);
+    return { success: false, data: [] };
+  }
+};
+
+export const handleUpdateTopTeacher = async (id, formData) => {
+  try {
+    const res = await api.patch(`/top-teacher/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    console.log('Teacher updated:', res.data);
+    return { success: true, data: res.data };
+
+  } catch (error) {
+    console.error('Error updating teacher:', error.response?.data || error.message);
+    return { success: false, error: error.response?.data || error.message };
+  }
+};
+export const handleDeleteTopTeacher = async (id) => {
+  try {
+    const res = await api.delete(`top-teacher/${id}`);
+    return res.data;
+
+  } catch (error) {
+
+  }
+}
+
+export const handleCreateTopStudent = async (formData) => {
+  try {
+    const res = api.post(`/topstudents`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleGetTopStudent = async () => {
+  try {
+    const res = await api.get('/topstudents');
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleDeleteTopStudent = async (id) => {
+  try {
+    const res = await api.delete(`/top-student/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error('Delete top student error:', error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to delete top student'
+    };
+  }
+};
+
+export const handleUpdateTopStudent = async (id, formData) => {
+  try {
+    const res = await api.put(`/top-student/${id}`, formData);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleCreateBulkQuestion = async (formData) => {
+  try {
+    const res = await api.post('/api/bulkquestion/import-question', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error('Create bulk question error:', error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to upload questions'
+    };
+  }
+};
+
+export const handleGetBulkQuestion = async () => {
+  try {
+    const res = await api.get('/api/bulkquestion/get-question');
+    return res.data;
+  } catch (error) {
+    console.error('Get bulk questions error:', error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to fetch questions'
+    };
+  }
+};
+
+export const handleDeleteBulkQuestion = async (id) => {
+  try {
+    const res = await api.delete(`/api/bulkquestion/delete-question/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error('Delete bulk question error:', error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to delete question'
+    };
+  }
+};
+
+export const handleDeleteAllBulkQuestions = async () => {
+  try {
+    const res = await api.delete('/api/bulkquestion/delete-question/all');
+    return res.data;
+  } catch (error) {
+    console.error('Delete all bulk questions error:', error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to delete all questions'
+    };
+  }
+};
+
+export const handleCreateSetting = async (data) => {
+  try {
+    const res = await api.post(`/api/setting/create-setting`, data);
+    return res.data;
+  } catch (error) {
+    console.error('Create setting error:', error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to create setting'
+    };
+  }
+};
+
+export const handleGetAllSettings = async () => {
+  try {
+    const res = await api.get('/api/setting/get-setting');
+    console.log(res.data);
+    return res.data;
+  } catch (error) {
+    console.error('Get settings error:', error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to fetch settings'
+    };
+  }
+};
+
+export const handleCreateRouteSetting = async (data) => {
+  try {
+    const res = await api.post(`/api/setting/create-routing_account`, data);
+    return res.data;
+  } catch (error) {
+    console.error('Create route setting error:', error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to create route setting'
+    };
+  }
+};
+
+export const handleDeleteRoutingAccount = async (id) => {
+  try {
+    const res = await api.delete(`/api/setting/delete-routing_account/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error('Delete routing account error:', error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to delete routing account'
+    };
+  }
+};
+
+export const handleGetRoutingAccount = async () => {
+  try {
+    const res = await api.get('/api/setting/get-routing_account');
+    return res.data;
+  } catch (error) {
+    console.error('Get routing account error:', error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || 'Failed to fetch routing accounts'
+    };
+  }
+};
+
+// admin
+
+export const handleGetProfile = async () => {
+  const res = await api.get('/admin/profile');
+  return res.data.admin;
+};
+
+export const handleGetAllAdmin = async () => {
+  try {
+    const res = await api.get('/admin');
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Update handleUpdateAdmin to send JSON
+export const handleUpdateAdmin = async (id, data) => {
+  try {
+    const response = await api.patch(`/admin/${id}`, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    });
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error("Update admin error:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message
+    };
+  }
+};
+
+export const handleCreateAdmin = async (data) => {
+  const res = await axios.post(`${BaseUrl}/admin`, data, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return res.data.data;
+};
+export const handleDeleteAdminAccount = async (id) => {
+  try {
+    const res = await api.delete(`/admin/${id}`)
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const handleOrganizationLogin = async (data, organizationCode) => {
+  try {
+    const res = await api.post(`/auth/${organizationCode}/login`, data);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
+
+export const handleUpdateUserPermissions = async (userId, data) => {
+  try {
+    const res = await api.put(`/api/admin/${userId}/permissions`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return res.data;
+  } catch (error) {
+    console.error('Error updating permissions:', error);
+    if (error.response) {
+      return {
+        success: false,
+        message: error.response.data?.message || 'Failed to update permissions',
+      };
+    } else if (error.request) {
+      return {
+        success: false,
+        message: 'No response from server. Please check your network connection.'
+      };
+    } else {
+      return {
+        success: false,
+        message: error.message || 'An error occurred while updating permissions'
+      };
+    }
+  }
+};
+
+/* ================= ROLE & PERMISSION APIS ================= */
+
+export const handleGetAllPermissions = async () => {
+  try {
+    const res = await api.get("/permissions");
+    return res.data;
+  } catch (error) {
+    console.error("Error getting permissions:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to get permissions"
+    };
+  }
+};
+
+export const handleGetAllPermissionsFlat = async () => {
+  try {
+    const res = await api.get("/api/permission/permissions/flat");
+    return res.data;
+  } catch (error) {
+    console.error("Error getting permissions flat:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to get permissions"
+    };
+  }
+};
+
+export const handleGetUserPermissions = async () => {
+  try {
+    const res = await api.get("/api/permission/user/permissions");
+
+    // The response structure might be different, handle it properly
+    if (res.data && res.data.success) {
+      return {
+        success: true,
+        data: res.data.data || {} // Make sure we return the permissions object
+      };
+    }
+
+    // If the response is directly the permissions object
+    if (res.data && typeof res.data === 'object' && !res.data.success) {
+      return {
+        success: true,
+        data: res.data
+      };
+    }
+
+    return {
+      success: false,
+      data: {}
+    };
+  } catch (error) {
+    console.error("Error getting user permissions:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to get user permissions",
+      data: {}
+    };
+  }
+};
+
+export const handleCheckPermission = async (permissionName) => {
+  try {
+    const res = await api.get(`/api/permission/user/check-permission?permission=${permissionName}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error checking permission:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to check permission"
+    };
+  }
+};
+
+export const handleGetAllRoles = async () => {
+  try {
+    const res = await api.get('/roles');
+    return res.data;
+  } catch (error) {
+    console.error("Error getting roles:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to get roles"
+    };
+  }
+};
+
+export const handleGetRoleById = async (id) => {
+  try {
+    const res = await api.get(`/role/${id}/permissions`);
+
+    return res.data
+
+  } catch (error) {
+    console.error("Error getting role:", error);
+
+  }
+};
+
+export const handleCreateRole = async (roleData) => {
+  try {
+    const res = await api.post("/roles", roleData);
+    toast.success(res.data?.message || "Role created successfully");
+    return res.data;
+  } catch (error) {
+    console.error("Error creating role:", error);
+    const message = error.response?.data?.message || "Failed to create role";
+    toast.error(message);
+    return {
+      success: false,
+      message
+    };
+  }
+};
+
+export const handleUpdateRole = async (id, roleData) => {
+  try {
+    const res = await api.put(`/api/permission/roles/${id}`, roleData);
+    toast.success(res.data?.message || "Role updated successfully");
+    return res.data;
+  } catch (error) {
+    console.error("Error updating role:", error);
+    const message = error.response?.data?.message || "Failed to update role";
+    toast.error(message);
+    return {
+      success: false,
+      message
+    };
+  }
+};
+
+export const handleDeleteRole = async (id) => {
+  try {
+    const res = await api.delete(`/api/permission/roles/${id}`);
+    toast.success(res.data?.message || "Role deleted successfully");
+    return res.data;
+  } catch (error) {
+    console.error("Error deleting role:", error);
+    const message = error.response?.data?.message || "Failed to delete role";
+    toast.error(message);
+    return {
+      success: false,
+      message
+    };
+  }
+};
+
+export const handleUpdateRolePermissions = async (id, permissionIds, name, description) => {
+  try {
+    const payload = {
+      name: name,
+      description: description,
+      permissionIds: permissionIds
+    };
+
+    console.log("Updating role with payload:", payload);
+
+    const res = await api.put(`/role/${id}`, payload);
+    return res.data;
+  } catch (error) {
+    console.error("Error updating role permissions:", error);
+    const message = error.response?.data?.message || "Failed to update role permissions";
+    toast.error(message);
+    return {
+      success: false,
+      message
+    };
+  }
+};
+
+export const handleAssignRoleToAdmin = async (adminId, role_id) => {
+  try {
+    const payload = {
+      role_id
+    };
+    const res = await api.put(`/api/permission/admin/${adminId}/assign-role`, payload);
+    toast.success(res.data?.message || "Role assigned successfully");
+    return res.data;
+  } catch (error) {
+    console.error("Error assigning role:", error);
+    const message = error.response?.data?.message || "Failed to assign role";
+    toast.error(message);
+    return {
+      success: false,
+      message
+    };
+  }
+};
