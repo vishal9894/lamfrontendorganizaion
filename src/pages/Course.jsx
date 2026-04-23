@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   handleCreateFolder,
   handleGetCourse,
@@ -11,15 +12,14 @@ import {
 import MenuItem from "@mui/material/MenuItem";
 import { styled } from "@mui/material/styles";
 import React from "react";
-import {
-  HiOutlineDotsVertical,
-} from "react-icons/hi";
+import { HiOutlineDotsVertical } from "react-icons/hi";
 import Popper from "@mui/material/Popper";
 import Grow from "@mui/material/Grow";
 import Paper from "@mui/material/Paper";
 import ClickAwayListener from "@mui/material/ClickAwayListener";
 import MenuList from "@mui/material/MenuList";
 import AddContentCourse from "../components/AddContentCourse";
+import { useApi } from "../context/AppState";
 
 // Add a simple toast notification component
 const Toast = ({ message, type, onClose }) => {
@@ -31,13 +31,17 @@ const Toast = ({ message, type, onClose }) => {
   }, [onClose]);
 
   return (
-    <div className={`fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] animate-slideDown
-      ${type === 'success' ? 'bg-green-50 text-green-800 border-l-4 border-green-500' : 
-        type === 'error' ? 'bg-red-50 text-red-800 border-l-4 border-red-500' :
-        'bg-blue-50 text-blue-800 border-l-4 border-blue-500'}`}
+    <div
+      className={`fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] animate-slideDown
+      ${type === "success"
+          ? "bg-green-50 text-green-800 border-l-4 border-green-500"
+          : type === "error"
+            ? "bg-red-50 text-red-800 border-l-4 border-red-500"
+            : "bg-blue-50 text-blue-800 border-l-4 border-blue-500"
+        }`}
     >
       <span className="text-xl">
-        {type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+        {type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️"}
       </span>
       <span className="flex-1">{message}</span>
       <button onClick={onClose} className="hover:opacity-70 transition-opacity">
@@ -48,6 +52,7 @@ const Toast = ({ message, type, onClose }) => {
 };
 
 const Course = () => {
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [contentLoading, setContentLoading] = useState(false);
@@ -69,20 +74,22 @@ const Course = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [openFileModal, setOpenFileModal] = useState(false);
 
+  const { setTestData } = useApi();
+
   // Toast notification state
-  const [toast, setToast] = useState({ show: false, message: '', type: '' });
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
 
   const [formData, setFormData] = useState({
     name: "",
     image: null,
   });
 
-  const showToast = (message, type = 'success') => {
+  const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
   };
 
   const hideToast = () => {
-    setToast({ show: false, message: '', type: '' });
+    setToast({ show: false, message: "", type: "" });
   };
 
   // Styled MenuItem for better visual
@@ -104,7 +111,7 @@ const Course = () => {
       try {
         const response = await handleGetCourse("regular_course");
         console.log("Courses response:", response);
-        
+
         let coursesData = [];
         if (response?.data?.course && Array.isArray(response.data.course)) {
           coursesData = response.data.course;
@@ -113,7 +120,7 @@ const Course = () => {
         } else if (Array.isArray(response)) {
           coursesData = response;
         }
-        
+
         setCourses(coursesData);
       } catch (error) {
         console.error(error);
@@ -125,52 +132,71 @@ const Course = () => {
     fetchCourses();
   }, []);
 
-  // ✅ LOAD FOLDERS, EVENTS, AND FILES
+  // Alternative cleaner solution
   const fetchFolders = async (parentId) => {
     setContentLoading(true);
     try {
       const res = await handleGetFolders(parentId);
-      console.log("Fetched data:", res);
       
-      // Handle different response structures
+
       let foldersArray = [];
       let eventsArray = [];
       let filesArray = [];
-      
-      // Handle folder response - can be object with events and files arrays
+
+      // Check if folder exists and is a valid folder (has an id and name)
       if (res?.folder) {
+        // Case 1: Folder is an array
         if (Array.isArray(res.folder)) {
-          foldersArray = res.folder;
-        } else if (res.folder && typeof res.folder === 'object') {
+          // Filter out any invalid folder entries
+          foldersArray = res.folder.filter(
+            (folder) => folder && folder.id && folder.name,
+          );
+        }
+        // Case 2: Folder is an object and has required properties (valid folder)
+        else if (
+          res.folder &&
+          typeof res.folder === "object" &&
+          res.folder.id &&
+          res.folder.name
+        ) {
           foldersArray = [res.folder];
-          // Check if folder has events array
+          // Get nested content
           if (res.folder.events && Array.isArray(res.folder.events)) {
             eventsArray = res.folder.events;
           }
-          // Check if folder has files array
+          if (res.folder.files && Array.isArray(res.folder.files)) {
+            filesArray = res.folder.files;
+          }
+        }
+        // Case 3: Folder object without id/name - just extract events and files
+        else if (res.folder && typeof res.folder === "object") {
+          // This is your case - extract events and files only
+          if (res.folder.events && Array.isArray(res.folder.events)) {
+            eventsArray = res.folder.events;
+          }
           if (res.folder.files && Array.isArray(res.folder.files)) {
             filesArray = res.folder.files;
           }
         }
       }
-      
+
       // Also check for separate arrays in response
       if (res?.events && Array.isArray(res.events)) {
-        eventsArray = res.events;
+        eventsArray = [...eventsArray, ...res.events];
       }
-      
+
       if (res?.files && Array.isArray(res.files)) {
-        filesArray = res.files;
+        filesArray = [...filesArray, ...res.files];
       }
-      
+
       if (res?.data?.fileContents && Array.isArray(res.data.fileContents)) {
         setContents(res.data.fileContents);
       }
-      
+
       setFolders(foldersArray);
       setEvents(eventsArray);
       setFiles(filesArray);
-      
+
       return foldersArray;
     } catch (err) {
       console.error("Error fetching folders:", err);
@@ -197,7 +223,7 @@ const Course = () => {
       showToast("Please enter a folder name", "error");
       return;
     }
-    
+
     try {
       const form = new FormData();
       form.append("name", formData.name);
@@ -219,9 +245,9 @@ const Course = () => {
 
       const res = await handleCreateFolder(form);
       console.log("Create folder response:", res);
-      
+
       const newFolder = res?.data?.data || res?.folder || res;
-      
+
       setFolders((prev) => [...prev, newFolder]);
       setOpenModal(false);
       setModalParentFolder(null);
@@ -239,7 +265,7 @@ const Course = () => {
       showToast("Please enter a folder name", "error");
       return;
     }
-    
+
     try {
       const form = new FormData();
       form.append("name", formData.name);
@@ -250,12 +276,14 @@ const Course = () => {
 
       const res = await handleUpdateFolder(editingFolder.id, form);
       console.log("Update folder response:", res);
-      
+
       const updatedFolder = res?.data?.data || res?.folder || res;
 
       setFolders((prev) =>
         prev.map((folder) =>
-          folder.id === editingFolder.id ? { ...folder, ...updatedFolder } : folder,
+          folder.id === editingFolder.id
+            ? { ...folder, ...updatedFolder }
+            : folder,
         ),
       );
 
@@ -272,7 +300,11 @@ const Course = () => {
 
   // ✅ DELETE FOLDER
   const handleDelete = async (folder) => {
-    if (window.confirm(`Are you sure you want to delete "${folder.name}"? This will also delete all subfolders and files inside it.`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to delete "${folder.name}"? This will also delete all subfolders and files inside it.`,
+      )
+    ) {
       try {
         await handleDeleteFolder(folder.id);
         setFolders((prev) => prev.filter((f) => f.id !== folder.id));
@@ -321,7 +353,9 @@ const Course = () => {
     if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
       try {
         await handleDeleteFilecontents(item.id);
-        await fetchFolders(currentFolder ? currentFolder.id : selectedCourse.id);
+        await fetchFolders(
+          currentFolder ? currentFolder.id : selectedCourse.id,
+        );
         handleDropdownClose();
         showToast("Content deleted successfully!", "success");
       } catch (error) {
@@ -456,8 +490,10 @@ const Course = () => {
 
   // Render content item row (for both events and files)
   const renderContentItem = (item, type) => {
-    const { icon, color, bg } = getContentTypeIcon(item.type || item.contentType);
-    
+    const { icon, color, bg } = getContentTypeIcon(
+      item.type || item.contentType,
+    );
+
     return (
       <tr
         key={`${type}-${item.id}`}
@@ -483,9 +519,7 @@ const Course = () => {
           </div>
         </td>
         <td className="px-6 py-4">
-          <div className="text-sm font-medium text-gray-900">
-            {item.name}
-          </div>
+          <div className="text-sm font-medium text-gray-900">{item.name}</div>
           {item.description && (
             <div className="text-xs text-gray-500 mt-1 truncate max-w-xs">
               📝 {item.description}
@@ -501,11 +535,10 @@ const Course = () => {
             </span>
             {item.accessType && (
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
-                  item.accessType === "free"
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${item.accessType === "free"
                     ? "bg-green-100 text-green-800"
                     : "bg-purple-100 text-purple-800"
-                }`}
+                  }`}
               >
                 {item.accessType}
               </span>
@@ -563,9 +596,7 @@ const Course = () => {
                   {...TransitionProps}
                   style={{
                     transformOrigin:
-                      placement === "bottom-start"
-                        ? "left top"
-                        : "left bottom",
+                      placement === "bottom-start" ? "left top" : "left bottom",
                   }}
                 >
                   <Paper
@@ -576,14 +607,62 @@ const Course = () => {
                       boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
                     }}
                   >
-                    <ClickAwayListener
-                      onClickAway={handleDropdownClose}
-                    >
-                      <MenuList
-                        autoFocusItem={
-                          openDropdownId === item.id
-                        }
-                      >
+                    <ClickAwayListener onClickAway={handleDropdownClose}>
+                      <MenuList autoFocusItem={openDropdownId === item.id}>
+                        {item.type === "test" && (
+                          <>
+                            <StyledMenuItem
+                              onClick={() => {
+                                window.open(
+                                  `/manage-view-questions/${item.id}/${encodeURIComponent(item.name)}`,
+                                  "_blank",
+                                );
+
+                                handleDropdownClose();
+                              }}
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                                />
+                              </svg>
+                              View Questions
+                            </StyledMenuItem>
+                            <StyledMenuItem
+                              onClick={() => {
+                                navigate(
+                                  `/manage-questions/${item.id}/${encodeURIComponent(item.name)}`,
+                                  "_blank",
+                                );
+                                handleDropdownClose();
+                                setTestData(item);
+                              }}
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 4v16m8-8H4"
+                                />
+                              </svg>
+                              Add Questions
+                            </StyledMenuItem>
+                          </>
+                        )}
                         <StyledMenuItem
                           onClick={() => {
                             console.log("Edit item:", item);
@@ -723,23 +802,22 @@ const Course = () => {
                             ₹{course.originalPrice?.toLocaleString()}
                           </div>
                         )}
-                       </td>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm transition ${
-                            course.status
+                          className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm transition ${course.status
                               ? "bg-green-100 text-green-700 ring-1 ring-green-300"
                               : "bg-red-100 text-red-700 ring-1 ring-red-300"
-                          }`}
+                            }`}
                         >
                           {course.status ? "Active" : "Inactive"}
                         </span>
-                       </td>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button className="text-blue-600 hover:text-blue-800 font-medium text-sm transition">
                           View Content →
                         </button>
-                       </td>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -956,7 +1034,9 @@ const Course = () => {
                                         }
                                       >
                                         <StyledMenuItem
-                                          onClick={() => handleEditClick(folder)}
+                                          onClick={() =>
+                                            handleEditClick(folder)
+                                          }
                                         >
                                           <svg
                                             className="w-4 h-4"
@@ -1002,44 +1082,47 @@ const Course = () => {
                         </td>
                       </tr>
                     ))}
-                    
+
                     {/* Events Section */}
-                    {events.map((event) => renderContentItem(event, 'event'))}
-                    
+                    {events.map((event) => renderContentItem(event, "event"))}
+
                     {/* Files Section */}
-                    {files.map((file) => renderContentItem(file, 'file'))}
+                    {files.map((file) => renderContentItem(file, "file"))}
                   </tbody>
                 </table>
               </div>
             )}
 
-            {!contentLoading && folders.length === 0 && events.length === 0 && files.length === 0 && (
-              <div className="text-center py-16">
-                <div className="text-gray-300 text-6xl mb-4">
-                  {currentFolder ? "📂" : "📁"}
+            {!contentLoading &&
+              folders.length === 0 &&
+              events.length === 0 &&
+              files.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="text-gray-300 text-6xl mb-4">
+                    {currentFolder ? "📂" : "📁"}
+                  </div>
+                  <p className="text-gray-500 mb-2">
+                    {currentFolder
+                      ? `No content in "${currentFolder.name}"`
+                      : `No content in "${selectedCourse.title}"`}
+                  </p>
+                  <div className="flex gap-4 justify-center mt-4">
+                    <button
+                      onClick={() => handleOpenCreateModal(currentFolder)}
+                      className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-2"
+                    >
+                      <span>+</span> Create your first{" "}
+                      {currentFolder ? "subfolder" : "folder"} →
+                    </button>
+                    <button
+                      onClick={() => setOpenFileModal(true)}
+                      className="text-green-600 hover:text-green-700 font-medium inline-flex items-center gap-2"
+                    >
+                      <span>+</span> Add your first content →
+                    </button>
+                  </div>
                 </div>
-                <p className="text-gray-500 mb-2">
-                  {currentFolder
-                    ? `No content in "${currentFolder.name}"`
-                    : `No content in "${selectedCourse.title}"`}
-                </p>
-                <div className="flex gap-4 justify-center mt-4">
-                  <button
-                    onClick={() => handleOpenCreateModal(currentFolder)}
-                    className="text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-2"
-                  >
-                    <span>+</span> Create your first{" "}
-                    {currentFolder ? "subfolder" : "folder"} →
-                  </button>
-                  <button
-                    onClick={() => setOpenFileModal(true)}
-                    className="text-green-600 hover:text-green-700 font-medium inline-flex items-center gap-2"
-                  >
-                    <span>+</span> Add your first content →
-                  </button>
-                </div>
-              </div>
-            )}
+              )}
           </div>
 
           {(folders.length > 0 || events.length > 0 || files.length > 0) && (

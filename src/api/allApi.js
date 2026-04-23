@@ -121,24 +121,24 @@ export const handleLgout = async () => {
 
 // wallet
 
-export const handleAddBallance = async (data)=>{
+export const handleAddBallance = async (data) => {
 
   try {
-    const res  = await api.post(`/wallets/debit/${data.userId}`, data);
+    const res = await api.post(`/wallets/credit/${data.userId}`, data);
 
     return res.data;
-    
+
   } catch (error) {
     console.log(error);
     throw error;
   }
 
 }
-export const handleGetWallet = async (id)=>{
+export const handleGetWallet = async (id) => {
   try {
     const res = await api.get(`/wallets/${id}`);
     return res.data;
-    
+
   } catch (error) {
     console.log(error);
     throw error;
@@ -488,7 +488,7 @@ export const handleCreateFile = async (formData) => {
 
 export const handleDeleteFilecontents = async (id) => {
   try {
-    const res = await api.delete(`/content/${id}`);
+    const res = await api.delete(`/file-contents/${id}`);
     toast.success(res.data?.message || "Content deleted successfully");
     return res.data;
   } catch (error) {
@@ -619,6 +619,114 @@ export const handleUpdateStream = async (id, formData) => {
   }
 };
 
+// test questions
+
+// Question Management APIs
+
+export const handleGetTests = async (testId) => {
+  try {
+    const res = await api.get(`/file-contents/test/${testId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching tests:", error);
+    throw error;
+  }
+}
+export const handleGetTestQuestions = async (testId) => {
+  try {
+    const response = await api.get(`testquestions?contentId=${testId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching questions:", error);
+    throw error;
+  }
+};
+
+export const handleCreateTestQuestion = async (testId, questionData) => {
+  try {
+    const response = await api.post(`/testquestions/${testId}`, questionData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error creating question:", error);
+    throw error;
+  }
+};
+
+export const handleBulkUploadQuestions = async (testId, formData) => {
+  try {
+    const response = await api.post(`/testquestions/bulk/${testId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+
+  } catch (error) {
+    console.error("Error uploading questions:", error);
+    throw error;
+  }
+};
+
+export const handleDeleteTestQuestion = async (questionId) => {
+  try {
+    const response = await api.delete(`/testquestions/${questionId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting question:", error);
+    throw error;
+  }
+};
+
+
+// create omr-sheet
+
+export const handleCreateOmrSheet = async (formData) =>{
+  try {
+    const res = await api.post(`/omr-sheets`,formData);
+    return res.data;
+    
+  } catch (error) {
+    
+  }
+}
+
+export const handleGetOmrSheet = async () =>{
+  try {
+    const res = await api.get(`/omr-sheets`);
+    return res.data;
+    
+  } catch (error) {
+    
+  }
+}
+
+export const handleMatchOmrSheetKey = async () =>{
+  try {
+    const res = await api.get(`/omr-sheets/keys/all`)
+    return res.data;
+    
+  } catch (error) {
+    
+  }
+}
+
+
+export const handleDeleteOmrSheet = async (id) => {
+  try {
+    const res = await api.delete(`/omr-sheets/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error deleting OMR sheet:", error);
+    throw error.response?.data || error.message || "Failed to delete OMR sheet";
+  }
+};
+
+
+
 
 // create teacher
 
@@ -658,7 +766,7 @@ export const handleUpdateTeacher = async (id, formData) => {
 
 export const handleDeleteTeacher = async (id) => {
   try {
-    const res = await api.delete(`/api/teacher/delete-teacher/${id}`);
+    const res = await api.delete(`/teachers/${id}`);
     toast.success(res.data.message)
     return res.data
 
@@ -1254,7 +1362,7 @@ export const handleGetAllRoles = async () => {
 
 export const handleGetRoleById = async (id) => {
   try {
-    const res = await api.get(`/role/${id}/permissions`);
+    const res = await api.get(`/roles/${id}`);
 
     return res.data
 
@@ -1296,9 +1404,9 @@ export const handleUpdateRole = async (id, roleData) => {
   }
 };
 
-export const handleDeleteRole = async (id) => {
+export const handleDeleteRoleById = async (id) => {
   try {
-    const res = await api.delete(`/api/permission/roles/${id}`);
+    const res = await api.delete(`roles/${id}`);
     toast.success(res.data?.message || "Role deleted successfully");
     return res.data;
   } catch (error) {
@@ -1322,7 +1430,7 @@ export const handleUpdateRolePermissions = async (id, permissionIds, name, descr
 
     console.log("Updating role with payload:", payload);
 
-    const res = await api.put(`/role/${id}`, payload);
+    const res = await api.put(`/roles/${id}`, payload);
     return res.data;
   } catch (error) {
     console.error("Error updating role permissions:", error);

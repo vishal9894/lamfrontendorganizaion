@@ -327,15 +327,11 @@ const AddTeacher = () => {
     try {
       const response = await handleDeleteTeacher(selectedTeacher.id);
       
-      if (response && (response.success === true || response.status === 200)) {
+    
         setTeachers(teachers.filter(t => t.id !== selectedTeacher.id));
         setShowDeleteModal(false);
         setSelectedTeacher(null);
-        setSuccess('Teacher deleted successfully!');
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        setError(response?.message || 'Failed to delete teacher');
-      }
+       
     } catch (err) {
       console.error('Failed to delete teacher:', err);
       setError(err?.response?.data?.message || err?.message || 'Failed to delete teacher');

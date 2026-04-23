@@ -6,7 +6,8 @@ import {
   handleGetAllRoles,
   handleUpdateAdmin,
 } from '../api/allApi';
-import { FiCheckCircle, FiEdit2, FiMail, FiPhone, FiPlus, FiShield, FiTrash2, FiUsers, FiXCircle } from 'react-icons/fi';
+import { FiCheckCircle, FiEdit2, FiMail, FiPhone, FiPlus, FiSave, FiShield, FiTrash2, FiUpload, FiUser, FiUsers, FiX, FiXCircle } from 'react-icons/fi';
+
 const AdminUserPage = () => {
   const [admins, setAdmins] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -22,10 +23,10 @@ const AdminUserPage = () => {
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [roleId, setRoleId] = useState('');
-  const [status, setStatus] = useState(true); // boolean value
-  const [image, setImage] = useState(null); // For file upload
-  const [imagePreview, setImagePreview] = useState(''); // For preview
-  const [existingImage, setExistingImage] = useState(''); // For existing admin image
+  const [status, setStatus] = useState(true);
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [existingImage, setExistingImage] = useState('');
 
   /* ================= FETCH ================= */
 
@@ -38,14 +39,16 @@ const AdminUserPage = () => {
     try {
       setLoading(true);
       const res = await handleGetAllAdmin();
-      // Ensure status is converted to boolean
-      const formattedAdmins = (res || []).map(admin => ({
+      // Handle different response structures
+      const adminData = res?.data || res || [];
+      const formattedAdmins = adminData.map(admin => ({
         ...admin,
-        status: admin.status === 1 || admin.status === true || admin.status === '1'
+        status: admin.status === 1 || admin.status === true || admin.status === '1',
+        roleName: admin.role?.name || admin.role || '-'
       }));
       setAdmins(formattedAdmins);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching admins:', err);
     } finally {
       setLoading(false);
     }
@@ -54,20 +57,16 @@ const AdminUserPage = () => {
   const fetchAllRoles = async () => {
     try {
       const res = await handleGetAllRoles();
-      setRoles(res.data || []);
+      const rolesData = res?.data || res || [];
+      setRoles(rolesData);
+      if (rolesData.length > 0 && !roleId) {
+        setRoleId(rolesData[0].id);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching roles:', err);
       setRoles([]);
     }
   };
-
-  /* ================= DEFAULT ROLE ================= */
-
-  useEffect(() => {
-    if (roles.length && !roleId) {
-      setRoleId(roles[0].id);
-    }
-  }, [roles]);
 
   /* ================= MODAL ================= */
 
@@ -92,8 +91,7 @@ const AdminUserPage = () => {
       setName(admin.name || '');
       setEmail(admin.email || '');
       setPhone(admin.phone_number || admin.phone || '');
-      setRoleId(admin.role?.id || admin.roleId || '');
-      // Convert status to boolean
+      setRoleId(admin.role?.id || admin.roleId || (roles.length ? roles[0].id : ''));
       setStatus(admin.status === true || admin.status === 1 || admin.status === '1');
       setExistingImage(admin.image || admin.avatar || '');
       setImagePreview(admin.image || admin.avatar || '');
@@ -114,14 +112,12 @@ const AdminUserPage = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         console.error('Invalid file type. Please upload JPEG, PNG, GIF, or WEBP images only.');
         return;
       }
       
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         console.error('File size too large. Maximum size is 5MB.');
         return;
@@ -129,7 +125,6 @@ const AdminUserPage = () => {
 
       setImage(file);
       
-      // Create preview URL
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -146,82 +141,78 @@ const AdminUserPage = () => {
 
   /* ================= SUBMIT ================= */
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  /* ---------- PAYLOAD ---------- */
-  const formData = new FormData();
-  formData.append('name', name.trim());
-  formData.append('email', email.trim());
-  formData.append('phone_number', phone.trim() || null);
-  formData.append('roleId', roleId);
-  // Send status as string 'true' or 'false' - backend should parse it
-  formData.append('status', status ? 'true' : 'false');
-  
-  // OR try sending as number (1 or 0)
-  // formData.append('status', status ? 1 : 0);
+    // Validation
+    if (!name.trim()) {
+      console.error('Name is required');
+      return;
+    }
+    if (!email.trim()) {
+      console.error('Email is required');
+      return;
+    }
+    if (modalType === 'create' && !password.trim()) {
+      console.error('Password is required');
+      return;
+    }
+    if (!roleId) {
+      console.error('Role is required');
+      return;
+    }
 
-  if (modalType === 'create') {
-    formData.append('password', password.trim());
-  }
-
-  // Handle image upload
-  if (image) {
-    formData.append('image', image);
-  } else if (modalType === 'update' && existingImage === '' && imagePreview === '') {
-    formData.append('remove_image', 'true');
-  }
-
-  setSubmitting(true);
-
-  try {
-    let result;
+    const formData = new FormData();
+    formData.append('name', name.trim());
+    formData.append('email', email.trim());
+    formData.append('phone_number', phone.trim() || '');
+    formData.append('roleId', roleId);
+    formData.append('status', status ? '1' : '0');
 
     if (modalType === 'create') {
-      result = await handleCreateAdmin(formData);
-      const formattedResult = {
-        ...result,
-        status: result.status === true || result.status === 1 || result.status === '1'
-      };
-      setAdmins((prev) => [...prev, formattedResult]);
-      await fetchAllAdmins();
-      closeModal();
-    } else {
-      result = await handleUpdateAdmin(currentAdmin.id, formData);
-      setAdmins((prev) =>
-        prev.map((adm) =>
-          adm.id === currentAdmin.id ? { 
-            ...adm, 
-            ...result,
-            status: result.status === true || result.status === 1 || result.status === '1'
-          } : adm
-        )
-      );
-      await fetchAllAdmins();
-      closeModal();
+      formData.append('password', password.trim());
     }
-  } catch (error) {
-    console.error(error.response?.data || error.message);
-  } finally {
-    setSubmitting(false);
-  }
-};
+
+    if (image) {
+      formData.append('image', image);
+    } else if (modalType === 'update' && existingImage === '' && imagePreview === '') {
+      formData.append('remove_image', 'true');
+    }
+
+    setSubmitting(true);
+
+    try {
+      if (modalType === 'create') {
+        await handleCreateAdmin(formData);
+        await fetchAllAdmins();
+        closeModal();
+      } else {
+        await handleUpdateAdmin(currentAdmin.id, formData);
+        await fetchAllAdmins();
+        closeModal();
+      }
+    } catch (error) {
+      console.error('Error:', error.response?.data || error.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   /* ================= DELETE ================= */
 
   const handleDelete = async (id) => {
-    try {
-      await handleDeleteAdminAccount(id);
-      setAdmins((prev) => prev.filter((a) => a.id !== id));
-      await fetchAllAdmins(); // Refresh the list
-    } catch (error) {
-      console.error('Delete failed:', error);
-      // Removed alert - just log the error
+    if (window.confirm('Are you sure you want to delete this admin?')) {
+      try {
+        await handleDeleteAdminAccount(id);
+        await fetchAllAdmins();
+      } catch (error) {
+        console.error('Delete failed:', error);
+      }
     }
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 via-gray-50 to-indigo-50/30">
+    <div className="bg-gradient-to-br from-gray-50 via-gray-50 to-indigo-50/30 min-h-screen">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -249,10 +240,8 @@ const AdminUserPage = () => {
             </button>
           </div>
         </div>
-        {/* <DeleteModal/> */}
       </div>
       
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -352,19 +341,19 @@ const AdminUserPage = () => {
                           <FiMail className="w-4 h-4 text-gray-400" />
                           {admin.email}
                         </div>
-                       </td>
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         <div className="flex items-center gap-1">
                           <FiPhone className="w-4 h-4 text-gray-400" />
-                          {admin.phone_number || admin.phone || '-'}
+                          {admin.phone || '-'}
                         </div>
-                       </td>
+                      </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
                           <FiShield className="w-3 h-3 mr-1" />
-                          {admin.role?.name || admin.role || '-'}
+                        {admin.roleName || '-'}
                         </span>
-                       </td>
+                      </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
                           admin.status === true
@@ -378,7 +367,7 @@ const AdminUserPage = () => {
                           )}
                           {admin.status === true ? 'Active' : 'Inactive'}
                         </span>
-                       </td>
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
                           <button
@@ -396,8 +385,8 @@ const AdminUserPage = () => {
                             <FiTrash2 className="w-4 h-4" />
                           </button>
                         </div>
-                       </td>
-                     </tr>
+                      </td>
+                    </tr>
                   ))}
                 </tbody>
               </table>
@@ -435,7 +424,6 @@ const AdminUserPage = () => {
                       Profile Image
                     </label>
                     <div className="flex items-center gap-4">
-                      {/* Image Preview */}
                       <div className="relative">
                         {imagePreview ? (
                           <div className="relative">
@@ -459,7 +447,6 @@ const AdminUserPage = () => {
                         )}
                       </div>
                       
-                      {/* Upload Button */}
                       <div className="flex-1">
                         <label className="cursor-pointer">
                           <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-gray-700">
@@ -568,6 +555,7 @@ const AdminUserPage = () => {
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none bg-white"
                         required
                       >
+                        <option value="">Select a role</option>
                         {roles.map((r) => (
                           <option key={r.id} value={r.id}>
                             {r.name}

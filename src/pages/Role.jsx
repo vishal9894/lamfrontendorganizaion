@@ -1,11 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   handleGetAllRoles,
   handleCreateRole,
   handleUpdateRolePermissions,
-  handleGetRoleById
-} from '../api/allApi';
-import { FiEdit2, FiPlus, FiSave, FiShield, FiTrash2, FiUsers, FiX } from 'react-icons/fi';
+  handleGetRoleById,
+  handleDeleteRoleById,
+} from "../api/allApi";
+import {
+  FiEdit2,
+  FiPlus,
+  FiSave,
+  FiShield,
+  FiTrash2,
+  FiUsers,
+  FiX,
+} from "react-icons/fi";
 import PermissionsUI from "../components/PermissionsUI";
 
 const Role = () => {
@@ -16,8 +25,8 @@ const Role = () => {
   const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
 
   // Create role form states
-  const [newRoleName, setNewRoleName] = useState('');
-  const [newRoleDescription, setNewRoleDescription] = useState('');
+  const [newRoleName, setNewRoleName] = useState("");
+  const [newRoleDescription, setNewRoleDescription] = useState("");
   const [selectedPermissions, setSelectedPermissions] = useState([]);
   const [creating, setCreating] = useState(false);
   const [rolePermissions, setRolePermissions] = useState([]);
@@ -33,7 +42,7 @@ const Role = () => {
       const response = await handleGetAllRoles();
       setRoles(response.data);
     } catch (error) {
-      console.error('Error fetching roles:', error);
+      console.error("Error fetching roles:", error);
     } finally {
       setLoading(false);
     }
@@ -52,20 +61,25 @@ const Role = () => {
       let permissionIds = [];
 
       if (response.permissions && Array.isArray(response.permissions)) {
-        permissionIds = response.permissions.map(permission => permission.id);
-      } else if (response.data && response.data.permissions && Array.isArray(response.data.permissions)) {
-        permissionIds = response.data.permissions.map(permission => permission.id);
+        permissionIds = response.permissions.map((permission) => permission.id);
+      } else if (
+        response.data &&
+        response.data.permissions &&
+        Array.isArray(response.data.permissions)
+      ) {
+        permissionIds = response.data.permissions.map(
+          (permission) => permission.id,
+        );
       } else if (Array.isArray(response)) {
-        permissionIds = response.map(permission => permission.id);
+        permissionIds = response.map((permission) => permission.id);
       }
 
       console.log("Extracted permission IDs:", permissionIds);
 
       setRolePermissions(permissionIds);
       setSelectedPermissions(permissionIds);
-
     } catch (error) {
-      console.error('Error fetching role permissions:', error);
+      console.error("Error fetching role permissions:", error);
       setRolePermissions([]);
       setSelectedPermissions([]);
     } finally {
@@ -76,7 +90,7 @@ const Role = () => {
   const handleEditRole = async (role) => {
     setSelectedRole(role);
     setNewRoleName(role.name);
-    setNewRoleDescription(role.description || '');
+    setNewRoleDescription(role.description || "");
 
     // Reset permissions before fetching
     setRolePermissions([]);
@@ -91,8 +105,8 @@ const Role = () => {
   const handleCloseCreateModal = () => {
     setShowCreateRoleModal(false);
     setSelectedRole(null);
-    setNewRoleName('');
-    setNewRoleDescription('');
+    setNewRoleName("");
+    setNewRoleDescription("");
     setSelectedPermissions([]);
     setRolePermissions([]);
   };
@@ -100,13 +114,13 @@ const Role = () => {
   const handleSaveRole = async () => {
     // Validate role name
     if (!newRoleName.trim()) {
-      alert('Please enter a role name');
+      alert("Please enter a role name");
       return;
     }
 
     // Validate that at least one permission is selected
     if (!selectedPermissions || selectedPermissions.length === 0) {
-      alert('Please select at least one permission for the role');
+      alert("Please select at least one permission for the role");
       return;
     }
 
@@ -120,66 +134,75 @@ const Role = () => {
           id: selectedRole.id,
           name: newRoleName,
           description: newRoleDescription,
-          permissionIds: selectedPermissions
+          permissionIds: selectedPermissions,
         });
 
         response = await handleUpdateRolePermissions(
           selectedRole.id,
           selectedPermissions,
           newRoleName,
-          newRoleDescription
+          newRoleDescription,
         );
       } else {
         // Create new role
         response = await handleCreateRole({
           name: newRoleName,
           description: newRoleDescription,
-          permissionIds: selectedPermissions
+          permissionIds: selectedPermissions,
         });
       }
 
-      if (response && (response.success || response.message === "Role created successfully" || response.message === "Role updated successfully")) {
+      if (
+        response &&
+        (response.success ||
+          response.message === "Role created successfully" ||
+          response.message === "Role updated successfully")
+      ) {
         handleCloseCreateModal();
         fetchRoles(); // Refresh roles list
-        toast.success(selectedRole ? 'Role updated successfully' : 'Role created successfully');
+        toast.success(
+          selectedRole
+            ? "Role updated successfully"
+            : "Role created successfully",
+        );
       } else {
         // Show error message if response has error
-        const errorMsg = response?.message || 'Failed to save role';
-        alert(Array.isArray(errorMsg) ? errorMsg.join('\n') : errorMsg);
+        const errorMsg = response?.message || "Failed to save role";
+        alert(Array.isArray(errorMsg) ? errorMsg.join("\n") : errorMsg);
       }
     } catch (error) {
-      console.error('Error saving role:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'An error occurred';
-      alert(Array.isArray(errorMessage) ? errorMessage.join('\n') : errorMessage);
+      console.error("Error saving role:", error);
+      const errorMessage =
+        error.response?.data?.message || error.message || "An error occurred";
+      alert(
+        Array.isArray(errorMessage) ? errorMessage.join("\n") : errorMessage,
+      );
     } finally {
       setCreating(false);
     }
   };
 
   const handleDeleteRole = async (roleId) => {
-
     try {
-      const response = await handleDeleteRole(roleId);
-      if (response.success) {
-        fetchRoles();
-        toast.success('Role deleted successfully');
-      }
-    } catch (error) {
-      console.error('Error deleting role:', error);
+      const response = await handleDeleteRoleById(roleId);
 
+      fetchRoles();
+     
+    } catch (error) {
+      console.error("Error deleting role:", error);
     }
   };
 
   const getRoleColor = (roleName) => {
     const colors = {
-      superAdmin: 'bg-purple-100 text-purple-800',
-      admin: 'bg-blue-100 text-blue-800',
-      teacher: 'bg-green-100 text-green-800',
-      contentManager: 'bg-orange-100 text-orange-800',
-      contentResearchAnalyst: 'bg-cyan-100 text-cyan-800',
-      questionUploader: 'bg-pink-100 text-pink-800',
+      superAdmin: "bg-purple-100 text-purple-800",
+      admin: "bg-blue-100 text-blue-800",
+      teacher: "bg-green-100 text-green-800",
+      contentManager: "bg-orange-100 text-orange-800",
+      contentResearchAnalyst: "bg-cyan-100 text-cyan-800",
+      questionUploader: "bg-pink-100 text-pink-800",
     };
-    return colors[roleName] || 'bg-gray-100 text-gray-800';
+    return colors[roleName] || "bg-gray-100 text-gray-800";
   };
 
   return (
@@ -217,7 +240,9 @@ const Role = () => {
         {/* Roles Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-lg font-semibold text-gray-900">Available Roles</h2>
+            <h2 className="text-lg font-semibold text-gray-900">
+              Available Roles
+            </h2>
           </div>
 
           {loading ? (
@@ -229,33 +254,52 @@ const Role = () => {
               <div className="p-4 bg-gray-50 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
                 <FiShield className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900">No roles found</h3>
-              <p className="text-sm text-gray-500 mt-1">Click "Create New Role" to add your first role</p>
+              <h3 className="text-lg font-medium text-gray-900">
+                No roles found
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Click "Create New Role" to add your first role
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role Name</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Permissions</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Users</th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Role Name
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Description
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Permissions
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Users
+                    </th>
+                    <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {roles.map((role) => (
-                    <tr key={role.id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={role.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-6 py-4">
                         <div className="flex items-center">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(role.name)} mr-3`}>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(role.name)} mr-3`}
+                          >
                             {role.name}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
-                        {role.description || 'No description'}
+                        {role.description || "No description"}
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
@@ -309,13 +353,16 @@ const Role = () => {
       {/* Create/Edit Role Modal */}
       {showCreateRoleModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={handleCloseCreateModal}></div>
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+            onClick={handleCloseCreateModal}
+          ></div>
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="relative bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
               {/* Modal Header */}
               <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                 <h3 className="text-xl font-semibold text-gray-900">
-                  {selectedRole ? 'Edit Role' : 'Create New Role'}
+                  {selectedRole ? "Edit Role" : "Create New Role"}
                 </h3>
                 <button
                   onClick={handleCloseCreateModal}
@@ -335,7 +382,9 @@ const Role = () => {
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Role Name <span className="text-red-500">*</span></label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Role Name <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         value={newRoleName}
@@ -345,7 +394,9 @@ const Role = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Description
+                      </label>
                       <input
                         type="text"
                         value={newRoleDescription}
@@ -365,8 +416,8 @@ const Role = () => {
                   </h4>
                   <p className="text-sm text-gray-500 mb-4">
                     {selectedRole
-                      ? 'Current permissions for this role are checked below. Modify as needed.'
-                      : 'Choose the permissions you want to assign to this role'}
+                      ? "Current permissions for this role are checked below. Modify as needed."
+                      : "Choose the permissions you want to assign to this role"}
                   </p>
 
                   {loadingRolePermissions ? (
@@ -403,7 +454,7 @@ const Role = () => {
                     ) : (
                       <>
                         <FiSave className="w-4 h-4" />
-                        {selectedRole ? 'Update Role' : 'Create Role'}
+                        {selectedRole ? "Update Role" : "Create Role"}
                       </>
                     )}
                   </button>

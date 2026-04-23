@@ -23,7 +23,7 @@ const Addcoins = () => {
       // Prepare data for API
       const data = {
         userId: user?.id,
-        balance: parseFloat(balance)
+        amount: parseFloat(balance)
       };
       
       // Call the API

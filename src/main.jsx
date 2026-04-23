@@ -7,6 +7,7 @@ import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import App from "./App.jsx";
 import { ToastContainer } from "react-toastify";
+import { UseApiProvider } from "./context/AppState.jsx";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -26,22 +27,24 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Provider store={store}>
-          <App />
-          <ToastContainer
-            position="top-right"
-            autoClose={2500}
-            hideProgressBar={true}
-            newestOnTop
-            closeOnClick
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="dark"
-            toastClassName="custom-toast"
-            bodyClassName="custom-toast-body"
-          />
-        </Provider>
+        <UseApiProvider>
+          <Provider store={store}>
+            <App />
+            <ToastContainer
+              position="top-right"
+              autoClose={2500}
+              hideProgressBar={true}
+              newestOnTop
+              closeOnClick
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="dark"
+              toastClassName="custom-toast"
+              bodyClassName="custom-toast-body"
+            />
+          </Provider>
+        </UseApiProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,

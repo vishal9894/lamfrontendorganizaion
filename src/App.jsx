@@ -75,6 +75,8 @@ import SocialMedia from "./pages/SocialMedia";
 // Other components
 import ImportBulkTest from "./pages/ImportBulkTest";
 import ViewQuizQuestion from "./pages/ViewQuizQuestion";
+import ManageQuestions from "./components/ManageQuestions";
+import ViewTestQuestions from "./components/ViewTestQuestions";
 
 
 // Sub-organization management
@@ -92,16 +94,6 @@ function App() {
 
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-      {/* Super Admin Routes */}
-      <Route element={<ProtectRoutes />}>
-        <Route element={<Homelayout />}>
-
-
-
-
-        </Route>
-      </Route>
 
       {/* Organization Routes */}
       <Route element={<ProtectRoutes />}>
@@ -121,7 +113,8 @@ function App() {
           <Route path="/organization/quiz/:id" element={
             <ViewQuizQuestion />
           } />
-
+          <Route path="/manage-questions/:testId/:testName" element={<ManageQuestions />} />
+          <Route path="/manage-view-questions/:testId/:testName" element={<ViewTestQuestions />} />
 
           <Route path="/organization/users/create" element={
 

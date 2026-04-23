@@ -9,8 +9,14 @@ import {
   Globe,
   Lock,
   Upload,
+  Clock,
+  Plus,
+  Trash2,
+  User,
+  Award,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 const AddContentCourse = ({
   onClose,
@@ -81,7 +87,6 @@ const AddContentCourse = ({
 
     try {
       // ✅ COMMON FIELDS
-    
 
       // 🔥 FIX: ALWAYS SEND TITLE (IMPORTANT FOR DB)
       let title = "";
@@ -137,10 +142,23 @@ const AddContentCourse = ({
             return;
           }
 
+          const invalidField = testFields.some(
+            (item) =>
+              !item.category?.trim() ||
+              !item.questions ||
+              Number(item.questions) <= 0,
+          );
+
+          if (invalidField) {
+            toast("Please fill all category names and question counts");
+            setLoading(false);
+            return;
+          }
+
           title = testName;
 
           formData.append("name", testName);
-          formData.append("title", title); // ✅ FIX ADDED
+          formData.append("title", title);
           formData.append("type", "test");
           formData.append("contentType", "test");
           formData.append("access", testAccess);
@@ -159,9 +177,6 @@ const AddContentCourse = ({
 
           formData.append("testType", testType);
           formData.append("postedBy", postedBy || "");
-          break;
-
-        default:
           break;
       }
 
@@ -586,6 +601,7 @@ const AddContentCourse = ({
                         onChange={(e) =>
                           handleFieldChange(index, "category", e.target.value)
                         }
+                        required
                         className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
                       />
                       <input
@@ -595,6 +611,7 @@ const AddContentCourse = ({
                         onChange={(e) =>
                           handleFieldChange(index, "questions", e.target.value)
                         }
+                        required
                         className="w-28 px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500"
                       />
                       <div className="flex gap-2">

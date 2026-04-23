@@ -1,5 +1,20 @@
 import { useState, useEffect } from 'react';
-
+import { 
+  Settings, 
+  RefreshCw, 
+  Save, 
+  Plus, 
+  Trash2,
+  Globe,
+  ArrowUpDown,
+  Package,
+  Image,
+  Bell,
+  CreditCard,
+  ToggleRight,
+  ToggleLeft,
+  Percent
+} from 'lucide-react';
 
 import { 
   handleGetAllSettings, 
@@ -8,6 +23,37 @@ import {
   handleCreateRouteSetting,
   handleDeleteRoutingAccount
 } from '../api/allApi';
+
+// Delete Modal Component
+const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isLoading, confirmText, cancelText, size }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className={`bg-white rounded-lg shadow-xl w-full ${size === 'md' ? 'max-w-md' : 'max-w-lg'} mx-4`}>
+        <div className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+          <p className="text-gray-600">{message}</p>
+        </div>
+        <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50 rounded-b-lg">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            {cancelText || 'Cancel'}
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Deleting...' : (confirmText || 'Delete')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const GeneralSetting = () => {
   const [loading, setLoading] = useState(false);
@@ -352,6 +398,26 @@ const GeneralSetting = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Success Message */}
+        {success && (
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Settings saved successfully!
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            {error}
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -402,7 +468,6 @@ const GeneralSetting = () => {
           </div>
         </div>
 
-       
         {/* Tab Content */}
         {activeTab === 'general' ? (
           <form onSubmit={handleSubmit}>
@@ -449,39 +514,7 @@ const GeneralSetting = () => {
                   </div>
                 </div>
 
-                {/* Social Media Links (New) */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <Globe className="w-5 h-5 text-indigo-600" />
-                    Social Media Links
-                  </h2>
-                  <div className="space-y-4">
-                    <SocialInput
-                      label="YouTube"
-                      value={formData.social_media.youtube}
-                      onChange={(e) => handleSocialMediaChange('youtube', e.target.value)}
-                      placeholder="https://youtube.com/@channel"
-                    />
-                    <SocialInput
-                      label="Facebook"
-                      value={formData.social_media.facebook}
-                      onChange={(e) => handleSocialMediaChange('facebook', e.target.value)}
-                      placeholder="https://facebook.com/page"
-                    />
-                    <SocialInput
-                      label="WhatsApp"
-                      value={formData.social_media.whatsapp}
-                      onChange={(e) => handleSocialMediaChange('whatsapp', e.target.value)}
-                      placeholder="+91 98765 43210"
-                    />
-                    <SocialInput
-                      label="Instagram"
-                      value={formData.social_media.instagram}
-                      onChange={(e) => handleSocialMediaChange('instagram', e.target.value)}
-                      placeholder="https://instagram.com/username"
-                    />
-                  </div>
-                </div>
+                
 
                 {/* Features (New) */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

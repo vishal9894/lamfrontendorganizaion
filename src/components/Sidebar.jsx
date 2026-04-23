@@ -323,12 +323,7 @@ const Sidebar = () => {
           icon: FiSettings,
           path: "/settings/general",
         },
-        {
-          id: "organization-accounts",
-          label: "Organization",
-          icon: FiUsers,
-          path: "/organization",
-        },
+       
         {
           id: "add-coin",
           label: "Coin Settings",
