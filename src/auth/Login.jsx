@@ -1,27 +1,28 @@
-import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+const BaseUrl = import.meta.env.VITE_BACKEND_API;
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/admin/org-login', {
+      const response = await axios.post(`${BaseUrl}/admin/org-login`, {
         email,
-        password
+        password,
       });
 
       const data = response.data;
@@ -29,9 +30,9 @@ const Login = () => {
       console.log(data);
 
       if (data.token) {
-        localStorage.setItem('authToken', data.token);
+        localStorage.setItem("authToken", data.token);
       } else {
-        throw new Error('No token received from login');
+        throw new Error("No token received from login");
       }
 
       // FIRST CONDITION: User already has organization in login response
@@ -39,11 +40,11 @@ const Login = () => {
         const { protocol, host } = window.location;
         let orgUrl;
 
-        if (host.includes('localhost') || host.includes('127.0.0.1')) {
-          const port = host.includes(':') ? ':' + host.split(':')[1] : '';
+        if (host.includes("localhost") || host.includes("127.0.0.1")) {
+          const port = host.includes(":") ? ":" + host.split(":")[1] : "";
           orgUrl = `${protocol}//${data.organization.subdomain}.localhost${port}`;
         } else {
-          const baseDomain = host.split('.').slice(-2).join('.');
+          const baseDomain = host.split(".").slice(-2).join(".");
           orgUrl = `${protocol}//${data.organization.subdomain}.${baseDomain}`;
         }
 
@@ -52,7 +53,7 @@ const Login = () => {
 
       // SECOND CONDITION: Super admin without org - MUST switch first!
       else if (
-        data.type === 'super_admin' &&
+        data.type === "super_admin" &&
         data.organizations &&
         data.organizations.length > 0
       ) {
@@ -60,7 +61,7 @@ const Login = () => {
         const selectedOrg = data.organizations[0];
 
         if (!selectedOrg || !selectedOrg.subdomain) {
-          setError('Invalid organization data. Please contact support.');
+          setError("Invalid organization data. Please contact support.");
           setLoading(false);
           return;
         }
@@ -68,22 +69,22 @@ const Login = () => {
         // Call switch-organization to get token with org context
         try {
           const switchRes = await axios.post(
-            'http://localhost:3000/admin/switch-organization',
+            `${BaseUrl}/admin/switch-organization`,
             { organizationId: selectedOrg.id },
-            { headers: { Authorization: `Bearer ${data.token}` } }
+            { headers: { Authorization: `Bearer ${data.token}` } },
           );
 
           const switchData = switchRes.data;
 
           // Use the NEW token with organization info
           if (switchData.token) {
-            localStorage.setItem('authToken', switchData.token);
+            localStorage.setItem("authToken", switchData.token);
           } else {
-            throw new Error('No token received from switch-organization');
+            throw new Error("No token received from switch-organization");
           }
         } catch (switchErr) {
-          console.error('Switch organization error:', switchErr);
-          setError('Failed to switch organization. Please try again.');
+          console.error("Switch organization error:", switchErr);
+          setError("Failed to switch organization. Please try again.");
           setLoading(false);
           return;
         }
@@ -92,11 +93,11 @@ const Login = () => {
         const { protocol, host } = window.location;
         let orgUrl;
 
-        if (host.includes('localhost') || host.includes('127.0.0.1')) {
-          const port = host.includes(':') ? ':' + host.split(':')[1] : '';
+        if (host.includes("localhost") || host.includes("127.0.0.1")) {
+          const port = host.includes(":") ? ":" + host.split(":")[1] : "";
           orgUrl = `${protocol}//${selectedOrg.subdomain}.localhost${port}`;
         } else {
-          const baseDomain = host.split('.').slice(-2).join('.');
+          const baseDomain = host.split(".").slice(-2).join(".");
           orgUrl = `${protocol}//${selectedOrg.subdomain}.${baseDomain}`;
         }
 
@@ -107,21 +108,20 @@ const Login = () => {
       else {
         navigate(from, { replace: true });
       }
-
     } catch (err) {
-      console.error('Login error:', err);
+      console.error("Login error:", err);
 
       // Handle different error types
       if (err.response?.status === 401) {
-        setError('Invalid email or password. Please try again.');
+        setError("Invalid email or password. Please try again.");
       } else if (err.response?.status === 403) {
-        setError('Access denied. Your account may be deactivated.');
+        setError("Access denied. Your account may be deactivated.");
       } else if (err.response?.status === 500) {
-        setError('Server error. Please try again later.');
-      } else if (err.code === 'ECONNREFUSED') {
-        setError('Cannot connect to server. Please check your network.');
+        setError("Server error. Please try again later.");
+      } else if (err.code === "ECONNREFUSED") {
+        setError("Cannot connect to server. Please check your network.");
       } else {
-        setError('Login failed. Please try again.');
+        setError("Login failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -189,7 +189,7 @@ const Login = () => {
             className="w-full py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-none rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
             disabled={loading}
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
       </div>
