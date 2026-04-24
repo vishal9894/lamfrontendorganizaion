@@ -1190,7 +1190,8 @@ export const handleGetProfile = async () => {
 
 export const handleGetAllAdmin = async () => {
   try {
-    const res = await api.get('/admin');
+    const res = await api.get('/admin/all-organization-admins');
+    console.log(res.data);
     return res.data;
   } catch (error) {
     console.log(error);
@@ -1216,7 +1217,7 @@ export const handleUpdateAdmin = async (id, data) => {
 };
 
 export const handleCreateAdmin = async (data) => {
-  const res = await axios.post(`${BaseUrl}/admin`, data, {
+  const res = await axios.post(`${BaseUrl}/admin/org-signup`, data, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },

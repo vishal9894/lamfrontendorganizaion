@@ -23,6 +23,8 @@ const AdminUserPage = () => {
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [roleId, setRoleId] = useState('');
+  const [roleName, setRoleName] = useState('');
+  const [organizationId, setOrganizationId] = useState('');
   const [status, setStatus] = useState(true);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
@@ -39,13 +41,31 @@ const AdminUserPage = () => {
     try {
       setLoading(true);
       const res = await handleGetAllAdmin();
-      // Handle different response structures
-      const adminData = res?.data || res || [];
+      console.log("Full API Response:", res);
+      
+      let adminData = [];
+      if (res?.admins && Array.isArray(res.admins)) {
+        adminData = res.admins;
+      } else if (res?.data && Array.isArray(res.data)) {
+        adminData = res.data;
+      } else if (Array.isArray(res)) {
+        adminData = res;
+      }
+      
       const formattedAdmins = adminData.map(admin => ({
-        ...admin,
-        status: admin.status === 1 || admin.status === true || admin.status === '1',
-        roleName: admin.role?.name || admin.role || '-'
+        id: admin.id,
+        name: admin.name || '',
+        email: admin.email || '',
+        phone: admin.phone || admin.phone_number || '',
+        roleName: admin.roleName || admin.role?.name || admin.role || '-',
+        roleId: admin.roleId || admin.role?.id,
+        status: admin.status === true || admin.status === 1 || admin.status === 'active',
+        organizationId: admin.organizationId || admin.organization?.id,
+        image: admin.image || admin.avatar || null,
+        createdAt: admin.createdAt,
+        type: admin.type
       }));
+      
       setAdmins(formattedAdmins);
     } catch (err) {
       console.error('Error fetching admins:', err);
@@ -59,9 +79,6 @@ const AdminUserPage = () => {
       const res = await handleGetAllRoles();
       const rolesData = res?.data || res || [];
       setRoles(rolesData);
-      if (rolesData.length > 0 && !roleId) {
-        setRoleId(rolesData[0].id);
-      }
     } catch (err) {
       console.error('Error fetching roles:', err);
       setRoles([]);
@@ -75,7 +92,9 @@ const AdminUserPage = () => {
     setEmail('');
     setPassword('');
     setPhone('');
-    setRoleId(roles.length ? roles[0].id : '');
+    setRoleId('');
+    setRoleName('');
+    setOrganizationId('');
     setStatus(true);
     setCurrentAdmin(null);
     setImage(null);
@@ -90,11 +109,13 @@ const AdminUserPage = () => {
     if (type === 'update' && admin) {
       setName(admin.name || '');
       setEmail(admin.email || '');
-      setPhone(admin.phone_number || admin.phone || '');
-      setRoleId(admin.role?.id || admin.roleId || (roles.length ? roles[0].id : ''));
-      setStatus(admin.status === true || admin.status === 1 || admin.status === '1');
-      setExistingImage(admin.image || admin.avatar || '');
-      setImagePreview(admin.image || admin.avatar || '');
+      setPhone(admin.phone || '');
+      setRoleId(admin.roleId || '');
+      setRoleName(admin.roleName || '');
+      setOrganizationId(admin.organizationId || '');
+      setStatus(admin.status === true || admin.status === 1 || admin.status === 'active' || admin.status === 'Active');
+      setExistingImage(admin.image || '');
+      setImagePreview(admin.image || '');
     } else {
       resetForm();
     }
@@ -114,12 +135,12 @@ const AdminUserPage = () => {
     if (file) {
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
-        console.error('Invalid file type. Please upload JPEG, PNG, GIF, or WEBP images only.');
+        alert('Invalid file type. Please upload JPEG, PNG, GIF, or WEBP images only.');
         return;
       }
       
       if (file.size > 5 * 1024 * 1024) {
-        console.error('File size too large. Maximum size is 5MB.');
+        alert('File size too large. Maximum size is 5MB.');
         return;
       }
 
@@ -139,6 +160,15 @@ const AdminUserPage = () => {
     setExistingImage('');
   };
 
+  // Simple role selection - just set ID and Name from selected option
+  const handleRoleSelect = (e) => {
+    const selectedRoleId = e.target.value;
+    const selectedRole = roles.find(role => role.id === selectedRoleId);
+    
+    setRoleId(selectedRoleId);
+    setRoleName(selectedRole ? selectedRole.name : '');
+  };
+
   /* ================= SUBMIT ================= */
 
   const handleSubmit = async (e) => {
@@ -146,28 +176,34 @@ const AdminUserPage = () => {
 
     // Validation
     if (!name.trim()) {
-      console.error('Name is required');
+      alert('Name is required');
       return;
     }
     if (!email.trim()) {
-      console.error('Email is required');
+      alert('Email is required');
       return;
     }
     if (modalType === 'create' && !password.trim()) {
-      console.error('Password is required');
+      alert('Password is required');
       return;
     }
     if (!roleId) {
-      console.error('Role is required');
+      alert('Please select a role');
+      return;
+    }
+    if (!organizationId) {
+      alert('Organization ID is required');
       return;
     }
 
     const formData = new FormData();
     formData.append('name', name.trim());
     formData.append('email', email.trim());
-    formData.append('phone_number', phone.trim() || '');
+    formData.append('phone', phone.trim() || '');
     formData.append('roleId', roleId);
-    formData.append('status', status ? '1' : '0');
+    formData.append('roleName', roleName);
+    formData.append('organizationId', organizationId);
+    formData.append('status', status ? 'active' : 'inactive');
 
     if (modalType === 'create') {
       formData.append('password', password.trim());
@@ -179,6 +215,13 @@ const AdminUserPage = () => {
       formData.append('remove_image', 'true');
     }
 
+    // Log the payload
+    console.log("Sending payload:");
+    console.log("roleId:", roleId);
+    console.log("roleName:", roleName);
+    console.log("organizationId:", organizationId);
+    console.log("status:", status ? 'active' : 'inactive');
+
     setSubmitting(true);
 
     try {
@@ -186,13 +229,16 @@ const AdminUserPage = () => {
         await handleCreateAdmin(formData);
         await fetchAllAdmins();
         closeModal();
+        alert('Admin created successfully!');
       } else {
         await handleUpdateAdmin(currentAdmin.id, formData);
         await fetchAllAdmins();
         closeModal();
+        alert('Admin updated successfully!');
       }
     } catch (error) {
       console.error('Error:', error.response?.data || error.message);
+      alert(error.response?.data?.message || 'An error occurred. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -205,8 +251,10 @@ const AdminUserPage = () => {
       try {
         await handleDeleteAdminAccount(id);
         await fetchAllAdmins();
+        alert('Admin deleted successfully!');
       } catch (error) {
         console.error('Delete failed:', error);
+        alert('Failed to delete admin. Please try again.');
       }
     }
   };
@@ -322,9 +370,9 @@ const AdminUserPage = () => {
                       <td className="px-6 py-4 text-sm text-gray-500">{index + 1}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          {admin.image || admin.avatar ? (
+                          {admin.image ? (
                             <img
-                              src={admin.image || admin.avatar}
+                              src={admin.image}
                               alt={admin.name}
                               className="w-8 h-8 rounded-full object-cover"
                             />
@@ -351,7 +399,7 @@ const AdminUserPage = () => {
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
                           <FiShield className="w-3 h-3 mr-1" />
-                        {admin.roleName || '-'}
+                          {admin.roleName}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -542,7 +590,22 @@ const AdminUserPage = () => {
                     </div>
                   </div>
 
-                  {/* Role */}
+                  {/* Organization ID */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Organization ID <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={organizationId}
+                      onChange={(e) => setOrganizationId(e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      placeholder="Enter Organization ID"
+                      required
+                    />
+                  </div>
+
+                  {/* Role Dropdown - Simple Select */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Role <span className="text-red-500">*</span>
@@ -551,14 +614,14 @@ const AdminUserPage = () => {
                       <FiShield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                       <select
                         value={roleId}
-                        onChange={(e) => setRoleId(e.target.value)}
+                        onChange={handleRoleSelect}
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none bg-white"
                         required
                       >
                         <option value="">Select a role</option>
-                        {roles.map((r) => (
-                          <option key={r.id} value={r.id}>
-                            {r.name}
+                        {roles.map((role) => (
+                          <option key={role.id} value={role.id}>
+                            {role.name}
                           </option>
                         ))}
                       </select>

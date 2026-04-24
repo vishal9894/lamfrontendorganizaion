@@ -291,7 +291,7 @@ const Course = () => {
       setEditingFolder(null);
       setModalParentFolder(null);
       setFormData({ name: "", image: null });
-      showToast("Folder updated successfully!", "success");
+      
     } catch (error) {
       console.error("Error updating folder:", error);
       showToast("Failed to update folder", "error");
