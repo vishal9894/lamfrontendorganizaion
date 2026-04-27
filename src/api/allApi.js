@@ -684,33 +684,33 @@ export const handleDeleteTestQuestion = async (questionId) => {
 
 // create omr-sheet
 
-export const handleCreateOmrSheet = async (formData) =>{
+export const handleCreateOmrSheet = async (formData) => {
   try {
-    const res = await api.post(`/omr-sheets`,formData);
+    const res = await api.post(`/omr-sheets`, formData);
     return res.data;
-    
+
   } catch (error) {
-    
+
   }
 }
 
-export const handleGetOmrSheet = async () =>{
+export const handleGetOmrSheet = async () => {
   try {
     const res = await api.get(`/omr-sheets`);
     return res.data;
-    
+
   } catch (error) {
-    
+
   }
 }
 
-export const handleMatchOmrSheetKey = async () =>{
+export const handleMatchOmrSheetKey = async () => {
   try {
     const res = await api.get(`/omr-sheets/keys/all`)
     return res.data;
-    
+
   } catch (error) {
-    
+
   }
 }
 
@@ -1459,6 +1459,107 @@ export const handleAssignRoleToAdmin = async (adminId, role_id) => {
     return {
       success: false,
       message
+    };
+  }
+};
+
+
+// notification
+
+
+export const handleSendPushNotification = async (formData) => {
+  try {
+    const res = await api.post(`/notifications`, formData)
+    return res.data;
+
+  } catch (error) {
+    console.error("Error sending push notification:", error);
+    const message = error.response?.data?.message || "Failed to send push notification";
+    toast.error(message);
+    return {
+      success: false,
+      message
+    };
+  }
+};
+
+// Send In-App Notification
+export const handleSendInAppNotification = async (formData) => {
+  try {
+    const res = await api.post(`/in-app-notifications`, formData)
+    return res.data;
+
+  } catch (error) {
+    console.error("Error sending in-app notification:", error);
+    const message = error.response?.data?.message || "Failed to send in-app notification";
+    toast.error(message);
+    return {
+      success: false,
+      message
+    };
+  }
+};
+
+// Get Notification History
+export const handleGetNotificationHistory = async (params = {}) => {
+  try {
+    const res = await api.get(`/notifications`, { params });
+    return res.data;
+  } catch (error) {
+    console.error("Error getting notification history:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to get notification history"
+    };
+  }
+};
+
+// Get Notification Details
+export const handleGetNotificationDetails = async (notificationId) => {
+  try {
+    const res = await api.get(`/notifications/${notificationId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error getting notification details:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to get notification details"
+    };
+  }
+};
+
+
+export const handleDeleteNotifications = async (notificationId) => {
+  console.log("Deleting notification with ID:", notificationId);
+
+  try {
+    console.log("Making DELETE request to:", `/notifications/${notificationId}`);
+    const res = await api.delete(`/notifications/${notificationId}`);
+    console.log("Delete response:", res);
+    return res.data;
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    console.error("Error response:", error.response);
+    console.error("Error status:", error.response?.status);
+
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || "Failed to delete notification"
+    };
+  }
+};
+
+
+// Get App Versions
+export const handleGetAppVersions = async () => {
+  try {
+    const res = await api.get(`/app-versions`);
+    return res.data;
+  } catch (error) {
+    console.error("Error getting app versions:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to get app versions"
     };
   }
 };

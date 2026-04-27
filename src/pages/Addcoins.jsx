@@ -29,10 +29,10 @@ const Addcoins = () => {
       // Call the API
       const response = await handleAddBallance(data);
       
-      console.log("API Response:", response);
+      
       
       // Check if API call was successful
-      if (response && response.success) {
+      
         setShowSuccess(true);
         setBalance("");
         
@@ -40,9 +40,7 @@ const Addcoins = () => {
         setTimeout(() => {
           setShowSuccess(false);
         }, 2000);
-      } else {
-        setError(response?.message || "Failed to add balance. Please try again.");
-      }
+      
     } catch (error) {
       console.error("Error adding balance:", error);
       setError(error?.message || "An error occurred. Please try again.");

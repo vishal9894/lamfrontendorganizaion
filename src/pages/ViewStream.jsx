@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
-import { 
-  AlertCircle, 
-  BookOpen, 
-  CheckCircle, 
-  
-  Download, 
-  
-  Edit, 
-  
+import {
+  AlertCircle,
+  BookOpen,
+  CheckCircle,
+
+  Download,
+
+  Edit,
+
   FolderTree,
   ImageIcon,
   Plus,
   RefreshCw,
   Search,
   Trash2,
-  Users, 
- 
+  Users,
+
 } from "lucide-react";
 
 import { handleGetStream, handleDeleteStream } from "../api/allApi";
@@ -53,7 +53,7 @@ const ViewStream = () => {
 
       // FIX: Safely handle the response structure
       let streamsData = [];
-      
+
       if (response && response.success && response.data) {
         // Check if data is an array or has data property
         if (Array.isArray(response.data)) {
@@ -222,7 +222,7 @@ const ViewStream = () => {
       alert("No streams to export");
       return;
     }
-    
+
     const headers = [
       "ID",
       "Name",
@@ -456,7 +456,7 @@ const ViewStream = () => {
                         Stream
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        ID
+                        SuperStream
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Description
@@ -464,7 +464,7 @@ const ViewStream = () => {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                       </th>
-                      
+
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Created
                       </th>
@@ -496,7 +496,7 @@ const ViewStream = () => {
                                     src={stream.image}
                                     alt={stream.name}
                                     className="w-full h-full object-cover"
-                                  
+
                                   />
                                 ) : (
                                   <ImageIcon className="w-5 h-5 text-indigo-400" />
@@ -509,7 +509,7 @@ const ViewStream = () => {
                           </td>
                           <td className="px-4 py-3">
                             <span className="text-xs font-mono text-gray-500">
-                              {stream.id?.substring(0, 8)}...
+                              {stream.superstream?.name || "N/A"}
                             </span>
                           </td>
                           <td className="px-4 py-3 max-w-xs">
@@ -519,19 +519,18 @@ const ViewStream = () => {
                           </td>
                           <td className="px-4 py-3">
                             <span
-                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                stream.status === "active"
+                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${stream.status === "active"
                                   ? "bg-green-100 text-green-700"
                                   : stream.status === "inactive"
                                     ? "bg-gray-100 text-gray-700"
                                     : "bg-blue-100 text-blue-700"
-                              }`}
+                                }`}
                             >
                               {stream.status || "Unknown"}
                             </span>
                           </td>
-                          
-                          
+
+
                           <td className="px-4 py-3 text-gray-600">
                             {stream.created_at
                               ? new Date(stream.created_at).toLocaleDateString()
@@ -539,7 +538,7 @@ const ViewStream = () => {
                           </td>
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-1">
-                             
+
                               <button
                                 onClick={() => handleEdit(stream)}
                                 className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
@@ -557,7 +556,7 @@ const ViewStream = () => {
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
-                             
+
                             </div>
                           </td>
                         </tr>
@@ -599,11 +598,10 @@ const ViewStream = () => {
                       <button
                         key={i + 1}
                         onClick={() => setCurrentPage(i + 1)}
-                        className={`w-8 h-8 rounded-lg transition-colors ${
-                          currentPage === i + 1
+                        className={`w-8 h-8 rounded-lg transition-colors ${currentPage === i + 1
                             ? "bg-indigo-600 text-white"
                             : "hover:bg-gray-100 text-gray-600"
-                        }`}
+                          }`}
                       >
                         {i + 1}
                       </button>
@@ -625,7 +623,7 @@ const ViewStream = () => {
           )}
         </div>
 
-       
+
 
         {/* Delete Modal */}
         {showDeleteModal && selectedStream && (

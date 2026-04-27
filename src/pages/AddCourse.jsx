@@ -755,7 +755,7 @@ const AddCourse = () => {
                       ) : Array.isArray(streams) && streams.length > 0 ? (
                         streams.map((stream) => (
                           <option key={stream.id || stream._id} value={stream.id || stream._id}>
-                            {stream.name || stream.streamname} {stream.status === 'active' ? '✓' : ''}
+                            {stream.name || stream.streamname}  ({stream.superstream?.name || ''}) 
                           </option>
                         ))
                       ) : (
