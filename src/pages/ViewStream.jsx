@@ -21,6 +21,8 @@ import {
 import { handleGetStream, handleDeleteStream } from "../api/allApi";
 import { useDispatch } from "react-redux";
 import { setStream } from "../redux/features/courseSlice";
+import DeleteModal from "../components/DeleteModal";
+
 
 const ViewStream = () => {
   const [streams, setStreams] = useState([]);
@@ -520,10 +522,10 @@ const ViewStream = () => {
                           <td className="px-4 py-3">
                             <span
                               className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${stream.status === "active"
-                                  ? "bg-green-100 text-green-700"
-                                  : stream.status === "inactive"
-                                    ? "bg-gray-100 text-gray-700"
-                                    : "bg-blue-100 text-blue-700"
+                                ? "bg-green-100 text-green-700"
+                                : stream.status === "inactive"
+                                  ? "bg-gray-100 text-gray-700"
+                                  : "bg-blue-100 text-blue-700"
                                 }`}
                             >
                               {stream.status || "Unknown"}
@@ -599,8 +601,8 @@ const ViewStream = () => {
                         key={i + 1}
                         onClick={() => setCurrentPage(i + 1)}
                         className={`w-8 h-8 rounded-lg transition-colors ${currentPage === i + 1
-                            ? "bg-indigo-600 text-white"
-                            : "hover:bg-gray-100 text-gray-600"
+                          ? "bg-indigo-600 text-white"
+                          : "hover:bg-gray-100 text-gray-600"
                           }`}
                       >
                         {i + 1}

@@ -154,7 +154,7 @@ const ViewCourse = () => {
       setError(null);
 
       const newPublishStatus = !course.status;
-      const statusToSend = newPublishStatus ? "published" : "draft";
+      const statusToSend = newPublishStatus ? true: false;
 
       console.log("Toggling publish for course:", course.id, "New status:", statusToSend);
 

@@ -119,6 +119,16 @@ export const handleLgout = async () => {
   }
 }
 
+export const handleUserCount = async() =>{
+  try {
+    const res = await api.get(`/users/count`)
+    return res.data;
+    
+  } catch (error) {
+    
+  }
+}
+
 // wallet
 
 export const handleAddBallance = async (data) => {
@@ -392,6 +402,17 @@ export const handleDeleteAssignCourse = async (courseId, userId) => {
     };
   }
 };
+
+
+export const handleGetActiveCourse = async () =>{
+  try {
+    const res = await api.get(`/courses/count`)
+    return res.data;
+    
+  } catch (error) {
+    
+  }
+}
 /* ================= FOLDER ================= */
 
 export const handleGetFolders = async (courseId) => {
