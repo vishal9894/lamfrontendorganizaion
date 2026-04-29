@@ -31,100 +31,83 @@ const Login = () => {
 
       if (data.token) {
         localStorage.setItem("authToken", data.token);
+        navigate(from, { replace: true });
       } else {
         throw new Error("No token received from login");
       }
 
       // FIRST CONDITION: User already has organization in login response
-      if (data.organization?.subdomain) {
-        const { protocol, host } = window.location;
-        let orgUrl;
+      // if (data.organization?.subdomain) {
+      //   const { protocol, host } = window.location;
+      //   let orgUrl;
 
-        if (host.includes("localhost") || host.includes("127.0.0.1")) {
-          const port = host.includes(":") ? ":" + host.split(":")[1] : "";
-          orgUrl = `${protocol}//${data.organization.subdomain}.localhost${port}`;
-        } else {
-          const baseDomain = host.split(".").slice(-2).join(".");
-          orgUrl = `${protocol}//${data.organization.subdomain}.${baseDomain}`;
-        }
+      //   if (host.includes("localhost") || host.includes("127.0.0.1")) {
+      //     const port = host.includes(":") ? ":" + host.split(":")[1] : "";
+      //     orgUrl = `${protocol}//${data.organization.subdomain}.localhost${port}`;
+      //   } else {
+      //     const baseDomain = host.split(".").slice(-2).join(".");
+      //     orgUrl = `${protocol}//${data.organization.subdomain}.${baseDomain}`;
+      //   }
 
-        window.location.href = orgUrl;
-      }
+      //   window.location.href = orgUrl;
+      // }
 
       // SECOND CONDITION: Super admin without org - MUST switch first!
-      else if (
-        data.type === "super_admin" &&
-        data.organizations &&
-        data.organizations.length > 0
-      ) {
-        // Get the first organization (or let user pick in the future)
-        const selectedOrg = data.organizations[0];
+      // else if (
+      //   data.type === "super_admin" &&
+      //   data.organizations &&
+      //   data.organizations.length > 0
+      // ) {
+      //   // Get the first organization (or let user pick in the future)
+      //   const selectedOrg = data.organizations[0];
 
-        if (!selectedOrg || !selectedOrg.subdomain) {
-          setError("Invalid organization data. Please contact support.");
-          setLoading(false);
-          return;
-        }
+      //   if (!selectedOrg || !selectedOrg.subdomain) {
+      //     setError("Invalid organization data. Please contact support.");
+      //     setLoading(false);
+      //     return;
+      //   }
 
-        // Call switch-organization to get token with org context
-        try {
-          const switchRes = await axios.post(
-            `${BaseUrl}/admin/switch-organization`,
-            { organizationId: selectedOrg.id },
-            { headers: { Authorization: `Bearer ${data.token}` } },
-          );
+      //   // Call switch-organization to get token with org context
+      //   try {
+      //     const switchRes = await axios.post(
+      //       `${BaseUrl}/admin/switch-organization`,
+      //       { organizationId: selectedOrg.id },
+      //       { headers: { Authorization: `Bearer ${data.token}` } },
+      //     );
 
-          const switchData = switchRes.data;
+      //     const switchData = switchRes.data;
 
-          // Use the NEW token with organization info
-          if (switchData.token) {
-            localStorage.setItem("authToken", switchData.token);
-          } else {
-            throw new Error("No token received from switch-organization");
-          }
-        } catch (switchErr) {
-          console.error("Switch organization error:", switchErr);
-          setError("Failed to switch organization. Please try again.");
-          setLoading(false);
-          return;
-        }
+      //     // Use the NEW token with organization info
+      //     if (switchData.token) {
+      //       localStorage.setItem("authToken", switchData.token);
+      //     } else {
+      //       throw new Error("No token received from switch-organization");
+      //     }
+      //   } catch (switchErr) {
+      //     console.error("Switch organization error:", switchErr);
+      //     setError("Failed to switch organization. Please try again.");
+      //     setLoading(false);
+      //     return;
+      //   }
 
-        // Redirect to the organization's subdomain
-        const { protocol, host } = window.location;
-        let orgUrl;
+      //   // Redirect to the organization's subdomain
+      //   const { protocol, host } = window.location;
+      //   let orgUrl;
 
-        if (host.includes("localhost") || host.includes("127.0.0.1")) {
-          const port = host.includes(":") ? ":" + host.split(":")[1] : "";
-          orgUrl = `${protocol}//${selectedOrg.subdomain}.localhost${port}`;
-        } else {
-          const baseDomain = host.split(".").slice(-2).join(".");
-          orgUrl = `${protocol}//${selectedOrg.subdomain}.${baseDomain}`;
-        }
+      //   if (host.includes("localhost") || host.includes("127.0.0.1")) {
+      //     const port = host.includes(":") ? ":" + host.split(":")[1] : "";
+      //     orgUrl = `${protocol}//${selectedOrg.subdomain}.localhost${port}`;
+      //   } else {
+      //     const baseDomain = host.split(".").slice(-2).join(".");
+      //     orgUrl = `${protocol}//${selectedOrg.subdomain}.${baseDomain}`;
+      //   }
 
-        window.location.href = orgUrl;
-      }
+      //   window.location.href = orgUrl;
+      // }
 
       // DEFAULT NAVIGATE
-      else {
-        navigate(from, { replace: true });
-      }
     } catch (err) {
       console.error("Login error:", err);
-
-      // Handle different error types
-      if (err.response?.status === 401) {
-        setError("Invalid email or password. Please try again.");
-      } else if (err.response?.status === 403) {
-        setError("Access denied. Your account may be deactivated.");
-      } else if (err.response?.status === 500) {
-        setError("Server error. Please try again later.");
-      } else if (err.code === "ECONNREFUSED") {
-        setError("Cannot connect to server. Please check your network.");
-      } else {
-        setError("Login failed. Please try again.");
-      }
-    } finally {
-      setLoading(false);
     }
   };
 
