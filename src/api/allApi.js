@@ -119,15 +119,6 @@ export const handleLgout = async () => {
   }
 }
 
-export const handleUserCount = async() =>{
-  try {
-    const res = await api.get(`/users/count`)
-    return res.data;
-    
-  } catch (error) {
-    
-  }
-}
 
 // wallet
 
@@ -403,16 +394,21 @@ export const handleDeleteAssignCourse = async (courseId, userId) => {
   }
 };
 
+// dashboard 
 
-export const handleGetActiveCourse = async () =>{
+export const handleGetDashboardData = async () => {
   try {
-    const res = await api.get(`/courses/count`)
+    const res = await api.get(`/dashboard/stats`);
     return res.data;
-    
   } catch (error) {
-    
+    console.error("Get dashboard data error:", error);
+    const message = error.response?.data?.message || "Failed to fetch dashboard data";
+    toast.error(message);
+    return { success: false, message, data: {} };
   }
-}
+};
+
+
 /* ================= FOLDER ================= */
 
 export const handleGetFolders = async (courseId) => {

@@ -1,32 +1,34 @@
 import { useEffect, useState } from "react";
-import { handleGetActiveCourse, handleGetWallet, handleUserCount } from "../api/allApi";
+import { handleGetWallet, handleGetDashboardData } from "../api/allApi";
 import { useSelector } from "react-redux";
-import { 
-  FaWallet, 
-  FaBookOpen, 
-  FaUsers, 
-  FaChartLine, 
-  FaArrowUp, 
+import {
+  FaWallet,
+  FaBookOpen,
+  FaUsers,
+  FaChartLine,
+  FaArrowUp,
   FaArrowDown,
-  FaShoppingCart,
   FaGraduationCap,
-  FaTrophy,
   FaCalendarAlt,
   FaBell,
-  FaStar,
-  FaUserGraduate
+  FaUserGraduate,
+  FaBuilding,
+  FaGlobe,
+  FaChalkboardTeacher,
+  FaTrophy,
+  FaCheckCircle
 } from "react-icons/fa";
-import { 
-  LineChart, 
-  Line, 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ResponsiveContainer 
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
 } from 'recharts';
 
 // Skeleton Loader Components
@@ -55,18 +57,6 @@ const SkeletonChart = () => (
   </div>
 );
 
-const SkeletonGradientCard = () => (
-  <div className="bg-gray-200 rounded-2xl shadow-lg p-6 animate-pulse">
-    <div className="w-12 h-12 bg-gray-300 rounded-lg mb-4"></div>
-    <div className="h-4 bg-gray-300 rounded w-24 mb-2"></div>
-    <div className="h-8 bg-gray-300 rounded w-32 mb-4"></div>
-    <div className="flex justify-between">
-      <div className="h-4 bg-gray-300 rounded w-20"></div>
-      <div className="h-4 bg-gray-300 rounded w-20"></div>
-    </div>
-  </div>
-);
-
 const SkeletonActivity = () => (
   <div className="flex items-start gap-3 p-3 animate-pulse">
     <div className="w-2 h-2 mt-2 bg-gray-200 rounded-full"></div>
@@ -81,11 +71,19 @@ const SkeletonActivity = () => (
 const DashBoard = () => {
   const { user } = useSelector((state) => state.user);
   const [wallet, setWallet] = useState(0);
-  const [courseData, setCourseData] = useState({ active: 0, inactive: 0, total: 0 });
-  const [totalUsers, setTotalUsers] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [completionRate, setCompletionRate] = useState(0);
-  
+  const [dashboardData, setDashboardData] = useState({
+    organizationId: "",
+    organizationName: "",
+    subdomain: "",
+    totalUsers: 0,
+    totalCourses: 0,
+    activeCourses: 0,
+    totalTeachers: 0,
+    status: "",
+    enrollmentTrends: []
+  });
+
   // Chart data states
   const [earningData, setEarningData] = useState([
     { month: "Jan", earnings: 0, expenses: 0 },
@@ -96,90 +94,72 @@ const DashBoard = () => {
     { month: "Jun", earnings: 0, expenses: 0 },
   ]);
 
-  const [enrollmentData, setEnrollmentData] = useState([
-    { name: "Jan", students: 0 },
-    { name: "Feb", students: 0 },
-    { name: "Mar", students: 0 },
-    { name: "Apr", students: 0 },
-    { name: "May", students: 0 },
-    { name: "Jun", students: 0 },
-  ]);
-
+  const [enrollmentData, setEnrollmentData] = useState([]);
   const [recentActivities, setRecentActivities] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Add minimum loading time for better UX (optional)
         await new Promise(resolve => setTimeout(resolve, 800));
-        
+
+        // Fetch dashboard data from API
+        const dashboardRes = await handleGetDashboardData();
+
+        if (dashboardRes) {
+          setDashboardData({
+            organizationId: dashboardRes.organizationId || "",
+            organizationName: dashboardRes.organizationName || "",
+            subdomain: dashboardRes.subdomain || "",
+            totalUsers: dashboardRes.totalUsers || 0,
+            totalCourses: dashboardRes.totalCourses || 0,
+            activeCourses: dashboardRes.activeCourses || 0,
+            totalTeachers: dashboardRes.totalTeachers || 0,
+            status: dashboardRes.status || "active",
+            enrollmentTrends: dashboardRes.enrollmentTrends || []
+          });
+
+          // Process enrollment trends for chart
+          if (dashboardRes.enrollmentTrends && dashboardRes.enrollmentTrends.length > 0) {
+            const formattedEnrollment = dashboardRes.enrollmentTrends.map(trend => ({
+              name: new Date(trend.month).toLocaleString('default', { month: 'short' }),
+              students: trend.count,
+              fullMonth: trend.month
+            }));
+            setEnrollmentData(formattedEnrollment);
+          } else {
+            setEnrollmentData([
+              { name: "Jan", students: 0 },
+              { name: "Feb", students: 0 },
+              { name: "Mar", students: 0 },
+              { name: "Apr", students: 0 },
+              { name: "May", students: 0 },
+              { name: "Jun", students: 0 },
+            ]);
+          }
+        }
+
         // Fetch wallet balance
         const walletRes = await handleGetWallet(user?.id);
-        console.log("Wallet response:", walletRes);
         setWallet(walletRes?.balance || walletRes?.data?.balance || 0);
 
-        // Fetch course data
-        const courseRes = await handleGetActiveCourse();
-        console.log("Course response:", courseRes);
-        
-        let activeCount = 0;
-        let inactiveCount = 0;
-        let totalCount = 0;
-        
-        if (courseRes?.success && courseRes?.data) {
-          activeCount = courseRes.data.active || 0;
-          inactiveCount = courseRes.data.inactive || 0;
-          totalCount = courseRes.data.total || (activeCount + inactiveCount) || 0;
-        } else if (courseRes?.data) {
-          activeCount = courseRes.data.active || 0;
-          inactiveCount = courseRes.data.inactive || 0;
-          totalCount = courseRes.data.total || (activeCount + inactiveCount) || 0;
-        }
-        
-        setCourseData({
-          active: activeCount,
-          inactive: inactiveCount,
-          total: totalCount
-        });
+        // Generate earning data based on wallet
+        const baseEarning = wallet > 0 ? wallet / 6 : 2000;
+        setEarningData([
+          { month: "Jan", earnings: Math.round(baseEarning * 0.6), expenses: Math.round(baseEarning * 0.3) },
+          { month: "Feb", earnings: Math.round(baseEarning * 0.7), expenses: Math.round(baseEarning * 0.35) },
+          { month: "Mar", earnings: Math.round(baseEarning * 0.8), expenses: Math.round(baseEarning * 0.4) },
+          { month: "Apr", earnings: Math.round(baseEarning * 0.9), expenses: Math.round(baseEarning * 0.45) },
+          { month: "May", earnings: Math.round(baseEarning * 1.0), expenses: Math.round(baseEarning * 0.5) },
+          { month: "Jun", earnings: Math.round(baseEarning * 1.1), expenses: Math.round(baseEarning * 0.55) },
+        ]);
 
-        // Fetch total users
-        const usersRes = await handleUserCount();
-        console.log("Users response:", usersRes);
-        
-        let userCount = 0;
-        if (usersRes?.data?.total) {
-          userCount = usersRes.data.total;
-        } else if (usersRes?.total) {
-          userCount = usersRes.total;
-        } else if (typeof usersRes === 'number') {
-          userCount = usersRes;
-        } else if (usersRes?.data && typeof usersRes.data === 'number') {
-          userCount = usersRes.data;
-        }
-        
-        setTotalUsers(userCount);
-        console.log("Set total users to:", userCount);
-
-        // Calculate completion rate
-        const calculatedCompletionRate = totalCount > 0 ? Math.round((activeCount / totalCount) * 100) : 78;
-        setCompletionRate(calculatedCompletionRate);
-
-        // Fetch earning data
-        const earningsHistory = await fetchEarningsHistory(user?.id);
-        if (earningsHistory && earningsHistory.length > 0) {
-          setEarningData(earningsHistory);
-        }
-
-        // Fetch enrollment data
-        const enrollmentHistory = await fetchEnrollmentHistory(user?.id);
-        if (enrollmentHistory && enrollmentHistory.length > 0) {
-          setEnrollmentData(enrollmentHistory);
-        }
-
-        // Fetch recent activities
-        const activities = await fetchRecentActivities(user?.id);
-        setRecentActivities(activities);
+        // Generate recent activities
+        setRecentActivities([
+          { id: 1, action: "Wallet Updated", amount: `₹${walletRes?.balance || 0}`, date: new Date().toISOString(), status: "success" },
+          { id: 2, action: "Active Courses", course: `${dashboardRes?.activeCourses || 0} Active`, date: new Date().toISOString(), status: "completed" },
+          { id: 3, action: "Total Students", amount: `${dashboardRes?.totalUsers || 0} Users`, date: new Date().toISOString(), status: "info" },
+        ]);
 
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -191,53 +171,11 @@ const DashBoard = () => {
     if (user?.id) fetchData();
   }, [user]);
 
-  // Mock API functions
-  const fetchEarningsHistory = async (userId) => {
-    try {
-      const baseEarning = wallet / 6;
-      return [
-        { month: "Jan", earnings: Math.round(baseEarning * 0.6), expenses: Math.round(baseEarning * 0.3) },
-        { month: "Feb", earnings: Math.round(baseEarning * 0.7), expenses: Math.round(baseEarning * 0.35) },
-        { month: "Mar", earnings: Math.round(baseEarning * 0.8), expenses: Math.round(baseEarning * 0.4) },
-        { month: "Apr", earnings: Math.round(baseEarning * 0.9), expenses: Math.round(baseEarning * 0.45) },
-        { month: "May", earnings: Math.round(baseEarning * 1.0), expenses: Math.round(baseEarning * 0.5) },
-        { month: "Jun", earnings: Math.round(baseEarning * 1.1), expenses: Math.round(baseEarning * 0.55) },
-      ];
-    } catch (error) {
-      console.error("Error fetching earnings:", error);
-      return earningData;
-    }
-  };
-
-  const fetchEnrollmentHistory = async (userId) => {
-    try {
-      const baseEnrollment = totalUsers / 6;
-      return [
-        { name: "Jan", students: Math.round(baseEnrollment * 0.3) },
-        { name: "Feb", students: Math.round(baseEnrollment * 0.4) },
-        { name: "Mar", students: Math.round(baseEnrollment * 0.5) },
-        { name: "Apr", students: Math.round(baseEnrollment * 0.6) },
-        { name: "May", students: Math.round(baseEnrollment * 0.7) },
-        { name: "Jun", students: Math.round(baseEnrollment * 0.8) },
-      ];
-    } catch (error) {
-      console.error("Error fetching enrollments:", error);
-      return enrollmentData;
-    }
-  };
-
-  const fetchRecentActivities = async (userId) => {
-    try {
-      return [
-        { id: 1, action: "Wallet Updated", amount: `₹${wallet}`, date: new Date().toISOString(), status: "success" },
-        { id: 2, action: "Course Enrolled", course: `${courseData.active} Active Courses`, date: new Date().toISOString(), status: "completed" },
-        { id: 3, action: "Total Users", amount: `${totalUsers} Users`, date: new Date().toISOString(), status: "info" },
-      ];
-    } catch (error) {
-      console.error("Error fetching activities:", error);
-      return [];
-    }
-  };
+  // Calculate statistics
+  const activeCourses = dashboardData.activeCourses;
+  const totalCourses = dashboardData.totalCourses;
+  const inactiveCourses = totalCourses - activeCourses;
+  const completionRate = totalCourses > 0 ? Math.round((activeCourses / totalCourses) * 100) : 0;
 
   const statsCards = [
     {
@@ -252,7 +190,7 @@ const DashBoard = () => {
     },
     {
       title: "Active Courses",
-      value: courseData.active,
+      value: activeCourses,
       icon: <FaBookOpen className="text-2xl" />,
       color: "from-green-500 to-green-600",
       bgColor: "bg-green-100",
@@ -262,7 +200,7 @@ const DashBoard = () => {
     },
     {
       title: "Total Students",
-      value: totalUsers.toLocaleString(),
+      value: dashboardData.totalUsers.toLocaleString(),
       icon: <FaUsers className="text-2xl" />,
       color: "from-purple-500 to-purple-600",
       bgColor: "bg-purple-100",
@@ -282,26 +220,50 @@ const DashBoard = () => {
     },
   ];
 
+  const performanceMetrics = [
+    { label: "Course Completion Rate", value: completionRate, icon: <FaCheckCircle />, color: "text-green-600" },
+    { label: "Total Teachers", value: dashboardData.totalTeachers, icon: <FaChalkboardTeacher />, color: "text-blue-600" },
+    { label: "Active Status", value: dashboardData.status === "active" ? 100 : 0, icon: <FaTrophy />, color: "text-yellow-600" },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Dashboard
-            </span>
-            <span className="text-sm font-normal text-gray-500">
-              Welcome back, {user?.name || "User"}!
-            </span>
-          </h1>
-          <p className="text-gray-500 mt-1">Here's what's happening with your account today.</p>
-        </div>
+        {/* Organization Header Card */}
+        {!loading && dashboardData.organizationName && (
+          <div className="mb-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="absolute inset-0 bg-black opacity-10"></div>
+            <div className="relative p-6 md:p-8">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-white/20 rounded-2xl backdrop-blur-sm flex items-center justify-center">
+                    <FaBuilding className="text-3xl text-white" />
+                  </div>
+                  <div>
+                    <h1 className="text-2xl md:text-3xl font-bold text-white">{dashboardData.organizationName}</h1>
+                    <div className="flex items-center gap-2 mt-1">
+                      <FaGlobe className="text-white/70 text-sm" />
+                      <span className="text-white/80 text-sm">{dashboardData.subdomain}</span>
+                      <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${dashboardData.status === 'active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                        {dashboardData.status === 'active' ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-white/80 text-sm">Organization ID</p>
+                    <p className="text-white font-mono text-sm">{dashboardData.organizationId?.slice(0, 8)}...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* Stats Cards Grid with Skeleton Loader */}
+        {/* Stats Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {loading ? (
-            // Show skeleton cards while loading
             <>
               <SkeletonCard />
               <SkeletonCard />
@@ -309,7 +271,6 @@ const DashBoard = () => {
               <SkeletonCard />
             </>
           ) : (
-            // Show actual cards when loaded
             statsCards.map((stat, index) => (
               <div
                 key={index}
@@ -320,9 +281,8 @@ const DashBoard = () => {
                     <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center ${stat.textColor} group-hover:scale-110 transition-transform duration-300`}>
                       {stat.icon}
                     </div>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                      stat.changeType === "up" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-                    }`}>
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${stat.changeType === "up" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                      }`}>
                       {stat.changeType === "up" ? <FaArrowUp className="inline mr-1 text-xs" /> : <FaArrowDown className="inline mr-1 text-xs" />}
                       {stat.change}
                     </span>
@@ -336,7 +296,7 @@ const DashBoard = () => {
           )}
         </div>
 
-        {/* Charts Section with Skeleton Loader */}
+        {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {loading ? (
             <>
@@ -360,12 +320,12 @@ const DashBoard = () => {
                   <AreaChart data={earningData}>
                     <defs>
                       <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -405,23 +365,45 @@ const DashBoard = () => {
           )}
         </div>
 
-        {/* Course Statistics Section with Skeleton Loader */}
+        {/* Performance Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {loading ? (
-            <>
-              <SkeletonGradientCard />
-              <SkeletonGradientCard />
-              <SkeletonGradientCard />
-            </>
-          ) : (
+          {!loading && performanceMetrics.map((metric, index) => (
+            <div key={index} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg p-6 transform hover:scale-105 transition-all duration-300">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`text-3xl ${metric.color}`}>{metric.icon}</div>
+                <div className="text-3xl font-bold text-gray-800">
+                  {typeof metric.value === 'number' && metric.label !== "Active Status" ? metric.value :
+                    metric.label === "Active Status" ? (metric.value === 100 ? "Active" : "Inactive") :
+                      `${metric.value}%`}
+                </div>
+              </div>
+              <h4 className="text-gray-600 font-medium">{metric.label}</h4>
+              {typeof metric.value === 'number' && metric.label !== "Total Teachers" && metric.label !== "Active Status" && (
+                <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-1000 ${metric.color.replace('text', 'bg')}`}
+                    style={{ width: `${metric.value}%` }}
+                  ></div>
+                </div>
+              )}
+              {metric.label === "Total Teachers" && (
+                <div className="mt-3 text-sm text-gray-500">Expert instructors</div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Course Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {!loading && (
             <>
               <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
                 <FaBookOpen className="text-4xl mb-4 opacity-80" />
                 <h3 className="text-sm font-medium opacity-90">Total Courses</h3>
-                <p className="text-3xl font-bold mt-2">{courseData.total}</p>
+                <p className="text-3xl font-bold mt-2">{totalCourses}</p>
                 <div className="mt-4 flex justify-between text-sm">
-                  <span>Active: {courseData.active}</span>
-                  <span>Inactive: {courseData.inactive}</span>
+                  <span>Active: {activeCourses}</span>
+                  <span>Inactive: {inactiveCourses}</span>
                 </div>
               </div>
 
@@ -435,14 +417,14 @@ const DashBoard = () => {
               <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
                 <FaUsers className="text-4xl mb-4 opacity-80" />
                 <h3 className="text-sm font-medium opacity-90">Total Users</h3>
-                <p className="text-3xl font-bold mt-2">{totalUsers.toLocaleString()}</p>
+                <p className="text-3xl font-bold mt-2">{dashboardData.totalUsers.toLocaleString()}</p>
                 <p className="text-sm opacity-90 mt-4">Active community members</p>
               </div>
             </>
           )}
         </div>
 
-        {/* Recent Activity Section with Skeleton Loader */}
+        {/* Recent Activity Section */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-800">Recent Activity</h3>
@@ -452,7 +434,6 @@ const DashBoard = () => {
           </div>
           <div className="space-y-4">
             {loading ? (
-              // Show skeleton activities while loading
               <>
                 <SkeletonActivity />
                 <SkeletonActivity />
@@ -463,21 +444,19 @@ const DashBoard = () => {
                 {recentActivities.length > 0 ? (
                   recentActivities.map((activity) => (
                     <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                      <div className={`w-2 h-2 mt-2 rounded-full ${
-                        activity.status === "completed" ? "bg-green-500" :
-                        activity.status === "success" ? "bg-blue-500" :
-                        activity.status === "achieved" ? "bg-purple-500" :
-                        "bg-yellow-500"
-                      }`}></div>
+                      <div className={`w-2 h-2 mt-2 rounded-full ${activity.status === "completed" ? "bg-green-500" :
+                          activity.status === "success" ? "bg-blue-500" :
+                            "bg-yellow-500"
+                        }`}></div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-800">{activity.action}</p>
                         <p className="text-xs text-gray-500">
-                          {activity.course || activity.amount || activity.from || "No additional info"}
+                          {activity.course || activity.amount || "No additional info"}
                         </p>
                         <div className="flex items-center gap-1 mt-1">
                           <FaCalendarAlt className="text-xs text-gray-400" />
                           <p className="text-xs text-gray-400">
-                            {activity.date ? new Date(activity.date).toLocaleDateString() : new Date().toLocaleDateString()}
+                            {new Date(activity.date).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -494,23 +473,7 @@ const DashBoard = () => {
           </div>
         </div>
 
-        {/* Skeleton Loader with Shimmer Effect (Optional) */}
-        <style jsx>{`
-          @keyframes shimmer {
-            0% {
-              background-position: -1000px 0;
-            }
-            100% {
-              background-position: 1000px 0;
-            }
-          }
-          
-          .animate-pulse {
-            animation: shimmer 2s infinite linear;
-            background: linear-gradient(to right, #f3f4f6 4%, #e5e7eb 25%, #f3f4f6 36%);
-            background-size: 1000px 100%;
-          }
-        `}</style>
+
       </div>
     </div>
   );
