@@ -61,7 +61,6 @@ const SocialMedia = () => {
     setError(null);
     try {
       const response = await handleGetSocialMedia();
-      console.log("API Response:", response);
 
       let socialData = [];
       if (response?.data) {

@@ -58,7 +58,7 @@ export const handleUpdateUser = async (id, data) => {
 
 export const handleDeleteUser = async (id) => {
   try {
-    const res = await api.delete(`/auth/${id}`)
+    const res = await api.delete(`/users/${id}`)
     return res.data;
 
   } catch (error) {
@@ -72,7 +72,6 @@ export const handleLgout = async () => {
     return res.data;
 
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -87,7 +86,6 @@ export const handleAddBallance = async (data) => {
     return res.data;
 
   } catch (error) {
-    console.log(error);
     throw error;
   }
 
@@ -98,7 +96,6 @@ export const handleGetWallet = async (id) => {
     return res.data;
 
   } catch (error) {
-    console.log(error);
     throw error;
   }
 }
@@ -416,7 +413,6 @@ export const handleUpdateFolder = async (folderId, data) => {
 };
 
 export const handleDeleteFolder = async (id) => {
-  console.log(id);
 
   try {
     const res = await api.delete(`/folders/${id}`);
@@ -479,7 +475,6 @@ export const handlecreateSuperStream = async (formData) => {
     const res = await api.post("/superstream", formData);
     return res.data;
   } catch (error) {
-    console.log("Create Error:", error);
     throw error;
   }
 };
@@ -489,7 +484,6 @@ export const handleGetSuperStream = async () => {
     const response = await api.get('/superstream');
     return response.data;
   } catch (error) {
-    console.log("Fetch Error:", error);
     return [];
   }
 };
@@ -500,7 +494,6 @@ export const handleUpdateSuperStream = async (id, data) => {
     const res = await api.put(`/superstream/${id}`, data);
     return res.data;
   } catch (error) {
-    console.log("Update Error:", error);
     throw error;
   }
 };
@@ -511,7 +504,6 @@ export const handleDeleteSuperStream = async (id) => {
     const res = await api.delete(`/superstream/${id}`);
     return res.data;
   } catch (error) {
-    console.log("Delete Error:", error);
     throw error;
   }
 };
@@ -753,7 +745,6 @@ export const handleUpdateTeacher = async (id, formData) => {
     const res = await api.put(`/teachers/${id}`, formData);
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -777,7 +768,6 @@ export const handleCreateBanner = async (formData) => {
     })
     return res.data;
   } catch (error) {
-    console.log("Create Banner Error:", error.response?.data || error.message);
     throw error;
   }
 }
@@ -799,7 +789,6 @@ export const handleGetBanner = async (page = 1, limit = 10, additionalParams = {
     const res = await api.get(`/banners?${params.toString()}`);
     return res.data;
   } catch (error) {
-    console.log("Get Banner Error:", error.response?.data || error.message);
     throw error;
   }
 }
@@ -812,7 +801,6 @@ export const handlePublishBanner = async (id, publish) => {
     return res.data;
 
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -821,7 +809,6 @@ export const handleDeleteBanner = async (id) => {
     const res = await api.delete(`/banners/${id}`);
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -850,7 +837,6 @@ export const handleGetEvent = async (id) => {
     return res.data;
 
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -879,7 +865,6 @@ export const handleDeleteEvent = async (id) => {
     const res = api.delete(`/events/${id}`)
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -888,7 +873,6 @@ export const handleUpdateEvent = async (id, formData) => {
     const res = await api.put(`/api/event/update-event/${id}`, formData);
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -912,7 +896,6 @@ export const handleGetAttachment = async (id) => {
     return res.data;
 
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -921,7 +904,6 @@ export const handleUpdateAttachment = async (id, formData) => {
     const res = await api.put(`/api/event/update-attachment/${id}`, formData);
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -966,7 +948,6 @@ export const handleGetSocialMedia = async () => {
     const res = await api.get('/social-media');
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -976,7 +957,6 @@ export const handleDeleteSocialMedia = async (id) => {
     toast.success(res.data.message)
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -991,7 +971,6 @@ export const handleCreateTopTeacher = async (formData) => {
     });
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -1013,7 +992,6 @@ export const handleUpdateTopTeacher = async (id, formData) => {
       },
     });
 
-    console.log('Teacher updated:', res.data);
     return { success: true, data: res.data };
 
   } catch (error) {
@@ -1040,7 +1018,6 @@ export const handleCreateTopStudent = async (formData) => {
     })
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -1049,7 +1026,6 @@ export const handleGetTopStudent = async () => {
     const res = await api.get('/topstudents');
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -1071,7 +1047,6 @@ export const handleUpdateTopStudent = async (id, formData) => {
     const res = await api.put(`/top-student/${id}`, formData);
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -1147,7 +1122,6 @@ export const handleCreateSetting = async (data) => {
 export const handleGetAllSettings = async () => {
   try {
     const res = await api.get('/api/setting/get-setting');
-    console.log(res.data);
     return res.data;
   } catch (error) {
     console.error('Get settings error:', error);
@@ -1256,7 +1230,6 @@ export const handleDeleteAdminAccount = async (id) => {
     const res = await api.delete(`/admin/${id}`)
     return res.data;
   } catch (error) {
-    console.log(error);
   }
 }
 
@@ -1265,7 +1238,6 @@ export const handleOrganizationLogin = async (data, organizationCode) => {
     const res = await api.post(`/auth/${organizationCode}/login`, data);
     return res.data;
   } catch (error) {
-    console.log(error);
     throw error;
   }
 }
@@ -1462,7 +1434,6 @@ export const handleUpdateRolePermissions = async (id, permissionIds, name, descr
       permissionIds: permissionIds
     };
 
-    console.log("Updating role with payload:", payload);
 
     const res = await api.put(`/roles/${id}`, payload);
     return res.data;
@@ -1570,12 +1541,9 @@ export const handleGetNotificationDetails = async (notificationId) => {
 
 
 export const handleDeleteNotifications = async (notificationId) => {
-  console.log("Deleting notification with ID:", notificationId);
 
   try {
-    console.log("Making DELETE request to:", `/notifications/${notificationId}`);
     const res = await api.delete(`/notifications/${notificationId}`);
-    console.log("Delete response:", res);
     return res.data;
   } catch (error) {
     console.error("Error deleting notification:", error);

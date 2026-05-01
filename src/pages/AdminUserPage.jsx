@@ -41,8 +41,7 @@ const AdminUserPage = () => {
     try {
       setLoading(true);
       const res = await handleGetAllAdmin();
-      console.log("Full API Response:", res);
-      
+
       let adminData = [];
       if (res?.admins && Array.isArray(res.admins)) {
         adminData = res.admins;
@@ -51,7 +50,7 @@ const AdminUserPage = () => {
       } else if (Array.isArray(res)) {
         adminData = res;
       }
-      
+
       const formattedAdmins = adminData.map(admin => ({
         id: admin.id,
         name: admin.name || '',
@@ -65,7 +64,7 @@ const AdminUserPage = () => {
         createdAt: admin.createdAt,
         type: admin.type
       }));
-      
+
       setAdmins(formattedAdmins);
     } catch (err) {
       console.error('Error fetching admins:', err);
@@ -138,14 +137,14 @@ const AdminUserPage = () => {
         alert('Invalid file type. Please upload JPEG, PNG, GIF, or WEBP images only.');
         return;
       }
-      
+
       if (file.size > 5 * 1024 * 1024) {
         alert('File size too large. Maximum size is 5MB.');
         return;
       }
 
       setImage(file);
-      
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -164,7 +163,7 @@ const AdminUserPage = () => {
   const handleRoleSelect = (e) => {
     const selectedRoleId = e.target.value;
     const selectedRole = roles.find(role => role.id === selectedRoleId);
-    
+
     setRoleId(selectedRoleId);
     setRoleName(selectedRole ? selectedRole.name : '');
   };
@@ -216,11 +215,6 @@ const AdminUserPage = () => {
     }
 
     // Log the payload
-    console.log("Sending payload:");
-    console.log("roleId:", roleId);
-    console.log("roleName:", roleName);
-    console.log("organizationId:", organizationId);
-    console.log("status:", status ? 'active' : 'inactive');
 
     setSubmitting(true);
 
@@ -260,7 +254,7 @@ const AdminUserPage = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 via-gray-50 to-indigo-50/30 min-h-screen">
+    <div className="bg-gradient-to-br from-gray-50 via-gray-50 to-indigo-50/30 ">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -289,7 +283,7 @@ const AdminUserPage = () => {
           </div>
         </div>
       </div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -304,7 +298,7 @@ const AdminUserPage = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -318,7 +312,7 @@ const AdminUserPage = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -403,11 +397,10 @@ const AdminUserPage = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                          admin.status === true
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${admin.status === true
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
-                        }`}>
+                          }`}>
                           {admin.status === true ? (
                             <FiCheckCircle className="w-3 h-3 mr-1" />
                           ) : (
@@ -494,7 +487,7 @@ const AdminUserPage = () => {
                           </div>
                         )}
                       </div>
-                      
+
                       <div className="flex-1">
                         <label className="cursor-pointer">
                           <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-gray-700">
@@ -636,11 +629,10 @@ const AdminUserPage = () => {
                     <button
                       type="button"
                       onClick={() => setStatus(!status)}
-                      className={`w-full py-2.5 rounded-xl font-medium transition-all ${
-                        status
+                      className={`w-full py-2.5 rounded-xl font-medium transition-all ${status
                           ? 'bg-green-500 text-white hover:bg-green-600'
                           : 'bg-gray-400 text-white hover:bg-gray-500'
-                      }`}
+                        }`}
                     >
                       {status ? 'Active' : 'Inactive'}
                     </button>

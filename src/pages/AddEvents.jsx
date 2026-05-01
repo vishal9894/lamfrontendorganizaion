@@ -4,13 +4,13 @@ import {
   handleGetFolders,
   handleCreateEvent
 } from "../api/allApi";
-import { 
-  FiBookOpen, 
-  FiCalendar, 
-  FiFolder, 
-  FiImage, 
-  FiLink, 
-  FiSettings, 
+import {
+  FiBookOpen,
+  FiCalendar,
+  FiFolder,
+  FiImage,
+  FiLink,
+  FiSettings,
   FiX,
   FiSave
 } from "react-icons/fi";
@@ -63,7 +63,7 @@ const AddEvents = () => {
     try {
       setFetchingCourses(true);
       let allCourses = [];
-      
+
       const promises = courseTypes.map(type => handleGetCourse(type));
       const results = await Promise.all(promises);
 
@@ -83,12 +83,12 @@ const AddEvents = () => {
           allCourses = [...allCourses, ...res.course];
         }
       });
-      
+
       // Remove duplicates
-      const uniqueCourses = allCourses.filter((course, index, self) => 
+      const uniqueCourses = allCourses.filter((course, index, self) =>
         index === self.findIndex((c) => c.id === course.id)
       );
-      
+
       setCourses(uniqueCourses);
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -108,8 +108,7 @@ const AddEvents = () => {
 
       setLoading(true);
       const res = await handleGetFolders(courseId);
-      console.log("Folders response:", res);
-      
+
       // Handle different response structures
       let folderData = [];
       if (res?.folder) {
@@ -125,7 +124,7 @@ const AddEvents = () => {
       } else if (res?.data && Array.isArray(res.data)) {
         folderData = res.data;
       }
-      
+
       // Filter to show only folders (items without file extensions or with folder indicators)
       const onlyFolders = folderData.filter(item => {
         return (
@@ -137,10 +136,8 @@ const AddEvents = () => {
           (item.items && Array.isArray(item.items))
         );
       });
-      
-      console.log("All items from API:", folderData);
-      console.log("Filtered folders only:", onlyFolders);
-      
+
+
       setFolders(onlyFolders);
     } catch (error) {
       console.error("Error fetching folders:", error);
@@ -166,7 +163,7 @@ const AddEvents = () => {
       const selectedCourse = courses.find(course => course.id === value);
       const courseName = selectedCourse ? (selectedCourse.courseName || selectedCourse.coursename || selectedCourse.title) : "";
       setSelectedCourseName(courseName);
-      
+
       setFormData((prev) => ({
         ...prev,
         courseId: value,
@@ -174,7 +171,7 @@ const AddEvents = () => {
         courseName: courseName,
         folderId: ""
       }));
-      
+
       fetchFolders(value);
     }
   };
@@ -197,7 +194,7 @@ const AddEvents = () => {
     }
 
     setBannerFile(file);
-    
+
     const reader = new FileReader();
     reader.onloadend = () => {
       setBannerPreview(reader.result);
@@ -218,18 +215,18 @@ const AddEvents = () => {
   /* SUBMIT FORM */
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validation
     if (!formData.courseId) {
       showNotification("error", "Please select a course");
       return;
     }
-    
+
     if (!formData.name.trim()) {
       showNotification("error", "Please enter an event name");
       return;
     }
-    
+
     setLoading(true);
 
     try {
@@ -239,44 +236,31 @@ const AddEvents = () => {
       formDataToSend.append("name", formData.name);
       formDataToSend.append("courseId", formData.courseId);
       formDataToSend.append("courseName", formData.courseName || formData.category_name);
-      
+
       if (formData.folderId) {
         formDataToSend.append("folderId", formData.folderId);
       }
-      
+
       if (formData.url) {
         formDataToSend.append("url", formData.url);
       }
-      
+
       if (formData.description) {
         formDataToSend.append("description", formData.description);
       }
-      
+
       formDataToSend.append("status", formData.status);
       formDataToSend.append("accessType", formData.access);
-      
+
       if (bannerFile) {
         formDataToSend.append("image", bannerFile);
       }
 
-      console.log("Submitting FormData:", {
-        name: formData.name,
-        courseId: formData.courseId,
-        courseName: formData.courseName,
-        folderId: formData.folderId,
-        url: formData.url,
-        description: formData.description,
-        status: formData.status,
-        accessType: formData.access,
-        image: bannerFile ? bannerFile.name : "No file"
-      });
-
       const res = await handleCreateEvent(formDataToSend);
-      console.log("Response:", res);
 
       if (res?.success || res?.status === 200 || res?.data) {
         showNotification("success", "Event created successfully!");
-        
+
         // Reset form
         setFormData({
           access: "free",
@@ -290,7 +274,7 @@ const AddEvents = () => {
           category_name: "",
           courseName: ""
         });
-        
+
         setSelectedCourseName("");
         setBannerPreview("");
         setBannerFile(null);
@@ -334,28 +318,8 @@ const AddEvents = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      {/* Notification */}
-      {notification.show && (
-        <div className={`fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] animate-slideDown
-          ${notification.type === "success" ? "bg-green-50 text-green-800 border-l-4 border-green-500" : 
-            "bg-red-50 text-red-800 border-l-4 border-red-500"}`}
-        >
-          <span className="text-xl">
-            {notification.type === "success" ? <MdSupervisedUserCircle /> : <MdWarning />}
-          </span>
-          
-          <span className="flex-1">{notification.message}</span>
-
-          <button 
-            onClick={closeNotification}
-            className="hover:opacity-70 transition-opacity"
-          >
-            <FiX />
-          </button>
-        </div>
-      )}
-
+    <div className=" bg-gray-100 p-6">
+     
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg">
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-xl">
           <h2 className="text-2xl font-bold flex items-center gap-2">
@@ -545,7 +509,7 @@ const AddEvents = () => {
             <label className="font-semibold flex items-center gap-2 text-gray-700">
               <FiSettings className="text-blue-600" /> Access Settings
             </label>
-            
+
             <div className="flex gap-6 p-3 bg-gray-50 rounded-lg">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input

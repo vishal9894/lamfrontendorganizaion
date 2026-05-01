@@ -27,34 +27,34 @@ import { handleCreateCourse, handleGetStream, handleGetTeacher } from "../api/al
 const AddCourse = () => {
   // Initial empty form state - FIXED with all required fields
   const initialFormState = {
-  // Backend expected fields
-  title: "",
-  type: "",
-  description: "",
-  streamId: "",
-  courseName: "",
-  teacherId: "",
-  status: false,
-  strikeoutPrice: "",
-  currentPrice: "",
-  productId: "",
-  courseGroupUrl: "",
-  durationDescription: "",
-  amount: "",
-  upgradeDuration: "",
-  upgradePrice: "",
-  videoId: "",
-  
-  // Additional fields for internal use
-  coursefeatures: "[]",
-  syllabus: "[]",
-  coursedescriptionamount: "",
-  whatsappurl: "",
-  publish: false,
-};
+    // Backend expected fields
+    title: "",
+    type: "",
+    description: "",
+    streamId: "",
+    courseName: "",
+    teacherId: "",
+    status: false,
+    strikeoutPrice: "",
+    currentPrice: "",
+    productId: "",
+    courseGroupUrl: "",
+    durationDescription: "",
+    amount: "",
+    upgradeDuration: "",
+    upgradePrice: "",
+    videoId: "",
+
+    // Additional fields for internal use
+    coursefeatures: "[]",
+    syllabus: "[]",
+    coursedescriptionamount: "",
+    whatsappurl: "",
+    publish: false,
+  };
 
   const [formData, setFormData] = useState(initialFormState);
-  
+
   const [files, setFiles] = useState({
     courseimage: null,
     timetable: null,
@@ -75,10 +75,10 @@ const AddCourse = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  
+
   // Track validation errors
   const [validationErrors, setValidationErrors] = useState({});
-  
+
   // State for Units and Chapters
   const [units, setUnits] = useState([]);
   const [currentUnit, setCurrentUnit] = useState("");
@@ -93,7 +93,7 @@ const AddCourse = () => {
     setIsMounted(true);
     fetchStreams();
     fetchTeachers();
-    
+
     return () => {
       setIsMounted(false);
     };
@@ -104,8 +104,7 @@ const AddCourse = () => {
     setLoadingStreams(true);
     try {
       const response = await handleGetStream();
-      console.log("Streams response:", response);
-      
+
       if (response && response.success && response.data) {
         setStreams(Array.isArray(response.data) ? response.data : []);
       } else if (response && response.data) {
@@ -128,8 +127,7 @@ const AddCourse = () => {
     setLoadingTeachers(true);
     try {
       const response = await handleGetTeacher();
-      console.log("Teachers response:", response);
-      
+
       // Handle different response structures
       if (response && response.success && response.data) {
         // If response has data property
@@ -159,7 +157,7 @@ const AddCourse = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
-    
+
     // Clear validation error for this field
     if (validationErrors[name]) {
       setValidationErrors(prev => ({
@@ -167,7 +165,7 @@ const AddCourse = () => {
         [name]: null
       }));
     }
-    
+
     if (submitSuccess) setSubmitSuccess(false);
     if (submitError) setSubmitError(null);
   };
@@ -175,15 +173,15 @@ const AddCourse = () => {
   const handleStreamChange = (e) => {
     e.preventDefault();
     const selectedStreamId = e.target.value;
-    
+
     const streamsArray = Array.isArray(streams) ? streams : [];
     const selectedStream = streamsArray.find(s => s.id === selectedStreamId || s._id === selectedStreamId);
-    
+
     setFormData(prev => ({
       ...prev,
       streamname: selectedStream?.name || selectedStream?.streamname || "",
     }));
-    
+
     // Clear validation error for streamname
     if (validationErrors.streamname) {
       setValidationErrors(prev => ({
@@ -196,7 +194,7 @@ const AddCourse = () => {
   const handleTeacherChange = (e) => {
     e.preventDefault();
     const selectedTeacherId = e.target.value;
-    
+
     if (!selectedTeacherId) {
       setFormData(prev => ({
         ...prev,
@@ -205,16 +203,15 @@ const AddCourse = () => {
       }));
       return;
     }
-    
+
     const teachersArray = Array.isArray(teachers) ? teachers : [];
-    
+
     // Find the selected teacher by ID (handle both id and _id)
-    const selectedTeacher = teachersArray.find(t => 
+    const selectedTeacher = teachersArray.find(t =>
       t.id === selectedTeacherId || t._id === selectedTeacherId
     );
-    
-    console.log("Selected teacher:", selectedTeacher);
-    
+
+
     if (selectedTeacher) {
       // Store both teacher name and ID based on what your API expects
       // Option 1: Store teacher name (if API expects name)
@@ -223,7 +220,7 @@ const AddCourse = () => {
         teacher: selectedTeacher.name || selectedTeacher.teachername || "",
         teacherId: selectedTeacher.id || selectedTeacher._id || ""
       }));
-      
+
       // Option 2: Store teacher ID (if API expects ID)
       // Uncomment the line below if your API expects teacher ID instead of name
       // setFormData(prev => ({ ...prev, teacher: selectedTeacher.id || selectedTeacher._id || "" }));
@@ -233,10 +230,10 @@ const AddCourse = () => {
   const handleFileChange = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     const file = e.target.files[0];
     const fileName = e.target.name;
-    
+
     if (file) {
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
@@ -294,7 +291,7 @@ const AddCourse = () => {
       ...prev,
       [fileName]: null,
     }));
-    
+
     // Set validation error for courseimage if it's being removed
     if (fileName === "courseimage") {
       setValidationErrors(prev => ({
@@ -342,30 +339,30 @@ const AddCourse = () => {
   // Validate form before submission
   const validateForm = () => {
     const errors = {};
-    
+
     // Required fields validation
     if (!formData.coursetype) {
       errors.coursetype = "Please select a course type";
     }
-    
+
     if (!formData.streamname) {
       errors.streamname = "Please select a stream";
     }
-    
+
     if (!formData.coursename) {
       errors.coursename = "Please enter a course name";
     }
-    
+
     // Check if course image is uploaded (REQUIRED)
     if (!files.courseimage) {
       errors.courseimage = "Course image is required";
     }
-    
+
     // Optional: Validate teacher if needed
     // if (!formData.teacher) {
     //   errors.teacher = "Please select a teacher";
     // }
-    
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -377,10 +374,10 @@ const AddCourse = () => {
       e.stopPropagation();
     }
     if (currentUnit.trim()) {
-      setUnits(prev => [...prev, { 
-        name: currentUnit.trim(), 
+      setUnits(prev => [...prev, {
+        name: currentUnit.trim(),
         chapters: [],
-        id: Date.now().toString() 
+        id: Date.now().toString()
       }]);
       setCurrentUnit("");
     }
@@ -445,8 +442,8 @@ const AddCourse = () => {
       e.preventDefault();
       e.stopPropagation();
     }
-    setExpandedUnits(prev => 
-      prev.includes(unitIndex) 
+    setExpandedUnits(prev =>
+      prev.includes(unitIndex)
         ? prev.filter(i => i !== unitIndex)
         : [...prev, unitIndex]
     );
@@ -461,99 +458,96 @@ const AddCourse = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  
-  // Validate form before submission
-  if (!validateForm()) {
-    // If validation fails, switch to the tab with errors
-    if (validationErrors.courseimage) {
-      setActiveTab("media");
-    } else if (validationErrors.coursetype || validationErrors.streamname || validationErrors.coursename) {
-      setActiveTab("basic");
-    }
-    return;
-  }
-  
-  setSubmitting(true);
-  setSubmitError(null);
-  setSubmitSuccess(false);
+    e.preventDefault();
+    e.stopPropagation();
 
-  try {
-    const data = new FormData();
-
-    // Safely parse course features and syllabus
-    const featuresArray = safeJSONParse(formData.coursefeatures);
-    const syllabusData = units.length > 0 ? units : safeJSONParse(formData.syllabus);
-    
-    // Find stream ID from selected stream name
-    const streamsArray = Array.isArray(streams) ? streams : [];
-    const selectedStream = streamsArray.find(s => s.name === formData.streamname);
-    const streamId = selectedStream?.id || selectedStream?._id || "";
-    
-    // Prepare data matching backend DTO exactly
-    const courseData = {
-      title: formData.coursename,
-      type: formData.coursetype,
-      description: formData.coursedescription,
-      streamId: streamId,
-      courseName: formData.coursename,
-      teacherId: formData.teacherId,
-      status: formData.publish || false,
-      strikeoutPrice: formData.strikeoutprice ? Number(formData.strikeoutprice) : undefined,
-      currentPrice: formData.currentprice ? Number(formData.currentprice) : undefined,
-      productId: formData.productid,
-      courseGroupUrl: formData.whatsappurl,
-      durationDescription: formData.courseduration,
-      amount: formData.coursedescriptionamount,
-      upgradeDuration: formData.upgradeduration,
-      upgradePrice: formData.upgradeprice ? Number(formData.upgradeprice) : undefined,
-      videoId: formData.introvideoid,
-      coursefeatures: JSON.stringify(featuresArray),
-      syllabus: JSON.stringify(syllabusData),
-    };
-
-    // Append all course data to FormData
-    Object.keys(courseData).forEach(key => {
-      if (courseData[key] !== undefined && courseData[key] !== "" && courseData[key] !== null) {
-        data.append(key, courseData[key]);
+    // Validate form before submission
+    if (!validateForm()) {
+      // If validation fails, switch to the tab with errors
+      if (validationErrors.courseimage) {
+        setActiveTab("media");
+      } else if (validationErrors.coursetype || validationErrors.streamname || validationErrors.coursename) {
+        setActiveTab("basic");
       }
-    });
-
-    // Append files
-    if (files.courseimage) {
-      data.append("courseimage", files.courseimage);
-    }
-    if (files.timetable) {
-      data.append("timetable", files.timetable);
-    }
-    if (files.batchinfo) {
-      data.append("batchinfo", files.batchinfo);
+      return;
     }
 
-    // Log FormData contents for debugging
-    console.log("Submitting course data:");
-    for (let pair of data.entries()) {
-      console.log(pair[0] + ':', pair[1] instanceof File ? pair[1].name : pair[1]);
+    setSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+
+    try {
+      const data = new FormData();
+
+      // Safely parse course features and syllabus
+      const featuresArray = safeJSONParse(formData.coursefeatures);
+      const syllabusData = units.length > 0 ? units : safeJSONParse(formData.syllabus);
+
+      // Find stream ID from selected stream name
+      const streamsArray = Array.isArray(streams) ? streams : [];
+      const selectedStream = streamsArray.find(s => s.name === formData.streamname);
+      const streamId = selectedStream?.id || selectedStream?._id || "";
+
+      // Prepare data matching backend DTO exactly
+      const courseData = {
+        title: formData.coursename,
+        type: formData.coursetype,
+        description: formData.coursedescription,
+        streamId: streamId,
+        courseName: formData.coursename,
+        teacherId: formData.teacherId,
+        status: formData.publish || false,
+        strikeoutPrice: formData.strikeoutprice ? Number(formData.strikeoutprice) : undefined,
+        currentPrice: formData.currentprice ? Number(formData.currentprice) : undefined,
+        productId: formData.productid,
+        courseGroupUrl: formData.whatsappurl,
+        durationDescription: formData.courseduration,
+        amount: formData.coursedescriptionamount,
+        upgradeDuration: formData.upgradeduration,
+        upgradePrice: formData.upgradeprice ? Number(formData.upgradeprice) : undefined,
+        videoId: formData.introvideoid,
+        coursefeatures: JSON.stringify(featuresArray),
+        syllabus: JSON.stringify(syllabusData),
+      };
+
+      // Append all course data to FormData
+      Object.keys(courseData).forEach(key => {
+        if (courseData[key] !== undefined && courseData[key] !== "" && courseData[key] !== null) {
+          data.append(key, courseData[key]);
+        }
+      });
+
+      // Append files
+      if (files.courseimage) {
+        data.append("courseimage", files.courseimage);
+      }
+      if (files.timetable) {
+        data.append("timetable", files.timetable);
+      }
+      if (files.batchinfo) {
+        data.append("batchinfo", files.batchinfo);
+      }
+
+      // Log FormData contents for debugging
+      for (let pair of data.entries()) {
+      }
+
+      const response = await handleCreateCourse(data);
+
+      setSubmitSuccess(true);
+
+      // Reset form after successful submission
+      setTimeout(() => {
+        resetForm();
+      }, 2000);
+
+    } catch (error) {
+      console.error("Failed to create course:", error);
+      setSubmitError(error.message || "Failed to create course. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-    
-    const response = await handleCreateCourse(data);
-    console.log("Course created successfully:", response);
-    
-    setSubmitSuccess(true);
-    
-    // Reset form after successful submission
-    setTimeout(() => {
-      resetForm();
-    }, 2000);
-    
-  } catch (error) {
-    console.error("Failed to create course:", error);
-    setSubmitError(error.message || "Failed to create course. Please try again.");
-  } finally {
-    setSubmitting(false);
-  }
-};
+  };
 
   // Handle tab change without submitting
   const handleTabChange = (tabId, e) => {
@@ -595,7 +589,7 @@ const AddCourse = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-8 px-4">
+    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header with Reset Button */}
         <div className="mb-8 flex justify-between items-center">
@@ -617,18 +611,7 @@ const AddCourse = () => {
           </button>
         </div>
 
-        {/* Success/Error Messages */}
-        {submitSuccess && (
-          <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-            Course created successfully! The form has been reset.
-          </div>
-        )}
-        
-        {submitError && (
-          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-            {submitError}
-          </div>
-        )}
+       
 
         {/* Validation Summary */}
         {Object.keys(validationErrors).length > 0 && (
@@ -657,11 +640,10 @@ const AddCourse = () => {
                 key={tab.id}
                 type="button"
                 onClick={(e) => handleTabChange(tab.id, e)}
-                className={`flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative whitespace-nowrap ${
-                  activeTab === tab.id
+                className={`flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative whitespace-nowrap ${activeTab === tab.id
                     ? "text-indigo-600"
                     : "text-gray-500 hover:text-gray-700"
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-center gap-1 sm:gap-2">
                   <tab.icon className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -674,8 +656,8 @@ const AddCourse = () => {
             ))}
           </div>
 
-          <form 
-            onSubmit={handleSubmit} 
+          <form
+            onSubmit={handleSubmit}
             className="p-4 sm:p-6 lg:p-8"
             onKeyDown={handleKeyPress}
           >
@@ -707,11 +689,10 @@ const AddCourse = () => {
                               setValidationErrors(prev => ({ ...prev, coursetype: null }));
                             }
                           }}
-                          className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${
-                            formData.coursetype === type.value
+                          className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${formData.coursetype === type.value
                               ? "border-indigo-600 bg-indigo-50 text-indigo-700"
                               : "border-gray-200 hover:border-indigo-300 hover:bg-gray-50"
-                          }`}
+                            }`}
                         >
                           <div className="flex flex-col items-center text-center">
                             <Icon className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
@@ -742,11 +723,10 @@ const AddCourse = () => {
                         return found?.id || found?._id || "";
                       })()}
                       onChange={handleStreamChange}
-                      className={`w-full px-4 py-3 rounded-xl border transition-all bg-white ${
-                        validationErrors.streamname 
-                          ? "border-red-500 focus:border-red-500 focus:ring-red-200" 
+                      className={`w-full px-4 py-3 rounded-xl border transition-all bg-white ${validationErrors.streamname
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-200"
                           : "border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                      }`}
+                        }`}
                       required
                     >
                       <option value="">-- Choose a stream --</option>
@@ -755,7 +735,7 @@ const AddCourse = () => {
                       ) : Array.isArray(streams) && streams.length > 0 ? (
                         streams.map((stream) => (
                           <option key={stream.id || stream._id} value={stream.id || stream._id}>
-                            {stream.name || stream.streamname}  ({stream.superstream?.name || ''}) 
+                            {stream.name || stream.streamname}  ({stream.superstream?.name || ''})
                           </option>
                         ))
                       ) : (
@@ -784,11 +764,10 @@ const AddCourse = () => {
                       onChange={handleChange}
                       onKeyDown={handleKeyPress}
                       placeholder="e.g., Full Stack Web Development"
-                      className={`w-full px-4 py-3 rounded-xl border transition-all ${
-                        validationErrors.coursename 
-                          ? "border-red-500 focus:border-red-500 focus:ring-red-200" 
+                      className={`w-full px-4 py-3 rounded-xl border transition-all ${validationErrors.coursename
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-200"
                           : "border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                      }`}
+                        }`}
                       required
                     />
                   </div>
@@ -879,11 +858,10 @@ const AddCourse = () => {
                               coursefeatures: JSON.stringify(newFeatures),
                             });
                           }}
-                          className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${
-                            isSelected
+                          className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${isSelected
                               ? "border-indigo-600 bg-indigo-50 text-indigo-700"
                               : "border-gray-200 hover:border-indigo-300"
-                          }`}
+                            }`}
                         >
                           <div className="flex flex-col items-center">
                             <span className="text-xl sm:text-2xl mb-1 sm:mb-2">
@@ -931,7 +909,7 @@ const AddCourse = () => {
                       <Folder className="w-5 h-5 text-indigo-600" />
                       Units
                     </h3>
-                    
+
                     {/* Add Unit */}
                     <div className="flex gap-2">
                       <input
@@ -958,11 +936,10 @@ const AddCourse = () => {
                       {units.map((unit, index) => (
                         <div
                           key={unit.id}
-                          className={`border rounded-xl overflow-hidden ${
-                            selectedUnitIndex === index
+                          className={`border rounded-xl overflow-hidden ${selectedUnitIndex === index
                               ? "border-indigo-500 ring-2 ring-indigo-200"
                               : "border-gray-200"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center justify-between p-3 bg-gray-50">
                             <div className="flex items-center gap-2 flex-1">
@@ -1327,11 +1304,10 @@ const AddCourse = () => {
                   {validationErrors.courseimage && (
                     <p className="text-xs text-red-500 mt-1">{validationErrors.courseimage}</p>
                   )}
-                  <div className={`border-2 border-dashed rounded-xl p-4 sm:p-6 text-center transition-colors ${
-                    validationErrors.courseimage 
-                      ? "border-red-500 bg-red-50" 
+                  <div className={`border-2 border-dashed rounded-xl p-4 sm:p-6 text-center transition-colors ${validationErrors.courseimage
+                      ? "border-red-500 bg-red-50"
                       : "border-gray-300 hover:border-indigo-500"
-                  }`}>
+                    }`}>
                     {filePreview.courseimage ? (
                       <div className="relative">
                         <img
@@ -1456,9 +1432,8 @@ const AddCourse = () => {
                   }
                 }}
                 disabled={activeTab === "basic"}
-                className={`w-full sm:flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium order-2 sm:order-1 ${
-                  activeTab === "basic" ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`w-full sm:flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium order-2 sm:order-1 ${activeTab === "basic" ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
                 Previous
               </button>

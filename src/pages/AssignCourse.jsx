@@ -165,7 +165,6 @@ const AssignMultipleCourses = () => {
     try {
       const res = await handleGetCourse(type);
 
-      console.log("API Response for type", type, ":", res);
 
       // Handle different response structures
       let coursesData = [];
@@ -177,7 +176,6 @@ const AssignMultipleCourses = () => {
         coursesData = [];
       }
 
-      console.log("Courses Data:", coursesData);
       setCourses(coursesData || []);
 
       // Show course results immediately if there are courses
@@ -335,7 +333,7 @@ const AssignMultipleCourses = () => {
   const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 md:p-6">
+    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6 md:mb-8">
@@ -577,72 +575,70 @@ const AssignMultipleCourses = () => {
                             (c) => c.id === course.id,
                           );
 
-                          console.log(course, "current course");
 
                           return (
-  <div
-    key={course.id}
-    onClick={() => toggleCourseSelection(course)}
-    className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition last:border-b-0 ${
-      isSelected ? "bg-indigo-50" : ""
-    }`}
-  >
-    <div className="flex items-center gap-3">
-      <div className="flex-shrink-0">
-        {isSelected ? (
-          <CheckCircle className="w-4 h-4 text-indigo-600" />
-        ) : (
-          <Square className="w-4 h-4 text-gray-400" />
-        )}
-      </div>
-      <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-        {course.courseImage ? (
-          <img
-            src={course.courseImage}
-            alt={course.courseName || course.title}
-            className="w-full h-full object-cover rounded-lg"
-          />
-        ) : (
-          <BookOpen className="w-4 h-4 text-white" />
-        )}
-      </div>
-      <div className="flex-1">
-        <p className="font-medium text-sm text-gray-800">
-          {course.courseName || course.title}
-        </p>
-        <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <span
-            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${typeInfo.bg} ${typeInfo.text} border ${typeInfo.border}`}
-          >
-            {typeInfo.label}
-          </span>
-          {course.status && (
-            <span className="text-xs text-green-600 flex items-center gap-0.5">
-              <CheckCircle className="w-3 h-3" /> Published
-            </span>
-          )}
-          {!course.status && (
-            <span className="text-xs text-gray-500 flex items-center gap-0.5">
-              <Clock className="w-3 h-3" /> Draft
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 flex-wrap">
-          <span className="flex items-center gap-1">
-            <DollarSign className="w-3 h-3" />
-            ₹{course.currentPrice || course.amount || "0"}
-          </span>
-          {course.durationDescription && (
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {course.durationDescription}
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  </div>
-);
+                            <div
+                              key={course.id}
+                              onClick={() => toggleCourseSelection(course)}
+                              className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition last:border-b-0 ${isSelected ? "bg-indigo-50" : ""
+                                }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="flex-shrink-0">
+                                  {isSelected ? (
+                                    <CheckCircle className="w-4 h-4 text-indigo-600" />
+                                  ) : (
+                                    <Square className="w-4 h-4 text-gray-400" />
+                                  )}
+                                </div>
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                                  {course.courseImage ? (
+                                    <img
+                                      src={course.courseImage}
+                                      alt={course.courseName || course.title}
+                                      className="w-full h-full object-cover rounded-lg"
+                                    />
+                                  ) : (
+                                    <BookOpen className="w-4 h-4 text-white" />
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <p className="font-medium text-sm text-gray-800">
+                                    {course.courseName || course.title}
+                                  </p>
+                                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                    <span
+                                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${typeInfo.bg} ${typeInfo.text} border ${typeInfo.border}`}
+                                    >
+                                      {typeInfo.label}
+                                    </span>
+                                    {course.status && (
+                                      <span className="text-xs text-green-600 flex items-center gap-0.5">
+                                        <CheckCircle className="w-3 h-3" /> Published
+                                      </span>
+                                    )}
+                                    {!course.status && (
+                                      <span className="text-xs text-gray-500 flex items-center gap-0.5">
+                                        <Clock className="w-3 h-3" /> Draft
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 flex-wrap">
+                                    <span className="flex items-center gap-1">
+                                      <DollarSign className="w-3 h-3" />
+                                      ₹{course.currentPrice || course.amount || "0"}
+                                    </span>
+                                    {course.durationDescription && (
+                                      <span className="flex items-center gap-1">
+                                        <Clock className="w-3 h-3" />
+                                        {course.durationDescription}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
                         })}
 
                         {/* Course Pagination */}

@@ -21,8 +21,6 @@ export const QueryDevTools = () => {
 // Query debugging utilities
 export const debugQuery = (queryClient) => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('Query Cache:', queryClient.getQueryCache().getAll());
-    console.log('Mutation Cache:', queryClient.getMutationCache().getAll());
   }
 };
 

@@ -135,7 +135,6 @@ const ViewQuiz = () => {
 
   // Handle edit quiz
   const handleEdit = (quiz) => {
-    console.log("Edit quiz:", quiz);
     navigate(`/edit-quiz/${quiz.id}`);
   };
 
@@ -197,7 +196,7 @@ const ViewQuiz = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+    <div className=" bg-gradient-to-br from-gray-50 to-gray-100 p-6">
 
 
       <div className="max-w-7xl mx-auto">

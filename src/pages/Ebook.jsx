@@ -99,25 +99,22 @@ const Ebook = () => {
   const draftEbooks = ebooks.filter(e => e.status === false).length;
 
   const handleView = (ebook) => {
-    console.log("View ebook:", ebook);
     // Add your view logic here
     alert(`Viewing: ${ebook.title}`);
   }
 
   const handleEdit = (ebook) => {
-    console.log("Edit ebook:", ebook);
     // Add your edit logic here
     alert(`Edit: ${ebook.title}`);
   }
 
   const handleDelete = (ebook) => {
-    console.log("Delete ebook:", ebook);
     // Add your delete logic here
     alert(`Delete: ${ebook.title}`);
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}

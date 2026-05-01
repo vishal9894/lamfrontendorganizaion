@@ -27,8 +27,7 @@ const AddTopStudent = () => {
   const fetchStreams = async () => {
     try {
       const response = await handleGetStream();
-      console.log('Streams response:', response);
-      
+
       let streamsData = [];
       if (response?.success && response?.data) {
         streamsData = Array.isArray(response.data) ? response.data : [response.data];
@@ -37,7 +36,7 @@ const AddTopStudent = () => {
       } else if (response?.data) {
         streamsData = Array.isArray(response.data) ? response.data : [response.data];
       }
-      
+
       setStreams(streamsData);
     } catch (err) {
       console.error('Failed to fetch streams:', err);
@@ -69,13 +68,13 @@ const AddTopStudent = () => {
     }
 
     setSelectedFile(file);
-    
+
     const reader = new FileReader();
     reader.onloadend = () => {
       setAvatarPreview(reader.result);
     };
     reader.readAsDataURL(file);
-    
+
     setFormData(prev => ({ ...prev, image: file }));
   };
 
@@ -114,7 +113,7 @@ const AddTopStudent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
@@ -123,38 +122,36 @@ const AddTopStudent = () => {
 
     try {
       const submitData = new FormData();
-      
+
       // Append fields
       submitData.append('name', formData.name.trim());
       submitData.append('streamid', formData.streamid);
       submitData.append('video_url', formData.video.trim());
-      
+
       if (selectedFile) {
         submitData.append('image', selectedFile);
       }
 
       // Log the data being sent
-      console.log('Submitting student data:');
       for (let pair of submitData.entries()) {
-        console.log(pair[0] + ':', pair[1]);
       }
 
       const response = await handleCreateTopStudent(submitData);
-        setSuccess(true);
-       
-        setFormData({
-          name: '',
-          streamid: '',
-          video_url: '',
-          image: null
-        });
-        setAvatarPreview('');
-        setSelectedFile(null);
-      
+      setSuccess(true);
+
+      setFormData({
+        name: '',
+        streamid: '',
+        video_url: '',
+        image: null
+      });
+      setAvatarPreview('');
+      setSelectedFile(null);
+
     } catch (err) {
       console.error('Error creating top student:', err);
-      
-    } 
+
+    }
   };
 
   const handleReset = () => {
@@ -171,7 +168,7 @@ const AddTopStudent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -196,7 +193,7 @@ const AddTopStudent = () => {
             </div>
           </div>
 
-          
+
 
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
             {/* Avatar Upload */}
@@ -224,7 +221,7 @@ const AddTopStudent = () => {
                   </button>
                 )}
               </div>
-              
+
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Student Avatar <span className="text-red-500">*</span>

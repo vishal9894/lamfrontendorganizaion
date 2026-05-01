@@ -57,13 +57,12 @@ const ViewOmrSheet = () => {
     try {
       setLoading(true);
       const response = await handleGetOmrSheet();
-      console.log("API Response:", response);
-      
+
       // Filter out null/empty entries and get only valid sheets
       const validSheets = response?.data?.filter(
         sheet => sheet.examKey && sheet.title && sheet.questions
       ) || [];
-      
+
       setOmrSheets(validSheets);
       setFilteredSheets(validSheets);
       setError(null);
@@ -85,7 +84,7 @@ const ViewOmrSheet = () => {
       setFilteredSheets(updatedSheets);
       setShowDeleteModal(false);
       setSheetToDelete(null);
-      
+
       // Show success message (you can add a toast notification here)
       alert("OMR Sheet deleted successfully!");
     } catch (err) {
@@ -97,7 +96,7 @@ const ViewOmrSheet = () => {
   // Search and Filter
   useEffect(() => {
     let filtered = omrSheets;
-    
+
     // Search by exam key or title
     if (searchTerm) {
       filtered = filtered.filter(
@@ -106,14 +105,14 @@ const ViewOmrSheet = () => {
           sheet.title?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+
     // Filter by status
     if (filterStatus !== "all") {
-      filtered = filtered.filter(sheet => 
+      filtered = filtered.filter(sheet =>
         filterStatus === "active" ? sheet.status : !sheet.status
       );
     }
-    
+
     // Sort
     if (sortConfig.key) {
       filtered.sort((a, b) => {
@@ -126,7 +125,7 @@ const ViewOmrSheet = () => {
         return 0;
       });
     }
-    
+
     setFilteredSheets(filtered);
     setCurrentPage(1);
   }, [searchTerm, filterStatus, omrSheets, sortConfig]);
@@ -230,24 +229,7 @@ const ViewOmrSheet = () => {
     );
   }
 
-  // Error State
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
-          <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-gray-800 mb-2">Error Loading Data</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={fetchOmrSheets}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
+  
 
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6">
@@ -266,7 +248,7 @@ const ViewOmrSheet = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex gap-3">
               <button
                 onClick={fetchOmrSheets}
@@ -290,7 +272,7 @@ const ViewOmrSheet = () => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
               />
             </div>
-            
+
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
@@ -313,7 +295,7 @@ const ViewOmrSheet = () => {
                 <FileText className="h-8 w-8 text-blue-600 opacity-50" />
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -325,7 +307,7 @@ const ViewOmrSheet = () => {
                 <CheckCircle2 className="h-8 w-8 text-green-600 opacity-50" />
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -358,8 +340,8 @@ const ViewOmrSheet = () => {
             <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-800 mb-2">No OMR Sheets Found</h3>
             <p className="text-gray-500">
-              {searchTerm || filterStatus !== "all" 
-                ? "Try adjusting your search or filter criteria" 
+              {searchTerm || filterStatus !== "all"
+                ? "Try adjusting your search or filter criteria"
                 : "Create your first OMR sheet to get started"}
             </p>
           </div>
@@ -487,11 +469,10 @@ const ViewOmrSheet = () => {
                         <button
                           key={number}
                           onClick={() => paginate(number)}
-                          className={`px-3 py-1 rounded-lg transition-colors ${
-                            currentPage === number
+                          className={`px-3 py-1 rounded-lg transition-colors ${currentPage === number
                               ? "bg-blue-600 text-white"
                               : "border border-gray-300 hover:bg-gray-50"
-                          }`}
+                            }`}
                         >
                           {number}
                         </button>
@@ -530,7 +511,7 @@ const ViewOmrSheet = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6">
               {/* Description */}
               {selectedSheet.description && (
@@ -539,7 +520,7 @@ const ViewOmrSheet = () => {
                   <p className="text-gray-600">{selectedSheet.description}</p>
                 </div>
               )}
-              
+
               {/* Exam Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div className="bg-gray-50 rounded-xl p-4">
@@ -549,7 +530,7 @@ const ViewOmrSheet = () => {
                   </div>
                   <p className="text-gray-600">{formatDate(selectedSheet.examDateTime)} at {formatTime(selectedSheet.examDateTime)}</p>
                 </div>
-                
+
                 <div className="bg-gray-50 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <ClockIcon className="h-5 w-5 text-blue-600" />
@@ -559,7 +540,7 @@ const ViewOmrSheet = () => {
                     {selectedSheet.duration} minutes + {selectedSheet.bufferTime} minutes buffer
                   </p>
                 </div>
-                
+
                 <div className="bg-gray-50 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Award className="h-5 w-5 text-blue-600" />
@@ -569,7 +550,7 @@ const ViewOmrSheet = () => {
                     +{selectedSheet.correctMarks} for correct / -{selectedSheet.wrongMarks} for wrong
                   </p>
                 </div>
-                
+
                 <div className="bg-gray-50 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Monitor className="h-5 w-5 text-blue-600" />
@@ -578,7 +559,7 @@ const ViewOmrSheet = () => {
                   <p className="text-gray-600 capitalize">{selectedSheet.examMode}</p>
                 </div>
               </div>
-              
+
               {/* Questions List */}
               {selectedSheet.questions && selectedSheet.questions.length > 0 && (
                 <div>
@@ -597,8 +578,8 @@ const ViewOmrSheet = () => {
                             <div className="flex items-center gap-2 mt-2">
                               <span className="text-sm text-gray-600">Correct Answer:</span>
                               <span className="bg-green-100 text-green-700 px-2 py-1 rounded-lg text-sm font-semibold">
-                                {Array.isArray(q.correctAnswer) 
-                                  ? q.correctAnswer.join(", ") 
+                                {Array.isArray(q.correctAnswer)
+                                  ? q.correctAnswer.join(", ")
                                   : q.correctAnswer}
                               </span>
                             </div>
@@ -611,7 +592,7 @@ const ViewOmrSheet = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="border-t p-6 bg-gray-50 rounded-b-2xl">
               <button
                 onClick={() => setShowModal(false)}
@@ -635,12 +616,12 @@ const ViewOmrSheet = () => {
                 </div>
                 <h3 className="text-xl font-bold text-gray-800">Delete OMR Sheet</h3>
               </div>
-              
+
               <p className="text-gray-600 mb-6">
                 Are you sure you want to delete "<span className="font-semibold">{sheetToDelete.title}</span>"?
                 This action cannot be undone.
               </p>
-              
+
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setShowDeleteModal(false)}

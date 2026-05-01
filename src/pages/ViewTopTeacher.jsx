@@ -311,7 +311,7 @@ const ViewTopTeacher = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -401,19 +401,7 @@ const ViewTopTeacher = () => {
           </div>
         </div>
 
-        {/* Success Message */}
-        {successMessage && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-green-600" />
-            <span className="text-green-700">{successMessage}</span>
-            <button
-              onClick={() => setSuccessMessage(null)}
-              className="ml-auto p-1 hover:bg-green-200 rounded-lg transition-colors"
-            >
-              <XCircle className="w-4 h-4 text-green-600" />
-            </button>
-          </div>
-        )}
+        
 
         {/* Search Bar */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { 
-  Settings, 
-  RefreshCw, 
-  Save, 
-  Plus, 
+import {
+  Settings,
+  RefreshCw,
+  Save,
+  Plus,
   Trash2,
   Globe,
   ArrowUpDown,
@@ -16,8 +16,8 @@ import {
   Percent
 } from 'lucide-react';
 
-import { 
-  handleGetAllSettings, 
+import {
+  handleGetAllSettings,
   handleCreateSetting,
   handleGetRoutingAccount,
   handleCreateRouteSetting,
@@ -27,7 +27,7 @@ import {
 // Delete Modal Component
 const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isLoading, confirmText, cancelText, size }) => {
   if (!isOpen) return null;
-  
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className={`bg-white rounded-lg shadow-xl w-full ${size === 'md' ? 'max-w-md' : 'max-w-lg'} mx-4`}>
@@ -61,7 +61,7 @@ const GeneralSetting = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
-  
+
   // Routing accounts state
   const [routingAccounts, setRoutingAccounts] = useState([]);
   const [showAddRouting, setShowAddRouting] = useState(false);
@@ -135,14 +135,13 @@ const GeneralSetting = () => {
     try {
       setLoading(true);
       const response = await handleGetAllSettings();
-      console.log('Settings response:', response);
-      
+
       if (response?.success && response?.data) {
         const settingsData = response.data;
-        
+
         // Get the main settings object (prefer all_settings if it exists)
         const mainSettings = settingsData.all_settings || settingsData;
-        
+
         setFormData(prev => ({
           ...prev,
           // Flat settings - check both mainSettings and root settingsData
@@ -152,36 +151,36 @@ const GeneralSetting = () => {
           group_joining: mainSettings.group_joining === true || mainSettings.group_joining === 'true' || settingsData.group_joining === true || false,
           buy_or_upgrade: mainSettings.buy_or_upgrade === true || mainSettings.buy_or_upgrade === 'true' || settingsData.buy_or_upgrade === true || false,
           test_reattempts: mainSettings.test_reattempts === true || mainSettings.test_reattempts === 'true' || settingsData.test_reattempts === true || false,
-          
+
           // Content Order
           app_content_order: mainSettings.app_content_order || settingsData.app_content_order || 'ascending',
           web_content_order: mainSettings.web_content_order || settingsData.web_content_order || 'ascending',
-          
+
           // Application Details
           application_package: mainSettings.application_package || settingsData.application_package || '',
           application_version: mainSettings.application_version || settingsData.application_version || '',
-          
+
           // Upload Size Limits
           max_image_size: parseInt(mainSettings.max_image_size) || parseInt(settingsData.max_image_size) || 5,
           max_pdf_size: parseInt(mainSettings.max_pdf_size) || parseInt(settingsData.max_pdf_size) || 10,
-          
+
           // Notification Settings
           onesignal_app_id: mainSettings.onesignal_app_id || settingsData.onesignal_app_id || '',
           onesignal_auth_key: mainSettings.onesignal_auth_key || settingsData.onesignal_auth_key || '',
-          
+
           // Payment & Security
           razorpay_auth: mainSettings.razorpay_auth || settingsData.razorpay_auth || '',
           login_attempts_limit: parseInt(mainSettings.login_attempts_limit) || parseInt(settingsData.login_attempts_limit) || 3,
           support_phone: mainSettings.support_phone || settingsData.support_phone || '',
           number_flashing_time: parseInt(mainSettings.number_flashing_time) || parseInt(settingsData.number_flashing_time) || 5,
-          
+
           // Social Media Links (Legacy)
           telegram_link: mainSettings.telegram_link || settingsData.telegram_link || '',
           facebook_link: mainSettings.facebook_link || settingsData.facebook_link || '',
           youtube_link: mainSettings.youtube_link || settingsData.youtube_link || '',
           board_result_link: mainSettings.board_result_link || settingsData.board_result_link || '',
           ytdl_link: mainSettings.ytdl_link || settingsData.ytdl_link || '',
-          
+
           // Nested objects - prefer from mainSettings, fallback to settingsData
           social_media: {
             ...prev.social_media,
@@ -204,8 +203,7 @@ const GeneralSetting = () => {
   const fetchRoutingAccounts = async () => {
     try {
       const response = await handleGetRoutingAccount();
-      console.log('Routing accounts:', response);
-      
+
       if (response?.success && response?.data) {
         setRoutingAccounts(response.data);
       }
@@ -290,11 +288,11 @@ const GeneralSetting = () => {
 
   const handleDeleteRoutingConfirm = async () => {
     if (!deleteModal.id) return;
-    
+
     setDeleteLoading(true);
     try {
       const response = await handleDeleteRoutingAccount(deleteModal.id);
-      
+
       if (response?.success) {
         await fetchRoutingAccounts();
         setDeleteModal({ show: false, id: null, name: '' });
@@ -339,12 +337,12 @@ const GeneralSetting = () => {
       youtube_link: formData.youtube_link,
       board_result_link: formData.board_result_link,
       ytdl_link: formData.ytdl_link,
-      
+
       // Nested objects
       social_media: formData.social_media,
       features: formData.features
     };
-    
+
     // Return as all_settings to match your API structure
     return {
       all_settings: settings
@@ -353,14 +351,14 @@ const GeneralSetting = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     try {
       setSaving(true);
       setError(null);
-      
+
       // Create a single settings object
       const settingsPayload = createSettingsPayload();
-      
+
       // Save all settings in one API call
       const response = await handleCreateSetting({
         setting_key: 'all_settings',
@@ -369,7 +367,7 @@ const GeneralSetting = () => {
       });
 
       await fetchSettings();
-      
+
       if (response?.success) {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
@@ -396,27 +394,8 @@ const GeneralSetting = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Success Message */}
-        {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center gap-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            Settings saved successfully!
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            {error}
-          </div>
-        )}
 
         {/* Header */}
         <div className="mb-8">
@@ -447,21 +426,19 @@ const GeneralSetting = () => {
           <div className="flex gap-2 mt-4 border-b border-gray-200">
             <button
               onClick={() => setActiveTab('general')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === 'general'
+              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'general'
                   ? 'text-indigo-600 border-b-2 border-indigo-600'
                   : 'text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               General Settings
             </button>
             <button
               onClick={() => setActiveTab('routing')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === 'routing'
+              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'routing'
                   ? 'text-indigo-600 border-b-2 border-indigo-600'
                   : 'text-gray-500 hover:text-gray-700'
-              }`}
+                }`}
             >
               Routing Accounts
             </button>
@@ -514,7 +491,7 @@ const GeneralSetting = () => {
                   </div>
                 </div>
 
-                
+
 
                 {/* Features (New) */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -901,11 +878,10 @@ const GeneralSetting = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            account.status 
-                              ? 'bg-green-100 text-green-700' 
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${account.status
+                              ? 'bg-green-100 text-green-700'
                               : 'bg-gray-100 text-gray-700'
-                          }`}>
+                            }`}>
                             {account.status ? 'Active' : 'Inactive'}
                           </span>
                         </td>

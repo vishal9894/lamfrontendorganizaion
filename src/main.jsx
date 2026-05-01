@@ -40,7 +40,7 @@ const queryClient = new QueryClient({
     },
   },
   logger: {
-    log: console.log,
+    log: () => { },
     warn: console.warn,
     error: process.env.NODE_ENV === 'development' ? console.error : () => { },
   },

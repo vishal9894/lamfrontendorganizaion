@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { 
-  handleCreateBulkQuestion, 
-  handleGetBulkQuestion, 
-  handleDeleteBulkQuestion, 
-  handleDeleteAllBulkQuestions 
+import {
+  handleCreateBulkQuestion,
+  handleGetBulkQuestion,
+  handleDeleteBulkQuestion,
+  handleDeleteAllBulkQuestions
 } from "../api/allApi";
 
 const ImportBulkTest = () => {
@@ -38,8 +38,7 @@ const ImportBulkTest = () => {
       setMessage("");
 
       const response = await handleCreateBulkQuestion(formData);
-      
-      console.log("Upload response:", response);
+
 
       if (response && response.success) {
         showMessage(
@@ -68,10 +67,9 @@ const ImportBulkTest = () => {
   const fetchQuestions = async () => {
     try {
       setLoadingQuestions(true);
-      
+
       const response = await handleGetBulkQuestion();
-      
-      console.log("Fetch response:", response);
+
 
       // Handle different response structures
       let questionsData = [];
@@ -100,9 +98,8 @@ const ImportBulkTest = () => {
       }
 
       setQuestions(questionsData);
-      
+
       if (questionsData.length === 0) {
-        console.log("No questions found in response");
       }
     } catch (error) {
       console.error("Fetch error:", error);
@@ -117,7 +114,7 @@ const ImportBulkTest = () => {
 
     try {
       const response = await handleDeleteBulkQuestion(id);
-      
+
       if (response && response.success) {
         showMessage("Question deleted successfully.", "success");
         fetchQuestions();
@@ -135,7 +132,7 @@ const ImportBulkTest = () => {
 
     try {
       const response = await handleDeleteAllBulkQuestions();
-      
+
       if (response && response.success) {
         showMessage("All questions deleted successfully.", "success");
         fetchQuestions();
@@ -153,7 +150,7 @@ const ImportBulkTest = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className=" bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8 mb-6">
@@ -233,11 +230,10 @@ const ImportBulkTest = () => {
           {/* Message */}
           {message && (
             <div
-              className={`mt-5 rounded-xl px-4 py-3 text-sm font-medium border ${
-                messageType === "success"
+              className={`mt-5 rounded-xl px-4 py-3 text-sm font-medium border ${messageType === "success"
                   ? "bg-green-50 text-green-700 border-green-200"
                   : "bg-red-50 text-red-700 border-red-200"
-              }`}
+                }`}
             >
               {message}
             </div>
@@ -298,7 +294,7 @@ const ImportBulkTest = () => {
                     <div className="text-green-700 font-medium">
                       Answer: {q.correct_answer || q.answer || "N/A"}
                     </div>
-                    
+
                     <button
                       onClick={() => handleDeleteQuestion(q.id)}
                       className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition text-sm"

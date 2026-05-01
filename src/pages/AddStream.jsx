@@ -211,7 +211,7 @@ const AddStream = () => {
   const selectedStreamName = selectedSuperStream ? getStreamName(selectedSuperStream) : '';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
+    <div className=" bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8 text-center">

@@ -1,14 +1,14 @@
 import { AlertCircle, BookOpen, Calendar, Folder, Globe, LinkIcon, Lock, Save, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-const EditEventModal = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  event, 
-  courses = {}, 
+const EditEventModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  event,
+  courses = {},
   folders = {},
-  loading = false 
+  loading = false
 }) => {
   const [formData, setFormData] = useState({
     name: '',
@@ -28,8 +28,7 @@ const EditEventModal = ({
 
   useEffect(() => {
     if (event) {
-      console.log('Event data:', event);
-      
+
       setFormData({
         name: event.name || '',
         description: event.description || '',
@@ -41,7 +40,7 @@ const EditEventModal = ({
         folderId: event.folderId || '',
         image: event.image || ''
       });
-      
+
       setBannerPreview(event.image || '');
     }
   }, [event]);
@@ -52,7 +51,7 @@ const EditEventModal = ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
+
     // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -76,7 +75,7 @@ const EditEventModal = ({
     }
 
     setImageFile(file);
-    
+
     const reader = new FileReader();
     reader.onloadend = () => {
       setBannerPreview(reader.result);
@@ -92,15 +91,15 @@ const EditEventModal = ({
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name?.trim()) {
       newErrors.name = 'Event name is required';
     }
-    
+
     if (formData.url && !isValidUrl(formData.url)) {
       newErrors.url = 'Please enter a valid URL';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -128,7 +127,7 @@ const EditEventModal = ({
         folderId: formData.folderId,
         courseName: formData.courseName
       };
-      
+
       // If there's a new image file, add it to FormData
       if (imageFile) {
         const formDataToSend = new FormData();
@@ -166,7 +165,7 @@ const EditEventModal = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
         onClick={handleClose}
       />
@@ -207,9 +206,8 @@ const EditEventModal = ({
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border ${
-                  errors.name ? 'border-red-500' : 'border-gray-300'
-                } rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400`}
+                className={`w-full px-3 py-2 border ${errors.name ? 'border-red-500' : 'border-gray-300'
+                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400`}
                 placeholder="Enter event name"
               />
               {errors.name && (
@@ -247,9 +245,8 @@ const EditEventModal = ({
                   name="url"
                   value={formData.url}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-3 py-2 border ${
-                    errors.url ? 'border-red-500' : 'border-gray-300'
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400`}
+                  className={`w-full pl-10 pr-3 py-2 border ${errors.url ? 'border-red-500' : 'border-gray-300'
+                    } rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400`}
                   placeholder="https://example.com/stream"
                 />
               </div>

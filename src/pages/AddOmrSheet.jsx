@@ -54,23 +54,17 @@ const InputField = ({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`w-full ${
-            Icon ? "pl-10" : "pl-4"
-          } pr-4 py-2.5 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2
-          ${
-            error
+          className={`w-full ${Icon ? "pl-10" : "pl-4"
+            } pr-4 py-2.5 border rounded-xl bg-gray-50 focus:outline-none focus:ring-2
+          ${error
               ? "border-red-500 ring-red-200"
               : "border-gray-200 focus:border-blue-500 focus:ring-blue-200"
-          }`}
+            }`}
           {...props}
         />
       </div>
 
-      {error && (
-        <p className="text-xs text-red-500 flex gap-1 items-center">
-          <AlertCircle className="h-3 w-3" /> {error}
-        </p>
-      )}
+      
     </div>
   );
 };
@@ -96,22 +90,16 @@ const TextAreaField = memo(
             onChange={onChange}
             rows={3}
             placeholder={placeholder}
-            className={`w-full ${
-              Icon ? "pl-10" : "pl-4"
-            } pr-4 py-2.5 border rounded-xl bg-gray-50 resize-none focus:outline-none focus:ring-2
-            ${
-              error
+            className={`w-full ${Icon ? "pl-10" : "pl-4"
+              } pr-4 py-2.5 border rounded-xl bg-gray-50 resize-none focus:outline-none focus:ring-2
+            ${error
                 ? "border-red-500 ring-red-200"
                 : "border-gray-200 focus:border-blue-500 focus:ring-blue-200"
-            }`}
+              }`}
           />
         </div>
 
-        {error && (
-          <p className="text-xs text-red-500 flex gap-1 items-center">
-            <AlertCircle className="h-3 w-3" /> {error}
-          </p>
-        )}
+        
       </div>
     );
   },
@@ -136,9 +124,8 @@ const SelectField = memo(
             name={name}
             value={value}
             onChange={onChange}
-            className={`w-full ${
-              Icon ? "pl-10" : "pl-4"
-            } pr-10 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+            className={`w-full ${Icon ? "pl-10" : "pl-4"
+              } pr-10 py-2.5 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200`}
           >
             {options.map((item) => (
               <option key={item.value} value={item.value}>
@@ -249,11 +236,10 @@ const QuestionCard = memo(
                 className={`
                 relative flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer
                 transition-all duration-200 border
-                ${
-                  isOptionSelected(option.value)
+                ${isOptionSelected(option.value)
                     ? `${option.bgColor} ${option.borderColor} border-2 shadow-md`
                     : "bg-gray-50 border-gray-200 hover:border-gray-300 hover:shadow-md"
-                }
+                  }
               `}
               >
                 <input
@@ -500,7 +486,7 @@ const AddOmrSheet = () => {
       setIsSubmitting(true);
       await handleCreateOmrSheet(submitData);
       setSubmitSuccess(true);
-      
+
       // Reset form after successful save
       setFormData({
         examKey: "",
@@ -520,19 +506,18 @@ const AddOmrSheet = () => {
       });
       setQuestions([]);
       setShowQuestions(false);
-      
+
       // Refresh exam keys list
       const response = await handleMatchOmrSheetKey();
       if (response && response.data) {
         setExistingExamKeys(response.data);
       }
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setSubmitSuccess(false);
       }, 3000);
     } catch (error) {
-      console.log(error);
       setErrors({ submit: error.message || "Failed to save OMR sheet" });
     } finally {
       setIsSubmitting(false);
@@ -783,11 +768,10 @@ const AddOmrSheet = () => {
                 onChange={handleDateTimeChange}
                 showTimeSelect
                 dateFormat="MMMM d, yyyy h:mm aa"
-                className={`w-full border px-4 py-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 ${
-                  errors.examDateTime
+                className={`w-full border px-4 py-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 ${errors.examDateTime
                     ? "border-red-500"
                     : "border-gray-200 focus:border-blue-500"
-                }`}
+                  }`}
                 placeholderText="Select date and time"
               />
               {errors.examDateTime && (
@@ -863,9 +847,8 @@ const AddOmrSheet = () => {
               <button
                 type="submit"
                 disabled={!!examKeyError || checkExamKeyExists(formData.examKey)}
-                className={`bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 ${
-                  (examKeyError || checkExamKeyExists(formData.examKey)) ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                className={`bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg transform hover:scale-105 ${(examKeyError || checkExamKeyExists(formData.examKey)) ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
               >
                 <Plus className="h-5 w-5" />
                 Generate OMR Sheet

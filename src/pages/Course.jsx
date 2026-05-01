@@ -110,7 +110,6 @@ const Course = () => {
     const fetchCourses = async () => {
       try {
         const response = await handleGetCourse("regular_course");
-        console.log("Courses response:", response);
 
         let coursesData = [];
         if (response?.data?.course && Array.isArray(response.data.course)) {
@@ -137,7 +136,7 @@ const Course = () => {
     setContentLoading(true);
     try {
       const res = await handleGetFolders(parentId);
-      
+
 
       let foldersArray = [];
       let eventsArray = [];
@@ -244,7 +243,6 @@ const Course = () => {
       }
 
       const res = await handleCreateFolder(form);
-      console.log("Create folder response:", res);
 
       const newFolder = res?.data?.data || res?.folder || res;
 
@@ -275,7 +273,6 @@ const Course = () => {
       }
 
       const res = await handleUpdateFolder(editingFolder.id, form);
-      console.log("Update folder response:", res);
 
       const updatedFolder = res?.data?.data || res?.folder || res;
 
@@ -291,7 +288,7 @@ const Course = () => {
       setEditingFolder(null);
       setModalParentFolder(null);
       setFormData({ name: "", image: null });
-      
+
     } catch (error) {
       console.error("Error updating folder:", error);
       showToast("Failed to update folder", "error");
@@ -332,7 +329,6 @@ const Course = () => {
       formData.append("parentId", parentId);
 
       const response = await handleCreateFile(formData);
-      console.log("Create content response:", response);
 
       if (response && response.success) {
         setOpenFileModal(false);
@@ -349,7 +345,6 @@ const Course = () => {
 
   // ✅ DELETE CONTENT (File/Event)
   const handleDeleteContent = async (item) => {
-    console.log("Deleting item:", item);
     if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
       try {
         await handleDeleteFilecontents(item.id);
@@ -536,8 +531,8 @@ const Course = () => {
             {item.accessType && (
               <span
                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${item.accessType === "free"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-purple-100 text-purple-800"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-purple-100 text-purple-800"
                   }`}
               >
                 {item.accessType}
@@ -665,7 +660,6 @@ const Course = () => {
                         )}
                         <StyledMenuItem
                           onClick={() => {
-                            console.log("Edit item:", item);
                             handleDropdownClose();
                           }}
                         >
@@ -726,13 +720,10 @@ const Course = () => {
     );
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 min-h-screen">
-      {/* Toast Notification */}
-      {toast.show && (
-        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
-      )}
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 ">
+     
 
-      {/* ================= COURSE LIST ================= */}
+      
       {!selectedCourse && (
         <div>
           <div className="mb-8">
@@ -806,8 +797,8 @@ const Course = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm transition ${course.status
-                              ? "bg-green-100 text-green-700 ring-1 ring-green-300"
-                              : "bg-red-100 text-red-700 ring-1 ring-red-300"
+                            ? "bg-green-100 text-green-700 ring-1 ring-green-300"
+                            : "bg-red-100 text-red-700 ring-1 ring-red-300"
                             }`}
                         >
                           {course.status ? "Active" : "Inactive"}

@@ -394,7 +394,7 @@ const UserPage = () => {
       }
     } catch (error) {
       console.error("Update error:", error);
-      alert("Error updating user");
+      
     } finally {
       setSaving(false);
     }
@@ -406,14 +406,14 @@ const UserPage = () => {
     try {
       setDeleting(true);
       const res = await deleteUserMutation.mutateAsync(userToDelete.id);
-      if (res.success) {
+     
         refreshData();
         setShowDeleteModal(false);
         setUserToDelete(null);
-      }
+      
     } catch (error) {
       console.error("Delete error:", error);
-      alert("Error deleting user");
+      
     } finally {
       setDeleting(false);
     }
@@ -568,42 +568,7 @@ const UserPage = () => {
   };
 
   const validateInAppNotification = () => {
-    if (!inAppNotification.title.trim()) {
-      alert("Please enter notification title");
-      return false;
-    }
-    if (!inAppNotification.message.trim()) {
-      alert("Please enter notification message");
-      return false;
-    }
-    if (inAppNotification.clickBehavior === 'redirect' && !inAppNotification.redirectUrl.trim()) {
-      alert("Please enter redirect URL for click behavior");
-      return false;
-    }
-    if (inAppNotification.targetAudience === 'stream_specific' && inAppNotification.streams.length === 0) {
-      alert("Please select at least one stream");
-      return false;
-    }
-    if (inAppNotification.appVersionTargeting !== 'all') {
-      if (inAppNotification.appVersionTargeting === 'include_specific' && inAppNotification.includeVersions.length === 0) {
-        alert("Please select at least one version to include");
-        return false;
-      }
-      if (inAppNotification.appVersionTargeting === 'exclude_specific' && inAppNotification.excludeVersions.length === 0) {
-        alert("Please select at least one version to exclude");
-        return false;
-      }
-    }
-    if (inAppNotification.courseTargeting !== 'all') {
-      if (inAppNotification.courseTargeting === 'include_specific' && inAppNotification.includeCourses.length === 0) {
-        alert("Please select at least one course to include");
-        return false;
-      }
-      if (inAppNotification.courseTargeting === 'exclude_specific' && inAppNotification.excludeCourses.length === 0) {
-        alert("Please select at least one course to exclude");
-        return false;
-      }
-    }
+  
     return true;
   };
 

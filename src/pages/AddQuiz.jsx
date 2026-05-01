@@ -150,21 +150,19 @@ const AddQuiz = () => {
         numberOfQuestions: totalQuestions
       };
 
-      console.log("Creating quiz with payload:", quizPayload);
 
       const quizResponse = await handleCreateMcq(quizPayload);
-      console.log("Quiz creation response:", quizResponse);
 
       if (quizResponse && (quizResponse.id || quizResponse.data?.id)) {
         const quizId = quizResponse.id || quizResponse.data?.id;
-        
+
         setCreatedQuizData({
           id: quizId,
           categories: categories,
           totalQuestions: totalQuestions,
           name: formData.name
         });
-        
+
         setShowQuestionModal(true);
         setSuccessMessage(`Quiz "${formData.name}" created! Now add your questions.`);
       } else {
@@ -179,7 +177,7 @@ const AddQuiz = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className=" bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -193,8 +191,8 @@ const AddQuiz = () => {
             </div>
           </div>
 
-          
-         
+
+
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Search, 
-  RefreshCw, 
+import {
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  RefreshCw,
   Filter,
   Download,
   Trash2,
@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useApiError } from '../hooks/useApiError';
 
-const OptimizedDataTable = ({ 
+const OptimizedDataTable = ({
   useQueryHook,
   useDeleteHook,
   queryKey,
@@ -33,12 +33,12 @@ const OptimizedDataTable = ({
   const { handleError, handleSuccess } = useApiError();
 
   // Get query hook with parameters
-  const { 
-    data, 
-    isLoading, 
-    error, 
+  const {
+    data,
+    isLoading,
+    error,
     refetch,
-    isRefetching 
+    isRefetching
   } = useQueryHook(currentPage, pageSize, { search: searchTerm, ...filters });
 
   // Get delete mutation
@@ -73,8 +73,8 @@ const OptimizedDataTable = ({
 
   // Handle row selection
   const handleRowSelect = (id) => {
-    setSelectedRows(prev => 
-      prev.includes(id) 
+    setSelectedRows(prev =>
+      prev.includes(id)
         ? prev.filter(rowId => rowId !== id)
         : [...prev, id]
     );
@@ -92,7 +92,7 @@ const OptimizedDataTable = ({
   // Handle delete
   const handleDelete = async (id) => {
     if (!deleteMutation) return;
-    
+
     if (!window.confirm('Are you sure you want to delete this item?')) return;
 
     try {
@@ -106,7 +106,7 @@ const OptimizedDataTable = ({
   // Handle bulk delete
   const handleBulkDelete = async () => {
     if (!deleteMutation || selectedRows.length === 0) return;
-    
+
     if (!window.confirm(`Are you sure you want to delete ${selectedRows.length} items?`)) return;
 
     try {
@@ -121,7 +121,6 @@ const OptimizedDataTable = ({
   // Handle export
   const handleExport = () => {
     // Export functionality here
-    console.log('Exporting data...');
   };
 
   // Loading state
@@ -133,7 +132,7 @@ const OptimizedDataTable = ({
     );
   }
 
-  
+
 
   return (
     <div className="bg-white rounded-lg shadow">
@@ -288,7 +287,7 @@ const OptimizedDataTable = ({
                   <div className="flex items-center justify-end space-x-2">
                     {actions.includes('view') && (
                       <button
-                        onClick={() => {/* Handle view */}}
+                        onClick={() => {/* Handle view */ }}
                         className="text-blue-600 hover:text-blue-900"
                         title="View"
                       >
@@ -297,7 +296,7 @@ const OptimizedDataTable = ({
                     )}
                     {actions.includes('edit') && (
                       <button
-                        onClick={() => {/* Handle edit */}}
+                        onClick={() => {/* Handle edit */ }}
                         className="text-gray-600 hover:text-gray-900"
                         title="Edit"
                       >
@@ -339,7 +338,7 @@ const OptimizedDataTable = ({
               <option value={100}>100</option>
             </select>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
@@ -348,11 +347,11 @@ const OptimizedDataTable = ({
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
-            
+
             <span className="text-sm text-gray-700">
               Page {currentPage} of {pagination.totalPages || 1}
             </span>
-            
+
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={!pagination.hasNextPage}

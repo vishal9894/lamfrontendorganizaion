@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { handleGetStream,  handleCreateTopTeacher } from '../api/allApi';
+import { handleGetStream, handleCreateTopTeacher } from '../api/allApi';
 import { Award, BookOpen, RefreshCw, Save, User, UserPlus, X, CheckCircle, AlertCircle } from 'lucide-react';
 
 const AddTopTeacher = () => {
@@ -24,10 +24,9 @@ const AddTopTeacher = () => {
   const fetchStreams = async () => {
     try {
       const response = await handleGetStream();
-      console.log('Streams response:', response);
-      
+
       let streamsData = [];
-      
+
       if (Array.isArray(response)) {
         streamsData = response;
       } else if (response?.success && response?.data) {
@@ -37,15 +36,15 @@ const AddTopTeacher = () => {
       } else if (response?.streams && Array.isArray(response.streams)) {
         streamsData = response.streams;
       }
-      
+
       // Ensure each stream has proper id and name
       const formattedStreams = streamsData.map(stream => ({
         id: stream.id || stream._id,
         name: stream.name || stream.streamName || 'Unnamed Stream'
       }));
-      
+
       setStreams(formattedStreams);
-      
+
     } catch (err) {
       console.error('Failed to fetch streams:', err);
       setError('Failed to load streams');
@@ -74,7 +73,7 @@ const AddTopTeacher = () => {
     }
 
     setSelectedFile(file);
-    
+
     const reader = new FileReader();
     reader.onloadend = () => {
       setAvatarPreview(reader.result);
@@ -107,7 +106,7 @@ const AddTopTeacher = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setLoading(true);
@@ -116,30 +115,23 @@ const AddTopTeacher = () => {
 
     try {
       const submitData = new FormData();
-      
+
       submitData.append('name', formData.name.trim());
       submitData.append('about', formData.about.trim());
-      
+
       // Handle streamid - only send if selected and valid
       if (formData.streamid && formData.streamid !== '') {
         submitData.append('streamid', formData.streamid);
-        console.log('Sending stream ID:', formData.streamid);
       }
-      
+
       if (selectedFile) {
         submitData.append('image', selectedFile);
       }
 
-      console.log('Submitting teacher data:');
-      console.log('Name:', formData.name);
-      console.log('About:', formData.about);
-      console.log('Stream ID:', formData.streamid || 'Not selected');
-      console.log('Image:', selectedFile?.name || 'Not provided');
 
       const response = await handleCreateTopTeacher(submitData);
-      
-      console.log('Response:', response);
-      
+
+
       // Check for successful response
       if (response && (response.success === true || response.status === 200 || response.data)) {
         setSuccess(true);
@@ -150,7 +142,7 @@ const AddTopTeacher = () => {
         });
         setAvatarPreview('');
         setSelectedFile(null);
-        
+
         // Clear success message after 3 seconds
         setTimeout(() => {
           setSuccess(false);
@@ -182,7 +174,7 @@ const AddTopTeacher = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -194,44 +186,6 @@ const AddTopTeacher = () => {
             Add outstanding teachers to the hall of fame
           </p>
         </div>
-
-        {/* Success Message */}
-        {success && (
-          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 animate-slideDown">
-            <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <CheckCircle className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-emerald-800">Success!</h3>
-              <p className="text-sm text-emerald-600">Top teacher added successfully!</p>
-            </div>
-            <button
-              onClick={() => setSuccess(false)}
-              className="p-1 hover:bg-emerald-200 rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4 text-emerald-600" />
-            </button>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 animate-slideDown">
-            <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <AlertCircle className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-red-800">Error!</h3>
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-            <button
-              onClick={() => setError(null)}
-              className="p-1 hover:bg-red-200 rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4 text-red-600" />
-            </button>
-          </div>
-        )}
 
         {/* Main Form Card */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
@@ -271,7 +225,7 @@ const AddTopTeacher = () => {
                   </button>
                 )}
               </div>
-              
+
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Teacher Avatar <span className="text-red-500">*</span>
@@ -359,7 +313,7 @@ const AddTopTeacher = () => {
                 {formData.about.length}/500 characters
               </p>
             </div>
-          
+
             {/* Form Actions */}
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
               <button

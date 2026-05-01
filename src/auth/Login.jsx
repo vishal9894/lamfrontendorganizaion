@@ -27,8 +27,6 @@ const Login = () => {
 
       const data = response.data;
 
-      console.log(data);
-
       if (data.token) {
         localStorage.setItem("authToken", data.token);
         navigate(from, { replace: true });

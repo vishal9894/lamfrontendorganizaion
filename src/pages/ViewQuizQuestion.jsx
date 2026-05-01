@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { handleGetQuizQuestions, handleDeleteQuestion, handleUpdateQuestion } from "../api/allApi";
-import { 
-  ArrowLeft, 
-  BookOpen, 
-  CheckCircle, 
-  Award, 
+import {
+  ArrowLeft,
+  BookOpen,
+  CheckCircle,
+  Award,
   Eye,
   Edit,
   Trash2,
@@ -26,7 +26,7 @@ const ViewQuizQuestion = () => {
   const [quizInfo, setQuizInfo] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  
+
   // Modal states
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -34,7 +34,7 @@ const ViewQuizQuestion = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  
+
   // Edit form state
   const [editFormData, setEditFormData] = useState({
     question: "",
@@ -53,7 +53,7 @@ const ViewQuizQuestion = () => {
       setLoading(true);
       setError(null);
       const res = await handleGetQuizQuestions(id);
-    
+
 
       let questionsData = [];
       let quizData = null;
@@ -69,7 +69,6 @@ const ViewQuizQuestion = () => {
       setData(questionsData);
       setQuizInfo(quizData);
     } catch (error) {
-      console.log("Error fetching questions:", error);
       setError(error.message || "Failed to load questions");
     } finally {
       setLoading(false);
@@ -118,7 +117,7 @@ const ViewQuizQuestion = () => {
 
     setEditLoading(true);
     setError(null);
-    
+
     try {
       const updateData = {
         question: editFormData.question,
@@ -131,9 +130,9 @@ const ViewQuizQuestion = () => {
         solution: editFormData.solution,
         category: editFormData.category
       };
-      
+
       const res = await handleUpdateQuestion(selectedQuestion.id, updateData);
-      
+
       if (res?.success || res?.status === 200) {
         setSuccess("Question updated successfully!");
         setTimeout(() => setSuccess(null), 3000);
@@ -153,13 +152,13 @@ const ViewQuizQuestion = () => {
   // Delete Question
   const handleDelete = async () => {
     if (!selectedQuestion) return;
-    
+
     setDeleteLoading(true);
     setError(null);
-    
+
     try {
       const res = await handleDeleteQuestion(selectedQuestion.id);
-      
+
       if (res?.success || res?.status === 200) {
         setSuccess("Question deleted successfully!");
         setTimeout(() => setSuccess(null), 3000);
@@ -194,27 +193,6 @@ const ViewQuizQuestion = () => {
   return (
     <div className=" bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Success Message */}
-        {success && (
-          <div className="fixed top-5 right-5 z-50 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3 shadow-lg animate-slideDown">
-            <CheckCircle className="w-5 h-5 text-green-500" />
-            <p className="text-green-700">{success}</p>
-            <button onClick={() => setSuccess(null)} className="ml-auto">
-              <X size={16} className="text-green-500" />
-            </button>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="fixed top-5 right-5 z-50 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3 shadow-lg animate-slideDown">
-            <AlertCircle className="w-5 h-5 text-red-500" />
-            <p className="text-red-700">{error}</p>
-            <button onClick={() => setError(null)} className="ml-auto">
-              <X size={16} className="text-red-500" />
-            </button>
-          </div>
-        )}
 
         {/* Back Button */}
         <button
@@ -284,8 +262,8 @@ const ViewQuizQuestion = () => {
                       <td className="px-4 py-3">
                         <p className={`text-sm ${question.question ? "text-gray-800" : "text-gray-400 italic"}`}>
                           {question.question ? (
-                            question.question.length > 50 
-                              ? question.question.substring(0, 50) + "..." 
+                            question.question.length > 50
+                              ? question.question.substring(0, 50) + "..."
                               : question.question
                           ) : "No question added"}
                         </p>
@@ -364,13 +342,13 @@ const ViewQuizQuestion = () => {
                 <X size={20} className="text-white" />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div className="bg-gray-50 rounded-xl p-4">
                 <p className="text-xs text-gray-500 mb-1">Question</p>
                 <p className="text-gray-800 font-medium">{selectedQuestion.question || "No question added"}</p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-50 rounded-xl p-4">
                   <p className="text-xs text-gray-500 mb-1">Option A</p>
@@ -389,7 +367,7 @@ const ViewQuizQuestion = () => {
                   <p className="text-gray-700">{selectedQuestion.option_d || "-"}</p>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-green-50 rounded-xl p-4">
                   <p className="text-xs text-green-600 mb-1">Correct Answer</p>
@@ -402,14 +380,14 @@ const ViewQuizQuestion = () => {
                   <p className="text-orange-700 font-medium">{selectedQuestion.marks || 0}</p>
                 </div>
               </div>
-              
+
               {selectedQuestion.category && (
                 <div className="bg-blue-50 rounded-xl p-4">
                   <p className="text-xs text-blue-600 mb-1">Category</p>
                   <p className="text-blue-700">{selectedQuestion.category}</p>
                 </div>
               )}
-              
+
               {selectedQuestion.solution && (
                 <div className="bg-purple-50 rounded-xl p-4">
                   <p className="text-xs text-purple-600 mb-1">Solution</p>
@@ -436,7 +414,7 @@ const ViewQuizQuestion = () => {
                 <X size={20} className="text-white" />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Question *</label>
@@ -449,7 +427,7 @@ const ViewQuizQuestion = () => {
                   placeholder="Enter question"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Option A</label>
@@ -492,7 +470,7 @@ const ViewQuizQuestion = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Correct Answer</label>
@@ -531,7 +509,7 @@ const ViewQuizQuestion = () => {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Solution</label>
                 <textarea
@@ -543,7 +521,7 @@ const ViewQuizQuestion = () => {
                   placeholder="Solution explanation"
                 />
               </div>
-              
+
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
                 <button
                   onClick={() => setShowEditModal(false)}
@@ -586,12 +564,12 @@ const ViewQuizQuestion = () => {
                 <h2 className="text-xl font-bold text-white">Delete Question</h2>
               </div>
             </div>
-            
+
             <div className="p-6">
               <p className="text-gray-600 mb-6">
                 Are you sure you want to delete this question? This action cannot be undone.
               </p>
-              
+
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowDeleteModal(false)}

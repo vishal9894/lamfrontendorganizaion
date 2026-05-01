@@ -104,21 +104,21 @@ const DashBoard = () => {
     { month: "Jun", earnings: 67000, expenses: 20000 },
   ], []);
 
-  const enrollmentData = useMemo(() => 
+  const enrollmentData = useMemo(() =>
     dashboard.enrollmentTrends && dashboard.enrollmentTrends.length > 0
       ? dashboard.enrollmentTrends.map(trend => ({
-          name: new Date(trend.month).toLocaleString('default', { month: 'short' }),
-          students: trend.count,
-          fullMonth: trend.month
-        }))
+        name: new Date(trend.month).toLocaleString('default', { month: 'short' }),
+        students: trend.count,
+        fullMonth: trend.month
+      }))
       : [
-          { name: "Jan", students: 120 },
-          { name: "Feb", students: 150 },
-          { name: "Mar", students: 180 },
-          { name: "Apr", students: 220 },
-          { name: "May", students: 195 },
-          { name: "Jun", students: 240 },
-        ],
+        { name: "Jan", students: 120 },
+        { name: "Feb", students: 150 },
+        { name: "Mar", students: 180 },
+        { name: "Apr", students: 220 },
+        { name: "May", students: 195 },
+        { name: "Jun", students: 240 },
+      ],
     [dashboard.enrollmentTrends]
   );
 
@@ -162,7 +162,7 @@ const DashBoard = () => {
   const statsCards = useMemo(() => [
     {
       title: "Wallet Balance",
-      value: `₹${wallet.toLocaleString()}`,
+      value: `₹${wallet?.toLocaleString() || '0'}`,
       icon: <FaWallet className="text-2xl" />,
       color: "from-blue-500 to-blue-600",
       bgColor: "bg-blue-100",
@@ -182,7 +182,7 @@ const DashBoard = () => {
     },
     {
       title: "Total Students",
-      value: dashboard.totalUsers.toLocaleString(),
+      value: dashboard.totalUsers?.toLocaleString() || '0',
       icon: <FaUsers className="text-2xl" />,
       color: "from-purple-500 to-purple-600",
       bgColor: "bg-purple-100",
@@ -204,7 +204,7 @@ const DashBoard = () => {
 
   const performanceMetrics = useMemo(() => [
     { label: "Course Completion Rate", value: completionRate, icon: <FaCheckCircle />, color: "text-green-600" },
-    { label: "Total Teachers", value: dashboard.totalTeachers, icon: <FaChalkboardTeacher />, color: "text-blue-600" },
+    { label: "Total Teachers", value: dashboard.totalTeachers || 0, icon: <FaChalkboardTeacher />, color: "text-blue-600" },
     { label: "Active Status", value: dashboard.status === "active" ? 100 : 0, icon: <FaTrophy />, color: "text-yellow-600" },
   ], [completionRate, dashboard.totalTeachers, dashboard.status]);
 
@@ -212,7 +212,7 @@ const DashBoard = () => {
   useEffect(() => {
     // Add smooth scrolling to the document
     document.documentElement.style.scrollBehavior = 'smooth';
-    
+
     // Cleanup function to restore default behavior when component unmounts
     return () => {
       document.documentElement.style.scrollBehavior = '';
@@ -220,7 +220,7 @@ const DashBoard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 overflow-y-auto">
+    <div className=" bg-gradient-to-br from-gray-50 to-gray-100 p-6 overflow-y-auto">
       <div className="max-w-7xl mx-auto">
         {/* Organization Header Card */}
         {!loading && dashboard.organizationName && (
@@ -233,10 +233,10 @@ const DashBoard = () => {
                     <FaBuilding className="text-3xl text-white" />
                   </div>
                   <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-white">{dashboard.organizationName}</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold text-white">{dashboard.organizationName || 'Organization'}</h1>
                     <div className="flex items-center gap-2 mt-1">
                       <FaGlobe className="text-white/70 text-sm" />
-                      <span className="text-white/80 text-sm">{dashboard.subdomain}</span>
+                      <span className="text-white/80 text-sm">{dashboard.subdomain || 'N/A'}</span>
                       <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${dashboard.status === 'active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
                         {dashboard.status === 'active' ? 'Active' : 'Inactive'}
                       </span>
@@ -246,7 +246,7 @@ const DashBoard = () => {
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className="text-white/80 text-sm">Organization ID</p>
-                    <p className="text-white font-mono text-sm">{dashboard.organizationId?.slice(0, 8)}...</p>
+                    <p className="text-white font-mono text-sm">{dashboard.organizationId?.slice(0, 8) || 'N/A'}...</p>
                   </div>
                 </div>
               </div>
@@ -403,14 +403,14 @@ const DashBoard = () => {
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
                 <FaWallet className="text-4xl mb-4 opacity-80" />
                 <h3 className="text-sm font-medium opacity-90">Wallet Balance</h3>
-                <p className="text-3xl font-bold mt-2">₹{wallet.toLocaleString()}</p>
+                <p className="text-3xl font-bold mt-2">₹{wallet?.toLocaleString() || '0'}</p>
                 <p className="text-sm opacity-90 mt-4">Available for purchases</p>
               </div>
 
               <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
                 <FaUsers className="text-4xl mb-4 opacity-80" />
                 <h3 className="text-sm font-medium opacity-90">Total Users</h3>
-                <p className="text-3xl font-bold mt-2">{dashboard.totalUsers.toLocaleString()}</p>
+                <p className="text-3xl font-bold mt-2">{dashboard.totalUsers?.toLocaleString() || '0'}</p>
                 <p className="text-sm opacity-90 mt-4">Active community members</p>
               </div>
             </>
