@@ -260,12 +260,25 @@ const UserPage = () => {
     refetchUsers();
   };
 
-  // Fetch initial data
+  // Fetch initial data - only users on load
   useEffect(() => {
     refetchUsers();
-    fetchStreams();
-    fetchCourses();
   }, [currentPage, pageSize, debouncedSearchTerm]);
+
+  // Lazy fetch streams and courses only when needed
+  useEffect(() => {
+    if (activeTab === "push-notification" || activeTab === "inapp-notification" || activeTab === "course-notification") {
+      if (availableStreams.length === 0) {
+        fetchStreams();
+      }
+    }
+
+    if (activeTab === "course-notification") {
+      if (availableCourses.length === 0) {
+        fetchCourses();
+      }
+    }
+  }, [activeTab]);
 
   /* ================= FETCH NOTIFICATION HISTORY ================= */
   const fetchNotificationHistory = async () => {
