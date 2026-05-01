@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useCourses, useDeleteCourse, usePublishCourse } from "../hooks/useOptimizedApi";
+import { PAGINATION_CONFIG } from "../utils/pagination";
 import {
   BookOpen,
   FileText,
@@ -17,9 +19,7 @@ import {
   Image as ImageIcon
 } from "lucide-react";
 import {
-  handleDeleteCourse,
   handleGetCourse,
-  handlePublishCourse,
 } from "../api/allApi";
 
 // Delete Modal Component
@@ -39,12 +39,12 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isL
               <h3 className="text-xl font-bold text-white">{title || "Delete Item"}</h3>
             </div>
           </div>
-          
+
           <div className="p-6">
             <p className="text-gray-600 mb-6">
               {message || `Are you sure you want to delete "${itemName}"? This action cannot be undone.`}
             </p>
-            
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={onClose}
@@ -75,19 +75,32 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isL
 };
 
 const ViewCourse = () => {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
   const [activeTab, setActiveTab] = useState("regular_course");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.COURSES.default);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Use optimized hooks with pagination
+  const { data: coursesData, isLoading: coursesLoading, refetch: refetchCourses } = useCourses(
+    currentPage,
+    pageSize,
+    { type: activeTab, search: searchTerm },
+    { enabled: true }
+  );
+
+  const deleteCourseMutation = useDeleteCourse();
+  const publishCourseMutation = usePublishCourse();
+
+  const courses = coursesData?.data || [];
+  const pagination = coursesData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalCourses = coursesData?.total || 0;
 
   // Course type tabs
   const tabs = [
@@ -98,55 +111,32 @@ const ViewCourse = () => {
     { id: "free_test_series", label: "📝 Free Test Series", icon: Award },
   ];
 
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
+
+  // Handle search
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1);
+  };
+
+  // Refresh data after mutations
+  const refreshData = () => {
+    refetchCourses();
+  };
+
   // Fetch courses based on active tab
   useEffect(() => {
-    fetchCourses();
-  }, [activeTab]);
-
-  const fetchCourses = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await handleGetCourse(activeTab);
-      console.log("API Response:", response);
-      
-      let coursesData = [];
-      
-      // Handle different response formats
-      if (response?.data?.course && Array.isArray(response.data.course)) {
-        coursesData = response.data.course;
-      } else if (response?.data && Array.isArray(response.data)) {
-        coursesData = response.data;
-      } else if (Array.isArray(response)) {
-        coursesData = response;
-      } else if (response?.course && Array.isArray(response.course)) {
-        coursesData = response.course;
-      }
-      
-      // Transform the data to ensure consistent field names
-      const transformedCourses = coursesData.map(course => ({
-        ...course,
-        id: course.id || course._id,
-        title: course.title || course.coursename || course.name,
-        description: course.description || course.coursedescription,
-        courseImage: course.courseImage || course.courseimage || course.image,
-        streamId: course.streamId || course.stream_id || course.streamid,
-        currentPrice: course.currentPrice || course.currentprice || course.price,
-        strikeoutPrice: course.strikeoutPrice || course.strikeoutprice || course.originalPrice,
-        durationDescription: course.durationDescription || course.courseduration || course.duration,
-        status: course.status === true || course.status === 'published' || course.publish === true,
-        createdAt: course.createdAt || course.created_at || course.created
-      }));
-      
-      setCourses(transformedCourses);
-    } catch (err) {
-      console.error("Failed to fetch courses:", err);
-      setError(err.message || "Failed to fetch courses");
-      setCourses([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    refreshData();
+  }, [activeTab, currentPage, pageSize, searchTerm]);
 
   const handlePublishToggle = async (course) => {
     try {
@@ -154,28 +144,13 @@ const ViewCourse = () => {
       setError(null);
 
       const newPublishStatus = !course.status;
-      const statusToSend = newPublishStatus ? true: false;
+      const statusToSend = newPublishStatus ? true : false;
 
-      console.log("Toggling publish for course:", course.id, "New status:", statusToSend);
-
-      const response = await handlePublishCourse(course.id, statusToSend);
-
-      console.log("Publish response:", response);
-
-      if (response && (response.success === true || response.status === 200)) {
-        // Update local state immediately for better UX
-        setCourses((prev) =>
-          prev.map((c) =>
-            c.id === course.id ? { ...c, status: newPublishStatus } : c,
-          ),
-        );
-        setSuccessMessage(`Course ${newPublishStatus ? 'published' : 'unpublished'} successfully!`);
-        setTimeout(() => setSuccessMessage(null), 3000);
-      } else {
-        setError(response?.message || "Failed to update publish status");
-      }
+      await publishCourseMutation.mutateAsync({ id: course.id, status: statusToSend });
+      refreshData();
+      setSuccessMessage(`Course ${newPublishStatus ? 'published' : 'unpublished'} successfully!`);
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      console.error("Failed to publish/unpublish course:", err);
       setError(err.message || "Failed to update publish status");
     } finally {
       setPublishingId(null);
@@ -183,8 +158,6 @@ const ViewCourse = () => {
   };
 
   const handleEdit = (course) => {
-    console.log("Edit course:", course);
-    // Navigate to edit page
     window.location.href = `/course/edit/${course.id}`;
   };
 
@@ -198,18 +171,13 @@ const ViewCourse = () => {
 
     setDeleteLoading(true);
     try {
-      const response = await handleDeleteCourse(selectedCourse.id);
-      if (response && (response.success === true || response.status === 200)) {
-        await fetchCourses(); // Refresh the list
-        setShowDeleteModal(false);
-        setSelectedCourse(null);
-        setSuccessMessage("Course deleted successfully!");
-        setTimeout(() => setSuccessMessage(null), 3000);
-      } else {
-        setError(response?.message || "Failed to delete course");
-      }
+      await deleteCourseMutation.mutateAsync(selectedCourse.id);
+      refreshData();
+      setShowDeleteModal(false);
+      setSelectedCourse(null);
+      setSuccessMessage("Course deleted successfully!");
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      console.error("Failed to delete course:", err);
       setError(err.message || "Failed to delete course");
     } finally {
       setDeleteLoading(false);
@@ -227,13 +195,12 @@ const ViewCourse = () => {
   });
 
   // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const indexOfLastItem = currentPage * pageSize;
+  const indexOfFirstItem = indexOfLastItem - pageSize;
   const currentCourses = filteredCourses.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredCourses.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredCourses.length / pageSize);
 
   // Stats
-  const totalCourses = courses.length;
   const publishedCourses = courses.filter((c) => c.status === true).length;
   const draftCourses = courses.filter((c) => c.status === false).length;
 
@@ -354,11 +321,10 @@ const ViewCourse = () => {
                   setCurrentPage(1);
                   setSearchTerm("");
                 }}
-                className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all mx-1 ${
-                  activeTab === tab.id
-                    ? "bg-indigo-600 text-white shadow-md"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+                className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all mx-1 ${activeTab === tab.id
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100"
+                  }`}
               >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -385,11 +351,11 @@ const ViewCourse = () => {
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
               <button
-                onClick={fetchCourses}
-                disabled={loading}
+                onClick={refreshData}
+                disabled={coursesLoading}
                 className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 justify-center w-full sm:w-auto disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${coursesLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
               <button
@@ -405,7 +371,7 @@ const ViewCourse = () => {
 
         {/* Courses Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {loading ? (
+          {coursesLoading ? (
             <div className="flex justify-center items-center h-64">
               <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
             </div>
@@ -588,11 +554,10 @@ const ViewCourse = () => {
                         <button
                           key={pageNum}
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`w-8 h-8 rounded-lg transition-colors ${
-                            currentPage === pageNum
-                              ? "bg-indigo-600 text-white"
-                              : "hover:bg-gray-100 text-gray-600"
-                          }`}
+                          className={`w-8 h-8 rounded-lg transition-colors ${currentPage === pageNum
+                            ? "bg-indigo-600 text-white"
+                            : "hover:bg-gray-100 text-gray-600"
+                            }`}
                         >
                           {pageNum}
                         </button>

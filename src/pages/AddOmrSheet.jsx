@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { handleCreateOmrSheet, handleMatchOmrSheetKey } from "../api/allApi";
 
-/* ---------------- reusable components OUTSIDE main component ---------------- */
 
 const InputField = ({
   label,

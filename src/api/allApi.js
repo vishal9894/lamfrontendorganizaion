@@ -1,5 +1,6 @@
 import axios from "axios";
 import { toast } from "react-toastify";
+import { buildPaginationParams, parsePaginatedResponse, PAGINATION_CONFIG } from "../utils/pagination";
 
 const BaseUrl = import.meta.env.VITE_BACKEND_API;
 
@@ -21,57 +22,13 @@ api.interceptors.request.use(
 
 /* ================= USER ================= */
 
-export const handleGetAllUsers = async (params = "") => {
+export const handleGetAllUsers = async (page = 1, limit = PAGINATION_CONFIG.USERS.default, additionalParams = {}) => {
   try {
+    const params = buildPaginationParams(page, limit, additionalParams);
     const url = `/users${params ? `?${params}` : ''}`;
     const res = await api.get(url);
-
-    if (res.data && typeof res.data === 'object') {
-      if (res.data.data && Array.isArray(res.data.data)) {
-        return {
-          success: true,
-          data: res.data.data,
-          total: res.data.total || res.data.totalCount || res.data.data.length,
-          page: res.data.page || 1,
-          limit: res.data.limit || 10,
-          totalPages: res.data.totalPages || Math.ceil((res.data.total || res.data.data.length) / (res.data.limit || 10))
-        };
-      }
-
-      if (Array.isArray(res.data)) {
-        return {
-          success: true,
-          data: res.data,
-          total: res.data.length,
-          page: 1,
-          limit: res.data.length,
-          totalPages: 1
-        };
-      }
-
-      if (res.data.users && Array.isArray(res.data.users)) {
-        return {
-          success: true,
-          data: res.data.users,
-          total: res.data.total || res.data.users.length,
-          page: res.data.page || 1,
-          limit: res.data.limit || res.data.users.length,
-          totalPages: res.data.totalPages || 1
-        };
-      }
-    }
-
-    return {
-      success: true,
-      data: Array.isArray(res.data) ? res.data : [],
-      total: Array.isArray(res.data) ? res.data.length : 0,
-      page: 1,
-      limit: 10,
-      totalPages: 1
-    };
-
+    return parsePaginatedResponse(res.data, limit);
   } catch (error) {
-    console.error("Get all users error:", error);
     const message = error.response?.data?.message || "Failed to fetch users";
     toast.error(message);
     return {
@@ -79,8 +36,8 @@ export const handleGetAllUsers = async (params = "") => {
       message,
       data: [],
       total: 0,
-      page: 1,
-      limit: 10,
+      page,
+      limit,
       totalPages: 1
     };
   }
@@ -199,15 +156,23 @@ export const handleCreateQuestions = async (data) => {
   }
 };
 
-export const handleGetMcq = async (page = 1, limit = 10) => {
+export const handleGetMcq = async (page = 1, limit = PAGINATION_CONFIG.QUIZZES.default, additionalParams = {}) => {
   try {
-    const res = await api.get(`/quizs`);
-    return { success: true, data: res.data };
+    const params = buildPaginationParams(page, limit, additionalParams);
+    const res = await api.get(`/quizs${params ? `?${params}` : ''}`);
+    return parsePaginatedResponse(res.data, limit);
   } catch (error) {
-    console.error("Get quizzes error:", error);
     const message = error.response?.data?.message || "Failed to fetch quizzes";
     toast.error(message);
-    return { success: false, message, data: { quizzes: [], total: 0 } };
+    return {
+      success: false,
+      message,
+      data: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 1
+    };
   }
 };
 
@@ -293,35 +258,22 @@ export const handleDeleteCourse = async (courseId) => {
   }
 };
 
-export const handleGetCourse = async (courseType) => {
+export const handleGetCourse = async (courseType, page = 1, limit = PAGINATION_CONFIG.COURSES.default, additionalParams = {}) => {
   try {
-    if (!courseType) {
-      throw new Error("courseType is required");
-    }
-
-    const res = await api.get("/courses", {
-      params: {
-        type: courseType
-      },
-    });
-
-    return {
-      success: true,
-      data: res.data.data,
-    };
-
+    const params = buildPaginationParams(page, limit, { ...additionalParams, type: courseType });
+    const res = await api.get(`/courses${params ? `?${params}` : ''}`);
+    return parsePaginatedResponse(res.data, limit);
   } catch (error) {
-    console.error("Get course error:", error);
-
-    const message =
-      error?.response?.data?.message || error.message || "Failed to fetch courses";
-
+    const message = error.response?.data?.message || "Failed to fetch courses";
     toast.error(message);
-
     return {
       success: false,
       message,
       data: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 1
     };
   }
 };
@@ -370,16 +322,25 @@ export const handleAssignMultipleCourses = async (assignData) => {
   }
 };
 
-export const handleGetAssignCourse = async () => {
+export const handleGetAssignCourse = async (page = 1, limit = PAGINATION_CONFIG.COURSES.default, additionalParams = {}) => {
   try {
-    const res = await api.get('/api/course/get-assign-course');
-    console.log(res.data);
-    return res.data;
-
+    const params = buildPaginationParams(page, limit, additionalParams);
+    const res = await api.get(`/api/course/get-assign-course${params ? `?${params}` : ''}`);
+    return parsePaginatedResponse(res.data, limit);
   } catch (error) {
-    console.log(error);
+    const message = error.response?.data?.message || "Failed to fetch assigned courses";
+    toast.error(message);
+    return {
+      success: false,
+      message,
+      data: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 1
+    };
   }
-}
+};
 
 export const handleDeleteAssignCourse = async (courseId, userId) => {
   try {
@@ -579,19 +540,23 @@ export const handleCreateStream = async (formData) => {
   }
 };
 
-export const handleGetStream = async () => {
+export const handleGetStream = async (page = 1, limit = PAGINATION_CONFIG.STREAMS.default, additionalParams = {}) => {
   try {
-    const res = await api.get('/stream');
-    return res.data;
+    const params = buildPaginationParams(page, limit, additionalParams);
+    const res = await api.get(`/stream${params ? `?${params}` : ''}`);
+    return parsePaginatedResponse(res.data, limit);
   } catch (error) {
-    console.error("Get streams error:", error);
-
-    const message =
-      error.response?.data?.message || "Failed to fetch streams";
-
+    const message = error.response?.data?.message || "Failed to fetch streams";
     toast.error(message);
-
-    return { success: false, message, data: [] };
+    return {
+      success: false,
+      message,
+      data: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 1
+    };
   }
 };
 
@@ -763,12 +728,23 @@ export const handleCreateTeacher = async (formData) => {
   }
 };
 
-export const handleGetTeacher = async () => {
+export const handleGetTeacher = async (page = 1, limit = PAGINATION_CONFIG.TEACHERS.default, additionalParams = {}) => {
   try {
-    const res = await api.get('/teachers');
-    return res.data.data;
+    const params = buildPaginationParams(page, limit, additionalParams);
+    const res = await api.get(`/teachers${params ? `?${params}` : ''}`);
+    return parsePaginatedResponse(res.data, limit);
   } catch (error) {
-    console.log(error);
+    const message = error.response?.data?.message || "Failed to fetch teachers";
+    toast.error(message);
+    return {
+      success: false,
+      message,
+      data: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 1
+    };
   }
 }
 
@@ -866,14 +842,25 @@ export const handleGetEvent = async (id) => {
   }
 }
 
-export const handleGetAllEvent = async () => {
+export const handleGetAllEvent = async (page = 1, limit = PAGINATION_CONFIG.EVENTS.default, additionalParams = {}) => {
   try {
-    const res = await api.get('/events');
-    return res.data;
+    const params = buildPaginationParams(page, limit, additionalParams);
+    const res = await api.get(`/events${params ? `?${params}` : ''}`);
+    return parsePaginatedResponse(res.data, limit);
   } catch (error) {
-    console.log(error);
+    const message = error.response?.data?.message || "Failed to fetch events";
+    toast.error(message);
+    return {
+      success: false,
+      message,
+      data: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 1
+    };
   }
-}
+};
 
 export const handleDeleteEvent = async (id) => {
   try {
@@ -1205,13 +1192,23 @@ export const handleGetProfile = async () => {
   return res.data.admin;
 };
 
-export const handleGetAllAdmin = async () => {
+export const handleGetAllAdmin = async (page = 1, limit = PAGINATION_CONFIG.ADMINS.default, additionalParams = {}) => {
   try {
-    const res = await api.get('/admin/all-organization-admins');
-    console.log(res.data);
-    return res.data;
+    const params = buildPaginationParams(page, limit, additionalParams);
+    const res = await api.get(`/admin/all-organization-admins${params ? `?${params}` : ''}`);
+    return parsePaginatedResponse(res.data, limit);
   } catch (error) {
-    console.log(error);
+    const message = error.response?.data?.message || "Failed to fetch admins";
+    toast.error(message);
+    return {
+      success: false,
+      message,
+      data: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 1
+    };
   }
 }
 
@@ -1365,15 +1362,22 @@ export const handleCheckPermission = async (permissionName) => {
   }
 };
 
-export const handleGetAllRoles = async () => {
+export const handleGetAllRoles = async (page = 1, limit = PAGINATION_CONFIG.ROLES.default, additionalParams = {}) => {
   try {
-    const res = await api.get('/roles');
-    return res.data;
+    const params = buildPaginationParams(page, limit, additionalParams);
+    const res = await api.get(`/roles${params ? `?${params}` : ''}`);
+    return parsePaginatedResponse(res.data, limit);
   } catch (error) {
-    console.error("Error getting roles:", error);
+    const message = error.response?.data?.message || "Failed to fetch roles";
+    toast.error(message);
     return {
       success: false,
-      message: error.response?.data?.message || "Failed to get roles"
+      message,
+      data: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 1
     };
   }
 };
@@ -1518,15 +1522,22 @@ export const handleSendInAppNotification = async (formData) => {
 };
 
 // Get Notification History
-export const handleGetNotificationHistory = async (params = {}) => {
+export const handleGetNotificationHistory = async (page = 1, limit = PAGINATION_CONFIG.NOTIFICATIONS.default, additionalParams = {}) => {
   try {
-    const res = await api.get(`/notifications`, { params });
-    return res.data;
+    const params = buildPaginationParams(page, limit, additionalParams);
+    const res = await api.get(`/notifications${params ? `?${params}` : ''}`);
+    return parsePaginatedResponse(res.data, limit);
   } catch (error) {
-    console.error("Error getting notification history:", error);
+    const message = error.response?.data?.message || "Failed to fetch notification history";
+    toast.error(message);
     return {
       success: false,
-      message: error.response?.data?.message || "Failed to get notification history"
+      message,
+      data: [],
+      total: 0,
+      page,
+      limit,
+      totalPages: 1
     };
   }
 };

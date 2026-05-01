@@ -1,26 +1,28 @@
 import { useState, useEffect } from 'react';
-import { 
-  UserPlus, 
-  Users, 
-  User, 
-  CreditCard, 
-  Percent, 
-  BookOpen, 
-  Star, 
-  FileText, 
-  Image as ImageIcon, 
-  X, 
-  Upload, 
-  Save, 
-  Search, 
-  RefreshCw, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  ChevronLeft, 
-  ChevronRight 
+import { useTeachers, useCreateTeacher, useUpdateTeacher, useDeleteTeacher } from '../hooks/useOptimizedApi';
+import { PAGINATION_CONFIG } from '../utils/pagination';
+import {
+  UserPlus,
+  Users,
+  User,
+  CreditCard,
+  Percent,
+  BookOpen,
+  Star,
+  FileText,
+  Image as ImageIcon,
+  X,
+  Upload,
+  Save,
+  Search,
+  RefreshCw,
+  Eye,
+  Edit,
+  Trash2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
-import { handleCreateTeacher, handleGetTeacher, handleDeleteTeacher, handleUpdateTeacher, handleGetCourse } from '../api/allApi';
+import { handleGetCourse } from '../api/allApi';
 
 // Delete Modal Component
 const DeleteModal = ({ isOpen, onClose, onConfirm, title, itemName, isLoading, confirmText, cancelText, size }) => {
@@ -74,7 +76,28 @@ const AddTeacher = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.TEACHERS.default);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Use optimized hooks with pagination
+  const { data: teachersData, isLoading: teachersLoading, refetch: refetchTeachers } = useTeachers(
+    currentPage,
+    pageSize,
+    { search: searchTerm },
+    { enabled: true }
+  );
+
+  const createTeacherMutation = useCreateTeacher();
+  const updateTeacherMutation = useUpdateTeacher();
+  const deleteTeacherMutation = useDeleteTeacher();
+
+  const teachers = teachersData?.data || [];
+  const pagination = teachersData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalTeachers = teachersData?.total || 0;
+
   // Add Teacher Form State
   const [formData, setFormData] = useState({
     name: '',
@@ -87,20 +110,13 @@ const AddTeacher = () => {
 
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-
-  // View Teachers State
-  const [teachers, setTeachers] = useState([]);
-  const [loadingTeachers, setLoadingTeachers] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState(null);
-  
+
   // Courses state - will hold ALL courses from all types
   const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
@@ -114,23 +130,47 @@ const AddTeacher = () => {
     "free_test_series"
   ];
 
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
+
+  // Handle search
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1);
+  };
+
+  // Refresh data after mutations
+  const refreshData = () => {
+    refetchTeachers();
+  };
+
   // Fetch all courses from all types on component mount
   useEffect(() => {
     fetchAllCourses();
   }, []);
 
+  useEffect(() => {
+    refetchTeachers();
+  }, [currentPage, pageSize, searchTerm]);
+
   const fetchAllCourses = async () => {
     setLoadingCourses(true);
     try {
       let allCourses = [];
-      
+
       // Fetch courses for each course type
       for (const type of courseTypes) {
         try {
           const response = await handleGetCourse(type);
-          console.log(`${type} response:`, response);
-          
-          // Handle different response formats
+
           if (response?.data?.course && Array.isArray(response.data.course)) {
             allCourses.push(...response.data.course);
           } else if (response?.data && Array.isArray(response.data)) {
@@ -141,56 +181,18 @@ const AddTeacher = () => {
             allCourses.push(...response.course);
           }
         } catch (err) {
-          console.error(`Failed to fetch ${type}:`, err);
         }
       }
-      
+
       // Remove duplicates by ID if any
       const uniqueCourses = allCourses.filter((course, index, self) =>
         index === self.findIndex((c) => c.id === course.id)
       );
-      
+
       setCourses(uniqueCourses);
-      console.log("All courses loaded:", uniqueCourses.length);
     } catch (err) {
-      console.error("Failed to fetch courses:", err);
     } finally {
       setLoadingCourses(false);
-    }
-  };
-
-  // Fetch teachers on component mount and when tab changes
-  useEffect(() => {
-    if (activeTab === 'view') {
-      fetchTeachers();
-    }
-  }, [activeTab]);
-
-  const fetchTeachers = async () => {
-    setLoadingTeachers(true);
-    setError(null);
-    try {
-      const response = await handleGetTeacher();
-      console.log("Teachers response:", response);
-
-      let teachersArray = [];
-      if (response && response.success && response.data) {
-        teachersArray = Array.isArray(response.data) ? response.data : [];
-      } else if (response && response.data) {
-        teachersArray = Array.isArray(response.data) ? response.data : [];
-      } else if (Array.isArray(response)) {
-        teachersArray = response;
-      } else if (response?.teachers && Array.isArray(response.teachers)) {
-        teachersArray = response.teachers;
-      }
-      
-      setTeachers(teachersArray);
-    } catch (err) {
-      console.error("Failed to fetch teachers:", err);
-      setError(err.message || "Failed to fetch teachers");
-      setTeachers([]);
-    } finally {
-      setLoadingTeachers(false);
     }
   };
 
@@ -206,7 +208,7 @@ const AddTeacher = () => {
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
-      
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -237,30 +239,24 @@ const AddTeacher = () => {
       formDataToSend.append('assigned_course_id', formData.assigned_course_id);
       formDataToSend.append('rating', formData.rating || '0');
       formDataToSend.append('teacherdetails', formData.teacherdetails || '');
-      
+
       if (imageFile) {
         formDataToSend.append('image', imageFile);
       }
 
       let response;
-      
+
       if (editMode && editId) {
-        // Update existing teacher
-        response = await handleUpdateTeacher(editId, formDataToSend);
-        console.log("Update teacher response:", response);
+        response = await updateTeacherMutation.mutateAsync({ id: editId, data: formDataToSend });
       } else {
-        // Create new teacher
-        response = await handleCreateTeacher(formDataToSend);
-        console.log("Create teacher response:", response);
+        response = await createTeacherMutation.mutateAsync(formDataToSend);
       }
-      
+
       if (response && (response.success === true || response.status === 200 || response.data)) {
         setSuccess(editMode ? 'Teacher updated successfully!' : 'Teacher created successfully!');
         resetForm();
-        
-        // Refresh teachers list
-        await fetchTeachers();
-        
+        refreshData();
+
         // Switch to view tab after successful creation/update
         setTimeout(() => {
           setActiveTab('view');
@@ -271,7 +267,6 @@ const AddTeacher = () => {
       }
 
     } catch (err) {
-      console.error('Failed to save teacher:', err);
       const errorMessage = err?.response?.data?.message || err?.message || (editMode ? 'Failed to update teacher' : 'Failed to create teacher');
       setError(errorMessage);
     } finally {
@@ -322,18 +317,14 @@ const AddTeacher = () => {
 
   const handleDeleteConfirm = async () => {
     if (!selectedTeacher) return;
-    
+
     setDeleteLoading(true);
     try {
-      const response = await handleDeleteTeacher(selectedTeacher.id);
-      
-    
-        setTeachers(teachers.filter(t => t.id !== selectedTeacher.id));
-        setShowDeleteModal(false);
-        setSelectedTeacher(null);
-       
+      await deleteTeacherMutation.mutateAsync(selectedTeacher.id);
+      refreshData();
+      setShowDeleteModal(false);
+      setSelectedTeacher(null);
     } catch (err) {
-      console.error('Failed to delete teacher:', err);
       setError(err?.response?.data?.message || err?.message || 'Failed to delete teacher');
     } finally {
       setDeleteLoading(false);
@@ -351,14 +342,13 @@ const AddTeacher = () => {
   });
 
   // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const indexOfLastItem = currentPage * pageSize;
+  const indexOfFirstItem = indexOfLastItem - pageSize;
   const currentTeachers = filteredTeachers.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredTeachers.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredTeachers.length / pageSize);
 
   // Stats
-  const totalTeachers = teachers.length;
-  const avgRating = teachers.length > 0 
+  const avgRating = teachers.length > 0
     ? (teachers.reduce((acc, t) => acc + (parseFloat(t.rating) || 0), 0) / teachers.length).toFixed(1)
     : 0;
 
@@ -371,9 +361,9 @@ const AddTeacher = () => {
   // Get course type badge
   const getCourseTypeBadge = (course) => {
     if (!course) return null;
-    
+
     const type = course.coursetype || course.type;
-    switch(type) {
+    switch (type) {
       case 'regular_course':
         return <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">Regular</span>;
       case 'ebook':
@@ -397,7 +387,7 @@ const AddTeacher = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -452,11 +442,10 @@ const AddTeacher = () => {
                 setActiveTab('add');
                 resetForm();
               }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                activeTab === 'add'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === 'add'
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
+                }`}
             >
               <UserPlus className="w-4 h-4" />
               {editMode ? 'Edit Teacher' : 'Add Teacher'}
@@ -465,13 +454,11 @@ const AddTeacher = () => {
               onClick={() => {
                 setActiveTab('view');
                 resetForm();
-                fetchTeachers();
               }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                activeTab === 'view'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === 'view'
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'text-gray-600 hover:bg-gray-100'
+                }`}
             >
               <Users className="w-4 h-4" />
               View Teachers
@@ -620,7 +607,7 @@ const AddTeacher = () => {
                   <ImageIcon className="w-4 h-4 text-indigo-600" />
                   Teacher Image
                 </label>
-                
+
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-500 transition-colors">
                   {imagePreview ? (
                     <div className="relative inline-block">
@@ -755,10 +742,10 @@ const AddTeacher = () => {
                   />
                 </div>
                 <button
-                  onClick={fetchTeachers}
+                  onClick={refreshData}
                   className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 justify-center"
                 >
-                  <RefreshCw className={`w-4 h-4 ${loadingTeachers ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-4 h-4 ${teachersLoading ? 'animate-spin' : ''}`} />
                   Refresh
                 </button>
               </div>
@@ -766,7 +753,7 @@ const AddTeacher = () => {
 
             {/* Teachers Table */}
             <div className="overflow-x-auto">
-              {loadingTeachers ? (
+              {teachersLoading ? (
                 <div className="flex justify-center items-center h-64">
                   <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
                 </div>
@@ -906,16 +893,15 @@ const AddTeacher = () => {
                     } else {
                       pageNum = currentPage - 2 + i;
                     }
-                    
+
                     return (
                       <button
                         key={pageNum}
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`w-8 h-8 rounded-lg transition-colors ${
-                          currentPage === pageNum
-                            ? "bg-indigo-600 text-white"
-                            : "hover:bg-gray-100 text-gray-600"
-                        }`}
+                        className={`w-8 h-8 rounded-lg transition-colors ${currentPage === pageNum
+                          ? "bg-indigo-600 text-white"
+                          : "hover:bg-gray-100 text-gray-600"
+                          }`}
                       >
                         {pageNum}
                       </button>

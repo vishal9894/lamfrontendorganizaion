@@ -1,26 +1,21 @@
 import { useState, useEffect } from 'react';
-import { 
-  handleGetAllEvent, 
-  
-  handleDeleteEvent, 
-  handleUpdateEvent, 
-  handleCreateEvent 
-} from '../api/allApi';
-import { 
-  BookOpen, 
-  Calendar, 
-  CheckCircle, 
-  ChevronLeft, 
-  ChevronRight, 
-  Clock, 
-  Copy, 
-  Download, 
-  Edit, 
-  Eye, 
-  Folder, 
-  Globe, 
-  RefreshCw, 
-  Search, 
+import { useEvents, useDeleteEvent, useUpdateEvent, useCreateEvent } from '../hooks/useOptimizedApi';
+import { PAGINATION_CONFIG } from '../utils/pagination';
+import {
+  BookOpen,
+  Calendar,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Copy,
+  Download,
+  Edit,
+  Eye,
+  Folder,
+  Globe,
+  RefreshCw,
+  Search,
   Trash2,
   Lock
 } from 'lucide-react';
@@ -30,22 +25,33 @@ import EditEventModal from '../components/EditEventModal';
 
 
 const ViewEvents = () => {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
-  // Store courses and folders data
-  const [courses, setCourses] = useState({});
-  const [folders, setFolders] = useState({});
-  
-  // Filter states
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.EVENTS.default);
   const [searchTerm, setSearchTerm] = useState('');
   const [accessFilter, setAccessFilter] = useState('all');
   const [publishFilter, setPublishFilter] = useState('all');
-  
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [eventsPerPage] = useState(10);
+
+  // Use optimized hooks with pagination
+  const { data: eventsData, isLoading: eventsLoading, refetch: refetchEvents } = useEvents(
+    currentPage,
+    pageSize,
+    { search: searchTerm, access: accessFilter, status: publishFilter },
+    { enabled: true }
+  );
+
+  const deleteEventMutation = useDeleteEvent();
+  const updateEventMutation = useUpdateEvent();
+  const createEventMutation = useCreateEvent();
+
+  const events = eventsData?.data || [];
+  const pagination = eventsData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalEvents = eventsData?.total || 0;
+
+  // Store courses and folders data
+  const [courses, setCourses] = useState({});
+  const [folders, setFolders] = useState({});
+  const [error, setError] = useState(null);
 
   // Modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -54,65 +60,33 @@ const ViewEvents = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    fetchAllData();
-  }, []);
-
-  const fetchAllData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Fetch events
-      const eventsRes = await handleGetAllEvent();
-     
-      
-      // Handle different response structures for events
-      let eventsData = [];
-      
-      if (eventsRes.events) {
-        // If response has data property
-        if (eventsRes.events) {
-          eventsData = Array.isArray(eventsRes.events) ? eventsRes.events : [eventsRes.events];
-        } 
-        // If response is directly an array
-        else if (Array.isArray(eventsRes)) {
-          eventsData = eventsRes;
-        } 
-        // If response is a single object
-        else if (typeof eventsRes === 'object') {
-          eventsData = [eventsRes];
-        }
-      }
-      
-      // Transform events to have consistent field names
-      const transformedEvents = eventsData.map(event => ({
-        ...event,
-        id: event.id || event._id,
-        name: event.name || event.event_name,
-        description: event.description || event.event_description,
-        url: event.url || event.stream_link,
-        access: event.access || 'public',
-        status: event.status || event.publish || false,
-        courseId: event.courseId || event.course_id,
-        courseName: event.courseName || event.category_name,
-        folderId: event.folderId || event.folder_id,
-        createdAt: event.createdAt || event.created_at
-      }));
-      
-      setEvents(transformedEvents);
-      
-      // Fetch all courses and folders for names
-     
-    } catch (err) {
-      console.error('Error fetching events:', err);
-      setError(err.message || 'Failed to fetch events');
-    } finally {
-      setLoading(false);
-    }
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
   };
 
- 
+  // Handle page size change
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
+
+  // Handle search
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1);
+  };
+
+  // Refresh data after mutations
+  const refreshData = () => {
+    refetchEvents();
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, [currentPage, pageSize, searchTerm, accessFilter, publishFilter]);
+
+
 
   // Handle Edit
   const handleEditClick = (event) => {
@@ -123,8 +97,7 @@ const ViewEvents = () => {
   const handleEditSubmit = async (updatedData) => {
     try {
       setActionLoading(true);
-      
-      // Prepare data for API
+
       const updatePayload = {
         name: updatedData.name,
         description: updatedData.description,
@@ -134,19 +107,13 @@ const ViewEvents = () => {
         courseId: updatedData.courseId,
         folderId: updatedData.folderId
       };
-      
-      const res = await handleUpdateEvent(selectedEvent.id, updatePayload);
-      console.log('Update response:', res);
-      
-      if (res && (res.success || res.id || res.data)) {
-        await fetchAllData();
-        setShowEditModal(false);
-        setSelectedEvent(null);
-      } else {
-        console.error('Update failed:', res);
-      }
+
+      await updateEventMutation.mutateAsync({ id: selectedEvent.id, data: updatePayload });
+      refreshData();
+      setShowEditModal(false);
+      setSelectedEvent(null);
     } catch (err) {
-      console.error('Error updating event:', err);
+      setError(err.message || 'Failed to update event');
     } finally {
       setActionLoading(false);
     }
@@ -160,18 +127,15 @@ const ViewEvents = () => {
 
   const handleDeleteConfirm = async () => {
     if (!selectedEvent) return;
-    
+
     setDeleteLoading(true);
     try {
-      const res = await handleDeleteEvent(selectedEvent.id);
-      console.log('Delete response:', res);
-      
-      await fetchAllData();
+      await deleteEventMutation.mutateAsync(selectedEvent.id);
+      refreshData();
       setShowDeleteModal(false);
       setSelectedEvent(null);
-      
     } catch (err) {
-      console.error('Error deleting event:', err);
+      setError(err.message || 'Failed to delete event');
       setShowDeleteModal(false);
     } finally {
       setDeleteLoading(false);
@@ -187,7 +151,7 @@ const ViewEvents = () => {
   const handleDuplicateClick = async (event) => {
     try {
       setActionLoading(true);
-      
+
       const duplicateData = {
         name: `${event.name} (Copy)`,
         description: event.description,
@@ -197,15 +161,11 @@ const ViewEvents = () => {
         courseId: event.courseId,
         folderId: event.folderId
       };
-      
-      const res = await handleCreateEvent(duplicateData);
-      console.log('Duplicate response:', res);
-      
-      if (res && (res.success || res.data || res.id)) {
-        await fetchAllData();
-      }
+
+      await createEventMutation.mutateAsync(duplicateData);
+      refreshData();
     } catch (err) {
-      console.error('Error duplicating event:', err);
+      setError(err.message || 'Failed to duplicate event');
     } finally {
       setActionLoading(false);
     }
@@ -213,27 +173,27 @@ const ViewEvents = () => {
 
   // Filter events based on search and filters
   const filteredEvents = events.filter(event => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       (event.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (event.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (event.url?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (courses[event.courseId]?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (folders[event.folderId]?.toLowerCase() || '').includes(searchTerm.toLowerCase());
-    
+
     const matchesAccess = accessFilter === 'all' || event.access === accessFilter;
-    
-    const matchesPublish = publishFilter === 'all' || 
+
+    const matchesPublish = publishFilter === 'all' ||
       (publishFilter === 'published' && event.status === true) ||
       (publishFilter === 'draft' && event.status === false);
-    
+
     return matchesSearch && matchesAccess && matchesPublish;
   });
 
   // Pagination
-  const indexOfLastEvent = currentPage * eventsPerPage;
-  const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
+  const indexOfLastEvent = currentPage * pageSize;
+  const indexOfFirstEvent = indexOfLastEvent - pageSize;
   const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
-  const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
+  const totalPages = Math.ceil(filteredEvents.length / pageSize);
 
   // Format date
   const formatDate = (dateString) => {
@@ -251,7 +211,7 @@ const ViewEvents = () => {
 
   // Get status badge color
   const getStatusBadge = (status) => {
-    return status 
+    return status
       ? 'bg-green-50 text-green-700 border border-green-200'
       : 'bg-gray-50 text-gray-700 border border-gray-200';
   };
@@ -265,7 +225,7 @@ const ViewEvents = () => {
 
   // Handle refresh
   const handleRefresh = () => {
-    fetchAllData();
+    refreshData();
   };
 
   // Export to CSV
@@ -281,11 +241,11 @@ const ViewEvents = () => {
       courses[event.courseId] || event.courseName || 'N/A',
       folders[event.folderId] || 'N/A'
     ]);
-    
+
     const csvContent = [headers, ...csvData]
       .map(row => row.map(cell => `"${cell}"`).join(','))
       .join('\n');
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -310,18 +270,18 @@ const ViewEvents = () => {
                 View and manage all events across courses
               </p>
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex gap-2">
               <button
                 onClick={handleRefresh}
-                disabled={loading}
+                disabled={eventsLoading}
                 className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${eventsLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
-              
+
               {filteredEvents.length > 0 && (
                 <button
                   onClick={exportToCSV}
@@ -333,7 +293,7 @@ const ViewEvents = () => {
               )}
             </div>
           </div>
-          
+
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
             <div className="bg-white rounded-lg shadow-sm p-4 border border-gray-100">
@@ -379,7 +339,7 @@ const ViewEvents = () => {
                 />
               </div>
             </div>
-            
+
             <div className="flex gap-2">
               <select
                 value={accessFilter}
@@ -393,7 +353,7 @@ const ViewEvents = () => {
                 <option value="public">Public</option>
                 <option value="private">Private</option>
               </select>
-              
+
               <select
                 value={publishFilter}
                 onChange={(e) => {
@@ -412,7 +372,7 @@ const ViewEvents = () => {
 
         {/* Events Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {loading ? (
+          {eventsLoading ? (
             <div className="flex justify-center items-center py-16">
               <div className="relative">
                 <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>

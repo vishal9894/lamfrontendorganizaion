@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useStreams, useDeleteStream } from "../hooks/useOptimizedApi";
+import { PAGINATION_CONFIG } from "../utils/pagination";
 import {
   AlertCircle,
   BookOpen,
@@ -18,21 +20,18 @@ import {
 
 } from "lucide-react";
 
-import { handleGetStream, handleDeleteStream } from "../api/allApi";
 import { useDispatch } from "react-redux";
 import { setStream } from "../redux/features/courseSlice";
 import DeleteModal from "../components/DeleteModal";
 
 
 const ViewStream = () => {
-  const [streams, setStreams] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStream, setSelectedStream] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.STREAMS.default);
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [error, setError] = useState(null);
@@ -42,70 +41,54 @@ const ViewStream = () => {
 
   const dispatch = useDispatch();
 
-  // Fetch streams from API
-  useEffect(() => {
-    fetchStreams();
-  }, []);
+  // Use optimized hooks with pagination
+  const { data: streamsData, isLoading: streamsLoading, refetch: refetchStreams } = useStreams(
+    currentPage,
+    pageSize,
+    { search: searchTerm, status: filterStatus },
+    { enabled: true }
+  );
 
-  const fetchStreams = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await handleGetStream();
+  const deleteStreamMutation = useDeleteStream();
 
-      // FIX: Safely handle the response structure
-      let streamsData = [];
+  const streams = streamsData?.data || [];
+  const pagination = streamsData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalStreams = streamsData?.total || 0;
 
-      if (response && response.success && response.data) {
-        // Check if data is an array or has data property
-        if (Array.isArray(response.data)) {
-          streamsData = response.data;
-          // If you need to dispatch the data to Redux
-          dispatch(setStream(response.data));
-        } else if (response.data.data && Array.isArray(response.data.data)) {
-          streamsData = response.data.data;
-          dispatch(setStream(response.data.data));
-        }
-        setStreams(streamsData);
-      } else if (response && response.data) {
-        if (Array.isArray(response.data)) {
-          streamsData = response.data;
-          dispatch(setStream(response.data));
-        } else if (response.data.data && Array.isArray(response.data.data)) {
-          streamsData = response.data.data;
-          dispatch(setStream(response.data.data));
-        }
-        setStreams(streamsData);
-      } else if (Array.isArray(response)) {
-        setStreams(response);
-        dispatch(setStream(response));
-      } else {
-        console.error("Unexpected response format:", response);
-        setError("Failed to load streams: Invalid data format");
-        setStreams([]);
-      }
-    } catch (err) {
-      console.error("Failed to fetch streams:", err);
-      setError(err.message || "Failed to load streams");
-      setStreams([]);
-    } finally {
-      setLoading(false);
-    }
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
   };
+
+  // Handle page size change
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
+
+  // Handle search
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1);
+  };
+
+  // Refresh data after mutations
+  const refreshData = () => {
+    refetchStreams();
+  };
+
+  useEffect(() => {
+    refreshData();
+  }, [currentPage, pageSize, searchTerm, filterStatus]);
 
   const handleDelete = async (id) => {
     setDeleteLoading(true);
     try {
-      const response = await handleDeleteStream(id);
-      if (response && response.success) {
-        await fetchStreams();
-        setShowDeleteModal(false);
-        setSelectedStream(null);
-      } else {
-        setError(response?.message || "Failed to delete stream");
-      }
+      await deleteStreamMutation.mutateAsync(id);
+      refreshData();
+      setShowDeleteModal(false);
+      setSelectedStream(null);
     } catch (err) {
-      console.error("Failed to delete stream:", err);
       setError(err.message || "Failed to delete stream");
     } finally {
       setDeleteLoading(false);
@@ -124,25 +107,20 @@ const ViewStream = () => {
 
     setDeleteLoading(true);
     try {
-      // Delete each selected stream
       for (const id of selectedRows) {
-        await handleDeleteStream(id);
+        await deleteStreamMutation.mutateAsync(id);
       }
-      await fetchStreams();
+      refreshData();
       setSelectedRows([]);
       setSelectAll(false);
     } catch (err) {
-      console.error("Failed to delete streams:", err);
-      alert("Failed to delete some streams");
+      setError(err.message || "Failed to delete streams");
     } finally {
       setDeleteLoading(false);
     }
   };
 
   const handleEdit = (stream) => {
-    console.log("Edit stream:", stream);
-    // Navigate to edit page
-    // window.location.href = `/stream/edit/${stream.id}`;
   };
 
   const handleView = (stream) => {
@@ -201,20 +179,15 @@ const ViewStream = () => {
   });
 
   // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const indexOfLastItem = currentPage * pageSize;
+  const indexOfFirstItem = indexOfLastItem - pageSize;
   const currentStreams = sortedStreams.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(sortedStreams.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedStreams.length / pageSize);
 
   // Stats
-  const totalStreams = streams?.length || 0;
   const activeStreams = streams?.filter((s) => s.status === "active").length || 0;
   const totalCourses = streams?.reduce(
     (acc, s) => acc + (s.courseCount || s.courses?.length || 0),
-    0,
-  ) || 0;
-  const totalStudents = streams?.reduce(
-    (acc, s) => acc + (s.studentCount || s.students?.length || 0),
     0,
   ) || 0;
 
@@ -288,7 +261,7 @@ const ViewStream = () => {
                 Export CSV
               </button>
               <button
-                onClick={fetchStreams}
+                onClick={refreshData}
                 className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -370,7 +343,7 @@ const ViewStream = () => {
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
             <p className="text-red-700 flex-1">{error}</p>
             <button
-              onClick={fetchStreams}
+              onClick={refreshData}
               className="px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
             >
               Retry
@@ -436,7 +409,7 @@ const ViewStream = () => {
 
         {/* Streams Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {loading ? (
+          {streamsLoading ? (
             <div className="flex justify-center items-center h-64">
               <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
             </div>

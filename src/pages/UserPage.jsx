@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useUsers, useUpdateUser, useDeleteUser } from "../hooks/useOptimizedApi";
+import { PAGINATION_CONFIG } from "../utils/pagination";
 import {
   Users,
   Send,
@@ -34,24 +36,37 @@ import {
   XCircle
 } from "lucide-react";
 import {
-  handleGetAllUsers,
-  handleUpdateUser,
-  handleDeleteUser,
   handleSendPushNotification,
   handleSendInAppNotification,
   handleGetNotificationHistory,
   handleGetStream,
-
   handleDeleteNotifications,
   handleGetCourse
 } from "../api/allApi";
 
 const UserPage = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.USERS.default);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Use optimized hooks with pagination
+  const { data: usersData, isLoading: usersLoading, refetch: refetchUsers } = useUsers(
+    currentPage,
+    pageSize,
+    { search: searchTerm },
+    { enabled: true }
+  );
+
+  const updateUserMutation = useUpdateUser();
+  const deleteUserMutation = useDeleteUser();
+
+  const users = usersData?.data || [];
+  const pagination = usersData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalUsers = usersData?.total || 0;
+
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -61,12 +76,7 @@ const UserPage = () => {
   const [notificationHistory, setNotificationHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [notificationFilter, setNotificationFilter] = useState("all");
-
-  // Pagination states
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_CONFIG.USERS.default);
   const [pageSizeOptions] = useState([5, 10, 25, 50, 100]);
 
   // Analytics states
@@ -190,55 +200,35 @@ const UserPage = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Fetch initial data
-  useEffect(() => {
-    fetchStreams();
-    fetchCourses();
-  }, []);
-
-  /* ================= FETCH USERS WITH PAGINATION ================= */
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      params.append('page', currentPage);
-      params.append('limit', itemsPerPage);
-
-      if (debouncedSearchTerm) {
-        params.append('search', debouncedSearchTerm);
-      }
-
-      const res = await handleGetAllUsers(params.toString());
-
-      if (res.success) {
-        setUsers(res.data || []);
-        setTotalPages(res.totalPages || 1);
-        setTotalUsers(res.total || res.data?.length || 0);
-
-        setAnalytics(prev => ({
-          ...prev,
-          totalUsers: res.total || res.data?.length || 0,
-          activeToday: Math.floor((res.data?.length || 0) * 0.3),
-          newThisWeek: Math.floor((res.data?.length || 0) * 0.1)
-        }));
-      } else {
-        setUsers([]);
-        setTotalPages(1);
-        setTotalUsers(0);
-      }
-    } catch (error) {
-      console.error("Fetch users error:", error);
-      setUsers([]);
-      setTotalPages(1);
-      setTotalUsers(0);
-    } finally {
-      setLoading(false);
-    }
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
   };
 
+  // Handle page size change
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setItemsPerPage(newSize);
+    setCurrentPage(1);
+  };
+
+  // Handle search
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1);
+  };
+
+  // Refresh data after mutations
+  const refreshData = () => {
+    refetchUsers();
+  };
+
+  // Fetch initial data
   useEffect(() => {
-    fetchUsers();
-  }, [currentPage, itemsPerPage, debouncedSearchTerm]);
+    refetchUsers();
+    fetchStreams();
+    fetchCourses();
+  }, [currentPage, pageSize, searchTerm]);
 
   /* ================= FETCH NOTIFICATION HISTORY ================= */
   const fetchNotificationHistory = async () => {
@@ -298,8 +288,6 @@ const UserPage = () => {
   };
 
   const handleDeleteNotification = async (id) => {
-
-
     try {
       const response = await handleDeleteNotifications(id);
 
@@ -324,9 +312,6 @@ const UserPage = () => {
     setNotificationToDelete(null);
   };
 
-  console.log("notificationToDelete:", notificationToDelete);
-
-
   /* ================= USER MANAGEMENT ================= */
   const openEditModal = (user) => {
     setSelectedUser({ ...user });
@@ -349,10 +334,14 @@ const UserPage = () => {
   const handleSave = async () => {
     try {
       setSaving(true);
-      const res = await handleUpdateUser(selectedUser.id, selectedUser);
+      const formData = new FormData();
+      Object.keys(selectedUser).forEach((key) => {
+        formData.append(key, selectedUser[key]);
+      });
+      const res = await updateUserMutation.mutateAsync({ id: selectedUser.id, data: formData });
+      refreshData();
 
       if (res.success) {
-        await fetchUsers();
         setShowModal(false);
         setSelectedUser(null);
       }
@@ -368,10 +357,10 @@ const UserPage = () => {
 
     try {
       setDeleting(true);
-      const res = await handleDeleteUser(userToDelete.id);
+      const res = await deleteUserMutation.mutateAsync(userToDelete.id);
+      refreshData();
 
       if (res.success) {
-        await fetchUsers();
         setShowDeleteModal(false);
         setUserToDelete(null);
       }
@@ -394,7 +383,7 @@ const UserPage = () => {
 
   /* ================= PAGINATION HANDLERS ================= */
   const goToPage = (page) => {
-    if (page >= 1 && page <= totalPages) {
+    if (page >= 1 && page <= pagination.totalPages) {
       setCurrentPage(page);
     }
   };
@@ -410,8 +399,8 @@ const UserPage = () => {
     const rangeWithDots = [];
     let l;
 
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+    for (let i = 1; i <= pagination.totalPages; i++) {
+      if (i === 1 || i === pagination.totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
         range.push(i);
       }
     }
@@ -840,7 +829,7 @@ const UserPage = () => {
               </div>
             </div>
 
-            {loading ? (
+            {usersLoading ? (
               <div className="p-10 text-center text-gray-500">
                 <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2" />
                 <p>Loading users...</p>
@@ -907,7 +896,7 @@ const UserPage = () => {
                   </table>
                 </div>
 
-                {totalPages > 0 && users.length > 0 && (
+                {pagination.totalPages > 0 && users.length > 0 && (
                   <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="text-sm text-gray-600">
                       Showing {users.length} of {totalUsers} users
@@ -934,10 +923,10 @@ const UserPage = () => {
                           )
                         ))}
                       </div>
-                      <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50">
+                      <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === pagination.totalPages} className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50">
                         <ChevronRight className="w-4 h-4" />
                       </button>
-                      <button onClick={() => goToPage(totalPages)} disabled={currentPage === totalPages} className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50">
+                      <button onClick={() => goToPage(pagination.totalPages)} disabled={currentPage === pagination.totalPages} className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50">
                         <ChevronsRight className="w-4 h-4" />
                       </button>
                     </div>

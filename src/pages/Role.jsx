@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
-import {
-  handleGetAllRoles,
-  handleCreateRole,
-  handleUpdateRolePermissions,
-  handleGetRoleById,
-  handleDeleteRoleById,
-} from "../api/allApi";
+import { useRoles, useCreateRole, useUpdateRolePermissions, useDeleteRole } from "../hooks/useOptimizedApi";
+import { handleGetRoleById } from "../api/allApi";
+import { PAGINATION_CONFIG } from "../utils/pagination";
 import {
   FiEdit2,
   FiPlus,
@@ -18,8 +14,26 @@ import {
 import PermissionsUI from "../components/PermissionsUI";
 
 const Role = () => {
-  const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.ROLES.default);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Use optimized hooks with pagination
+  const { data: rolesData, isLoading: rolesLoading, refetch: refetchRoles } = useRoles(
+    currentPage,
+    pageSize,
+    { search: searchTerm },
+    { enabled: true }
+  );
+
+  const createRoleMutation = useCreateRole();
+  const updateRoleMutation = useUpdateRolePermissions();
+  const deleteRoleMutation = useDeleteRole();
+
+  const roles = rolesData?.data || [];
+  const pagination = rolesData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalRoles = rolesData?.total || 0;
   const [selectedRole, setSelectedRole] = useState(null);
   const [showPermissions, setShowPermissions] = useState(false);
   const [showCreateRoleModal, setShowCreateRoleModal] = useState(false);
@@ -33,31 +47,36 @@ const Role = () => {
   const [loadingRolePermissions, setLoadingRolePermissions] = useState(false);
 
   useEffect(() => {
-    fetchRoles();
-  }, []);
+    refetchRoles();
+  }, [currentPage, pageSize, searchTerm]);
 
-  const fetchRoles = async () => {
-    try {
-      setLoading(true);
-      const response = await handleGetAllRoles();
-      setRoles(response.data);
-    } catch (error) {
-      console.error("Error fetching roles:", error);
-    } finally {
-      setLoading(false);
-    }
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
+
+  // Handle search
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1);
+  };
+
+  // Refresh data after mutations
+  const refreshData = () => {
+    refetchRoles();
   };
 
   const fetchRolePermissions = async (id) => {
-    console.log("Fetching permissions for role ID:", id);
-
     try {
       setLoadingRolePermissions(true);
       const response = await handleGetRoleById(id);
 
-      console.log("Full API response:", response);
-
-      // Extract permission IDs from the response
       let permissionIds = [];
 
       if (response.permissions && Array.isArray(response.permissions)) {
@@ -74,12 +93,9 @@ const Role = () => {
         permissionIds = response.map((permission) => permission.id);
       }
 
-      console.log("Extracted permission IDs:", permissionIds);
-
       setRolePermissions(permissionIds);
       setSelectedPermissions(permissionIds);
     } catch (error) {
-      console.error("Error fetching role permissions:", error);
       setRolePermissions([]);
       setSelectedPermissions([]);
     } finally {
@@ -129,26 +145,17 @@ const Role = () => {
       let response;
 
       if (selectedRole) {
-        // Update existing role with name, description, and permissions
-        console.log("Updating role:", {
+        response = await updateRoleMutation.mutateAsync({
           id: selectedRole.id,
           name: newRoleName,
           description: newRoleDescription,
-          permissionIds: selectedPermissions,
+          permissions: selectedPermissions,
         });
-
-        response = await handleUpdateRolePermissions(
-          selectedRole.id,
-          selectedPermissions,
-          newRoleName,
-          newRoleDescription,
-        );
       } else {
-        // Create new role
-        response = await handleCreateRole({
+        response = await createRoleMutation.mutateAsync({
           name: newRoleName,
           description: newRoleDescription,
-          permissionIds: selectedPermissions,
+          permissions: selectedPermissions,
         });
       }
 
@@ -159,19 +166,17 @@ const Role = () => {
           response.message === "Role updated successfully")
       ) {
         handleCloseCreateModal();
-        fetchRoles(); // Refresh roles list
-        toast.success(
+        refreshData();
+        alert(
           selectedRole
             ? "Role updated successfully"
             : "Role created successfully",
         );
       } else {
-        // Show error message if response has error
         const errorMsg = response?.message || "Failed to save role";
         alert(Array.isArray(errorMsg) ? errorMsg.join("\n") : errorMsg);
       }
     } catch (error) {
-      console.error("Error saving role:", error);
       const errorMessage =
         error.response?.data?.message || error.message || "An error occurred";
       alert(
@@ -183,13 +188,13 @@ const Role = () => {
   };
 
   const handleDeleteRole = async (roleId) => {
-    try {
-      const response = await handleDeleteRoleById(roleId);
-
-      fetchRoles();
-     
-    } catch (error) {
-      console.error("Error deleting role:", error);
+    if (window.confirm("Are you sure you want to delete this role?")) {
+      try {
+        await deleteRoleMutation.mutateAsync(roleId);
+        refreshData();
+      } catch (error) {
+        alert("Failed to delete role");
+      }
     }
   };
 
@@ -245,7 +250,7 @@ const Role = () => {
             </h2>
           </div>
 
-          {loading ? (
+          {rolesLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
             </div>

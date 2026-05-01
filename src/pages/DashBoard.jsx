@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { handleGetWallet, handleGetDashboardData } from "../api/allApi";
 import { useSelector } from "react-redux";
+import { useWallet, usePrefetchDashboard } from "../hooks/useOptimizedApi";
+import { handleGetDashboardData } from "../api/allApi";
 import {
   FaWallet,
   FaBookOpen,
@@ -70,8 +71,14 @@ const SkeletonActivity = () => (
 
 const DashBoard = () => {
   const { user } = useSelector((state) => state.user);
-  const [wallet, setWallet] = useState(0);
-  const [loading, setLoading] = useState(true);
+  // Use optimized React Query hooks with pagination
+  const walletRes = useWallet(user?.id);
+  const { prefetchDashboardData } = usePrefetchDashboard();
+
+  // Calculate derived data from React Query results
+  const wallet = walletRes.data?.balance || 0;
+  const loading = walletRes.isLoading;
+
   const [dashboardData, setDashboardData] = useState({
     organizationId: "",
     organizationName: "",
@@ -97,13 +104,17 @@ const DashBoard = () => {
   const [enrollmentData, setEnrollmentData] = useState([]);
   const [recentActivities, setRecentActivities] = useState([]);
 
+  // Prefetch data on component mount for instant subsequent loads
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 800));
+    if (user?.id) {
+      prefetchDashboardData(user.id);
+    }
+  }, [user?.id, prefetchDashboardData]);
 
-        // Fetch dashboard data from API
+  // Fetch dashboard data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
         const dashboardRes = await handleGetDashboardData();
 
         if (dashboardRes) {
@@ -138,38 +149,15 @@ const DashBoard = () => {
             ]);
           }
         }
-
-        // Fetch wallet balance
-        const walletRes = await handleGetWallet(user?.id);
-        setWallet(walletRes?.balance || walletRes?.data?.balance || 0);
-
-        // Generate earning data based on wallet
-        const baseEarning = wallet > 0 ? wallet / 6 : 2000;
-        setEarningData([
-          { month: "Jan", earnings: Math.round(baseEarning * 0.6), expenses: Math.round(baseEarning * 0.3) },
-          { month: "Feb", earnings: Math.round(baseEarning * 0.7), expenses: Math.round(baseEarning * 0.35) },
-          { month: "Mar", earnings: Math.round(baseEarning * 0.8), expenses: Math.round(baseEarning * 0.4) },
-          { month: "Apr", earnings: Math.round(baseEarning * 0.9), expenses: Math.round(baseEarning * 0.45) },
-          { month: "May", earnings: Math.round(baseEarning * 1.0), expenses: Math.round(baseEarning * 0.5) },
-          { month: "Jun", earnings: Math.round(baseEarning * 1.1), expenses: Math.round(baseEarning * 0.55) },
-        ]);
-
-        // Generate recent activities
-        setRecentActivities([
-          { id: 1, action: "Wallet Updated", amount: `₹${walletRes?.balance || 0}`, date: new Date().toISOString(), status: "success" },
-          { id: 2, action: "Active Courses", course: `${dashboardRes?.activeCourses || 0} Active`, date: new Date().toISOString(), status: "completed" },
-          { id: 3, action: "Total Students", amount: `${dashboardRes?.totalUsers || 0} Users`, date: new Date().toISOString(), status: "info" },
-        ]);
-
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
+        // Silently handle errors
       }
     };
 
-    if (user?.id) fetchData();
-  }, [user]);
+    if (user?.id) {
+      fetchDashboardData();
+    }
+  }, [user?.id]);
 
   // Calculate statistics
   const activeCourses = dashboardData.activeCourses;
@@ -445,8 +433,8 @@ const DashBoard = () => {
                   recentActivities.map((activity) => (
                     <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                       <div className={`w-2 h-2 mt-2 rounded-full ${activity.status === "completed" ? "bg-green-500" :
-                          activity.status === "success" ? "bg-blue-500" :
-                            "bg-yellow-500"
+                        activity.status === "success" ? "bg-blue-500" :
+                          "bg-yellow-500"
                         }`}></div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-800">{activity.action}</p>
