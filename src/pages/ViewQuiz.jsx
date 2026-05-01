@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { handleDeleteQuiz, handleGetMcq } from "../api/allApi";
+import { useQuizzes, useDeleteQuiz } from "../hooks/useOptimizedApi";
+import { PAGINATION_CONFIG } from "../utils/pagination";
 import {
   BookOpen,
   Clock,
@@ -48,12 +49,9 @@ const Toast = ({ message, type, onClose }) => {
 };
 
 const ViewQuiz = () => {
-  const [quizzes, setQuizzes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.QUIZZES.default);
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
   // Modal states
@@ -63,6 +61,20 @@ const ViewQuiz = () => {
 
   const navigate = useNavigate();
 
+  // Use optimized hooks with pagination
+  const { data: quizzesData, isLoading: quizzesLoading, refetch: refetchQuizzes } = useQuizzes(
+    currentPage,
+    pageSize,
+    { search: searchTerm },
+    { enabled: true }
+  );
+
+  const deleteQuizMutation = useDeleteQuiz();
+
+  const quizzes = quizzesData?.data || [];
+  const pagination = quizzesData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalQuizzes = quizzesData?.total || 0;
+
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
   };
@@ -71,72 +83,27 @@ const ViewQuiz = () => {
     setToast({ show: false, message: '', type: '' });
   };
 
-  useEffect(() => {
-    fetchQuizzes();
-  }, []);
-
-  const fetchQuizzes = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await handleGetMcq();
-     
-
-      let quizzesData = [];
-
-      // Handle different response structures
-      if (response?.data?.quizzes && Array.isArray(response.data.quizzes)) {
-        quizzesData = response.data.quizzes;
-      } else if (response?.quizzes && Array.isArray(response.quizzes)) {
-        quizzesData = response.quizzes;
-      } else if (response?.data && Array.isArray(response.data)) {
-        quizzesData = response.data;
-      } else if (Array.isArray(response)) {
-        quizzesData = response;
-      } else if (response && typeof response === 'object') {
-        quizzesData = [response];
-      }
-
-      // Transform the data to ensure consistent field names
-      const transformedQuizzes = quizzesData.map(quiz => ({
-        ...quiz,
-        id: quiz.id || quiz._id,
-        name: quiz.name || quiz.title || quiz.quizName,
-        category: quiz.category || quiz.courseName || 'General',
-        duration: quiz.duration || quiz.timeLimit || 0,
-        numberOfQuestions: quiz.numberOfQuestions || quiz.questionCount || 0,
-        questionCategory: quiz.questionCategory || quiz.category || '',
-        negativeMarking: quiz.negativeMarking || false,
-        negativeMarks: quiz.negativeMarks || 0,
-        showSolution: quiz.showSolution || false,
-        advancedMode: quiz.advancedMode || false,
-        createdAt: quiz.createdAt || quiz.created_at,
-        updatedAt: quiz.updatedAt || quiz.updated_at
-      }));
-
-      setQuizzes(transformedQuizzes);
-    } catch (err) {
-      console.error("Error fetching quizzes:", err);
-      setError(err.message || "Failed to fetch quizzes");
-      showToast("Failed to load quizzes", "error");
-    } finally {
-      setLoading(false);
+  // Pagination handlers
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setCurrentPage(newPage);
     }
+  };
+
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
   };
 
   // Filter quizzes based on search
   const filteredQuizzes = quizzes.filter(quiz => {
     const matchesSearch = searchTerm === '' ||
       (quiz.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (quiz.category?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+      (quiz.category?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (quiz.description?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
-  // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentQuizzes = filteredQuizzes.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredQuizzes.length / itemsPerPage);
 
   // Format date
   const formatDate = (dateString) => {
@@ -213,13 +180,9 @@ const ViewQuiz = () => {
   const handleDelete = async (quiz) => {
     if (window.confirm(`Are you sure you want to delete "${quiz.name}"? This action cannot be undone.`)) {
       try {
-        const response = await handleDeleteQuiz(quiz.id);
-        if (response?.success || response?.status === 200) {
-          showToast("Quiz deleted successfully!", "success");
-          fetchQuizzes();
-        } else {
-          showToast(response?.message || "Failed to delete quiz", "error");
-        }
+        await deleteQuizMutation.mutateAsync(quiz.id);
+        refetchQuizzes();
+        showToast("Quiz deleted successfully!", "success");
       } catch (error) {
         console.error("Error deleting quiz:", error);
         showToast("Failed to delete quiz", "error");
@@ -228,7 +191,6 @@ const ViewQuiz = () => {
   };
 
   // Stats
-  const totalQuizzes = quizzes.length;
   const totalQuestions = quizzes.reduce((sum, quiz) => sum + (quiz.numberOfQuestions || 0), 0);
   const avgDuration = quizzes.length > 0
     ? Math.round(quizzes.reduce((sum, quiz) => sum + (quiz.duration || 0), 0) / quizzes.length)
@@ -254,11 +216,11 @@ const ViewQuiz = () => {
 
             <div className="flex gap-2">
               <button
-                onClick={fetchQuizzes}
-                disabled={loading}
+                onClick={() => refetchQuizzes()}
+                disabled={quizzesLoading}
                 className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${quizzesLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
               <button
@@ -311,20 +273,6 @@ const ViewQuiz = () => {
           </div>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 animate-slideDown">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <p className="text-red-700 flex-1">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="p-1 hover:bg-red-200 rounded-lg transition-colors"
-            >
-              <XCircle className="w-4 h-4 text-red-600" />
-            </button>
-          </div>
-        )}
-
         {/* Search Bar */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
           <div className="relative">
@@ -344,7 +292,7 @@ const ViewQuiz = () => {
 
         {/* Quizzes Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {loading ? (
+          {quizzesLoading ? (
             <div className="flex justify-center items-center py-16">
               <div className="relative">
                 <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
@@ -416,7 +364,7 @@ const ViewQuiz = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {currentQuizzes.map((quiz) => (
+                    {filteredQuizzes.map((quiz) => (
                       <tr key={quiz.id} className="hover:bg-gray-50 transition-colors group">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
@@ -516,31 +464,26 @@ const ViewQuiz = () => {
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="px-6 py-3 bg-gray-50 border-t border-gray-200">
-                  <div className="flex items-center justify-between flex-wrap gap-4">
-                    <span className="text-sm text-gray-600">
-                      Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredQuizzes.length)} of {filteredQuizzes.length} quizzes
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <span className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-medium">
-                        {currentPage} / {totalPages}
-                      </span>
-                      <button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        className="p-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
+              {pagination.totalPages > 1 && (
+                <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between">
+                  <div className="text-sm text-gray-500">
+                    Page {currentPage} of {pagination.totalPages}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === pagination.totalPages}
+                      className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               )}
@@ -556,14 +499,14 @@ const ViewQuiz = () => {
           onClose={() => {
             setIsQuestionModalOpen(false);
             setSelectedQuiz(null);
-            fetchQuizzes();
+            refetchQuizzes();
           }}
           quizId={selectedQuiz.id}
           categories={parseQuizCategories(selectedQuiz)}
           totalQuestions={selectedQuiz.numberOfQuestions || 0}
           onComplete={() => {
             showToast("All questions created successfully!", "success");
-            fetchQuizzes();
+            refetchQuizzes();
           }}
         />
       )}
@@ -584,7 +527,7 @@ const ViewQuiz = () => {
           animation: slideDown 0.3s ease-out;
         }
       `}</style>
-    </div>
+    </div >
   );
 };
 

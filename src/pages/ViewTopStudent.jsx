@@ -1,20 +1,21 @@
-import { useState, useEffect } from 'react';
-import { handleGetTopStudent, handleDeleteTopStudent, handleUpdateTopStudent } from '../api/allApi';
-import { 
-  CheckCircle, 
-  ChevronLeft, 
-  ChevronRight, 
-  Edit, 
-  Eye, 
-  Film, 
-  GraduationCap, 
-  Hash, 
-  Loader, 
-  Play, 
-  RefreshCw, 
-  Search, 
-  Trash2, 
-  User, 
+import { useState } from 'react';
+import { useTopStudents, useDeleteTopStudent, useUpdateTopStudent } from '../hooks/useOptimizedApi';
+import { PAGINATION_CONFIG } from '../utils/pagination';
+import {
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  Eye,
+  Film,
+  GraduationCap,
+  Hash,
+  Loader,
+  Play,
+  RefreshCw,
+  Search,
+  Trash2,
+  User,
   Users,
   X,
   Save,
@@ -39,12 +40,12 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isL
               <h3 className="text-xl font-bold text-white">{title}</h3>
             </div>
           </div>
-          
+
           <div className="p-6">
             <p className="text-gray-600 mb-6">
               {message || `Are you sure you want to delete "${itemName}"? This action cannot be undone.`}
             </p>
-            
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={onClose}
@@ -69,19 +70,42 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isL
 };
 
 const ViewTopStudent = () => {
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.USERS.default);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Use optimized hooks with pagination
+  const { data: studentsData, isLoading: studentsLoading, refetch: refetchStudents } = useTopStudents(
+    currentPage,
+    pageSize,
+    { search: searchTerm },
+    { enabled: true }
+  );
+
+  const deleteStudentMutation = useDeleteTopStudent();
+  const updateStudentMutation = useUpdateTopStudent();
+
+  const students = studentsData?.data || [];
+  const pagination = studentsData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalStudents = studentsData?.total || 0;
+
+  // Pagination handlers
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
+
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editLoading, setEditLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
   const [editFormData, setEditFormData] = useState({
     name: '',
@@ -116,49 +140,6 @@ const ViewTopStudent = () => {
     }
   };
 
-  // Fetch students on component mount
-  useEffect(() => {
-    fetchStudents();
-  }, []);
-
-  const fetchStudents = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await handleGetTopStudent();
-      console.log('Students response:', response);
-      
-      let studentsData = [];
-      if (response?.success && response?.data) {
-        studentsData = Array.isArray(response.data) ? response.data : [response.data];
-      } else if (Array.isArray(response)) {
-        studentsData = response;
-      } else if (response?.data) {
-        studentsData = Array.isArray(response.data) ? response.data : [response.data];
-      } else if (response?.students && Array.isArray(response.students)) {
-        studentsData = response.students;
-      }
-      
-      const transformedStudents = studentsData.map(student => ({
-        ...student,
-        id: student.id || student._id,
-        streamId: student.streamid || student.stream_id || student.streamId,
-        videoUrl: student.video_url || student.videoUrl || student.video,
-        avatar: student.image || student.avatar,
-        createdAt: student.createdAt || student.created_at,
-        updatedAt: student.updatedAt || student.updated_at,
-        name: safeDecrypt(student.name) || student.name
-      }));
-      
-      setStudents(transformedStudents);
-    } catch (err) {
-      console.error('Failed to fetch students:', err);
-      setError(err.message || 'Failed to fetch students');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDeleteClick = (student) => {
     setSelectedStudent(student);
     setShowDeleteModal(true);
@@ -166,20 +147,16 @@ const ViewTopStudent = () => {
 
   const handleDeleteConfirm = async () => {
     if (!selectedStudent) return;
-    
-    setDeleteLoading(true);
+
     try {
-      await handleDeleteTopStudent(selectedStudent.id);
-      await fetchStudents();
-      setShowDeleteModal(false);
-      setSelectedStudent(null);
+      await deleteStudentMutation.mutateAsync(selectedStudent.id);
       setSuccessMessage('Student deleted successfully!');
       setTimeout(() => setSuccessMessage(null), 3000);
+      refetchStudents();
+      setShowDeleteModal(false);
+      setSelectedStudent(null);
     } catch (err) {
       console.error('Failed to delete student:', err);
-      setError(err.message || 'Failed to delete student');
-    } finally {
-      setDeleteLoading(false);
     }
   };
 
@@ -231,7 +208,7 @@ const ViewTopStudent = () => {
     }
 
     setEditSelectedFile(file);
-    
+
     const reader = new FileReader();
     reader.onloadend = () => {
       setEditImagePreview(reader.result);
@@ -241,50 +218,38 @@ const ViewTopStudent = () => {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!editFormData.name.trim()) {
-      setError('Name is required');
       return;
     }
-
-    setEditLoading(true);
-    setError(null);
 
     try {
       const submitData = new FormData();
       submitData.append('name', safeEncrypt(editFormData.name.trim()) || editFormData.name.trim());
-      
+
       if (editFormData.videoUrl.trim()) {
         submitData.append('video_url', editFormData.videoUrl.trim());
       }
-      
+
       if (editFormData.streamId.trim()) {
         submitData.append('streamid', editFormData.streamId.trim());
       }
-      
+
       if (editSelectedFile) {
         submitData.append('image', editSelectedFile);
       }
 
-      const response = await handleUpdateTopStudent(selectedStudent.id, submitData);
-      
-      if (response && (response.success === true || response.status === 200)) {
-        await fetchStudents();
-        setShowEditModal(false);
-        setSelectedStudent(null);
-        setEditFormData({ name: '', videoUrl: '', streamId: '', image: null });
-        setEditImagePreview('');
-        setEditSelectedFile(null);
-        setSuccessMessage('Student updated successfully!');
-        setTimeout(() => setSuccessMessage(null), 3000);
-      } else {
-        setError(response?.message || 'Failed to update student');
-      }
+      await updateStudentMutation.mutateAsync({ id: selectedStudent.id, data: submitData });
+      refetchStudents();
+      setShowEditModal(false);
+      setSelectedStudent(null);
+      setEditFormData({ name: '', videoUrl: '', streamId: '', image: null });
+      setEditImagePreview('');
+      setEditSelectedFile(null);
+      setSuccessMessage('Student updated successfully!');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
       console.error('Failed to update student:', err);
-      setError(err.message || 'Failed to update student');
-    } finally {
-      setEditLoading(false);
     }
   };
 
@@ -294,7 +259,6 @@ const ViewTopStudent = () => {
     setEditFormData({ name: '', videoUrl: '', streamId: '', image: null });
     setEditImagePreview('');
     setEditSelectedFile(null);
-    setError(null);
   };
 
   // Check if stream_id is a valid UUID
@@ -311,19 +275,13 @@ const ViewTopStudent = () => {
 
   // Filter students based on search
   const filteredStudents = students.filter(student => {
-    const matchesSearch = searchTerm === '' || 
+    const matchesSearch = searchTerm === '' ||
       (student.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (student.streamId?.toString() || '').includes(searchTerm) ||
       (student.id?.toLowerCase() || '').includes(searchTerm.toLowerCase());
-    
+
     return matchesSearch;
   });
-
-  // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentStudents = filteredStudents.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
 
   // Format date
   const formatDate = (dateString) => {
@@ -344,7 +302,7 @@ const ViewTopStudent = () => {
   // Get stream badge color based on type
   const getStreamBadge = (streamId) => {
     if (!streamId) return 'bg-gray-100 text-gray-700';
-    
+
     if (isValidNumber(streamId)) {
       return 'bg-blue-100 text-blue-700 border border-blue-200';
     } else if (isValidUUID(streamId)) {
@@ -392,25 +350,6 @@ const ViewTopStudent = () => {
           </div>
         )}
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 animate-slideDown">
-            <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <X className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-red-800">Error!</h3>
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-            <button
-              onClick={() => setError(null)}
-              className="p-1 hover:bg-red-200 rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4 text-red-600" />
-            </button>
-          </div>
-        )}
-
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -421,18 +360,18 @@ const ViewTopStudent = () => {
               </h1>
               <p className="text-gray-600">View and manage all outstanding students</p>
             </div>
-            
+
             <div className="flex gap-2">
-              <button 
-                onClick={fetchStudents} 
-                disabled={loading} 
-                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2"
+              <button
+                onClick={() => refetchStudents()}
+                disabled={studentsLoading}
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${studentsLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
-              <button 
-                onClick={() => window.location.href = '/add-top-student'} 
+              <button
+                onClick={() => window.location.href = '/add-top-student'}
                 className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2"
               >
                 <Users className="w-4 h-4" />
@@ -454,7 +393,7 @@ const ViewTopStudent = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
@@ -468,7 +407,7 @@ const ViewTopStudent = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -515,11 +454,11 @@ const ViewTopStudent = () => {
 
         {/* Students Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {loading ? (
+          {studentsLoading ? (
             <div className="flex justify-center items-center h-64">
               <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
             </div>
-          ) : currentStudents.length === 0 ? (
+          ) : filteredStudents.length === 0 ? (
             <div className="text-center py-12">
               <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">No students found</p>
@@ -540,9 +479,9 @@ const ViewTopStudent = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {currentStudents.map((student, index) => (
+                    {filteredStudents.map((student, index) => (
                       <tr key={student.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-gray-600">{indexOfFirstItem + index + 1}</td>
+                        <td className="px-4 py-3 text-gray-600">{((currentPage - 1) * pageSize) + index + 1}</td>
                         <td className="px-4 py-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
                             {student.avatar ? (
@@ -566,8 +505,8 @@ const ViewTopStudent = () => {
                         </td>
                         <td className="px-4 py-3">
                           {student.videoUrl ? (
-                            <button 
-                              onClick={() => handleViewVideo(student)} 
+                            <button
+                              onClick={() => handleViewVideo(student)}
                               className="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-xs font-medium transition-colors"
                             >
                               <Play className="w-3 h-3 mr-1" /> Play
@@ -577,23 +516,23 @@ const ViewTopStudent = () => {
                         <td className="px-4 py-3 text-gray-600">{formatDate(student.createdAt)}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <button 
-                              onClick={() => handleViewDetails(student)} 
-                              className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-colors" 
+                            <button
+                              onClick={() => handleViewDetails(student)}
+                              className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-colors"
                               title="View"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
-                            <button 
-                              onClick={() => handleEditClick(student)} 
-                              className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors" 
+                            <button
+                              onClick={() => handleEditClick(student)}
+                              className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
                               title="Edit"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
-                            <button 
-                              onClick={() => handleDeleteClick(student)} 
-                              className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors" 
+                            <button
+                              onClick={() => handleDeleteClick(student)}
+                              className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -607,43 +546,43 @@ const ViewTopStudent = () => {
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
+              {pagination.totalPages > 1 && (
                 <div className="px-4 py-3 bg-gray-50 border-t flex items-center justify-between flex-wrap gap-4">
                   <div className="text-sm text-gray-600">
-                    Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredStudents.length)} of {filteredStudents.length}
+                    Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalStudents)} of {totalStudents}
                   </div>
                   <div className="flex gap-2">
-                    <button 
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
-                      disabled={currentPage === 1} 
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
                       className="p-2 border rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                       let pageNum;
-                      if (totalPages <= 5) {
+                      if (pagination.totalPages <= 5) {
                         pageNum = i + 1;
                       } else if (currentPage <= 3) {
                         pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
+                      } else if (currentPage >= pagination.totalPages - 2) {
+                        pageNum = pagination.totalPages - 4 + i;
                       } else {
                         pageNum = currentPage - 2 + i;
                       }
                       return (
-                        <button 
-                          key={pageNum} 
-                          onClick={() => setCurrentPage(pageNum)} 
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
                           className={`w-8 h-8 rounded-lg transition-colors ${currentPage === pageNum ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100'}`}
                         >
                           {pageNum}
                         </button>
                       );
                     })}
-                    <button 
-                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
-                      disabled={currentPage === totalPages} 
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === pagination.totalPages}
                       className="p-2 border rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight className="w-4 h-4" />
@@ -674,7 +613,7 @@ const ViewTopStudent = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="p-6 space-y-4">
                   <div className="flex justify-center">
                     <div className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden ring-4 ring-white shadow">
@@ -685,7 +624,7 @@ const ViewTopStudent = () => {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-indigo-50 p-4 rounded-xl">
                       <p className="text-xs text-indigo-600 mb-1">Name</p>
@@ -704,7 +643,7 @@ const ViewTopStudent = () => {
                       <p className="font-semibold text-gray-800">{formatDate(selectedStudent.createdAt)}</p>
                     </div>
                   </div>
-                  
+
                   {selectedStudent.videoUrl && (
                     <div className="bg-red-50 p-4 rounded-xl">
                       <p className="text-xs text-red-600 mb-1">Video URL</p>
@@ -738,7 +677,7 @@ const ViewTopStudent = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="p-4">
                   <div className="aspect-video bg-black rounded-lg overflow-hidden">
                     <iframe
@@ -777,7 +716,7 @@ const ViewTopStudent = () => {
                   </div>
                   <p className="text-green-100 text-sm mt-2 ml-12">Update student information</p>
                 </div>
-                
+
                 <form onSubmit={handleEditSubmit} className="p-6 space-y-5">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Profile Image</label>
@@ -791,9 +730,9 @@ const ViewTopStudent = () => {
                           )}
                         </div>
                         {editImagePreview && (
-                          <button 
-                            type="button" 
-                            onClick={() => { setEditImagePreview(''); setEditSelectedFile(null); }} 
+                          <button
+                            type="button"
+                            onClick={() => { setEditImagePreview(''); setEditSelectedFile(null); }}
                             className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-md"
                           >
                             <X className="w-3 h-3" />
@@ -801,11 +740,11 @@ const ViewTopStudent = () => {
                         )}
                       </div>
                       <div className="flex-1">
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          onChange={handleEditImageChange} 
-                          className="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" 
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleEditImageChange}
+                          className="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                         />
                         <p className="text-xs text-gray-400 mt-1">Max 2MB. Leave empty to keep current image</p>
                       </div>
@@ -814,57 +753,57 @@ const ViewTopStudent = () => {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
-                    <input 
-                      type="text" 
-                      name="name" 
-                      value={editFormData.name} 
-                      onChange={handleEditInputChange} 
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 transition-all" 
-                      placeholder="Enter student name" 
-                      required 
+                    <input
+                      type="text"
+                      name="name"
+                      value={editFormData.name}
+                      onChange={handleEditInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 transition-all"
+                      placeholder="Enter student name"
+                      required
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Video URL</label>
-                    <input 
-                      type="url" 
-                      name="videoUrl" 
-                      value={editFormData.videoUrl} 
-                      onChange={handleEditInputChange} 
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 transition-all" 
-                      placeholder="https://youtube.com/..." 
+                    <input
+                      type="url"
+                      name="videoUrl"
+                      value={editFormData.videoUrl}
+                      onChange={handleEditInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 transition-all"
+                      placeholder="https://youtube.com/..."
                     />
                     <p className="text-xs text-gray-400 mt-1">YouTube URL or direct video link</p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Stream ID</label>
-                    <input 
-                      type="text" 
-                      name="streamId" 
-                      value={editFormData.streamId} 
-                      onChange={handleEditInputChange} 
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 transition-all" 
-                      placeholder="Enter stream ID (optional)" 
+                    <input
+                      type="text"
+                      name="streamId"
+                      value={editFormData.streamId}
+                      onChange={handleEditInputChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 transition-all"
+                      placeholder="Enter stream ID (optional)"
                     />
                   </div>
 
                   <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-                    <button 
-                      type="button" 
-                      onClick={handleEditCancel} 
+                    <button
+                      type="button"
+                      onClick={handleEditCancel}
                       className="px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                     >
                       Cancel
                     </button>
-                    <button 
-                      type="submit" 
-                      disabled={editLoading} 
-                      className="px-5 py-2 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition-all flex items-center gap-2 font-medium disabled:opacity-50"
+                    <button
+                      type="submit"
+                      disabled={updateStudentMutation.isPending}
+                      className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {editLoading ? <Loader className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                      {editLoading ? 'Saving...' : 'Save Changes'}
+                      {updateStudentMutation.isPending ? <Loader className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      {updateStudentMutation.isPending ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
                 </form>
@@ -874,15 +813,15 @@ const ViewTopStudent = () => {
         )}
 
         {/* Delete Modal */}
-        <DeleteModal 
-          isOpen={showDeleteModal} 
-          onClose={handleDeleteCancel} 
-          onConfirm={handleDeleteConfirm} 
-          title="Delete Student" 
-          itemName={selectedStudent?.name} 
-          isLoading={deleteLoading} 
-          confirmText="Delete" 
-          cancelText="Cancel" 
+        <DeleteModal
+          isOpen={showDeleteModal}
+          onClose={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+          title="Delete Student"
+          itemName={selectedStudent?.name}
+          isLoading={deleteStudentMutation.isPending}
+          confirmText="Delete"
+          cancelText="Cancel"
         />
       </div>
 

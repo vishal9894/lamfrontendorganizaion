@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner, useCourses } from "../hooks/useOptimizedApi";
+import { PAGINATION_CONFIG } from "../utils/pagination";
 import {
   Plus,
   Image,
@@ -20,13 +22,7 @@ import {
   ChevronRight,
   Search
 } from "lucide-react";
-import {
-  handleCreateBanner,
-  handleDeleteBanner,
-  handleGetBanner,
-  handleGetCourse,
-  handlePublishBanner,
-} from "../api/allApi";
+import { handlePublishBanner, handleGetCourse } from "../api/allApi";
 
 // Delete Modal Component
 const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isLoading, confirmText, cancelText, size }) => {
@@ -45,12 +41,12 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isL
               <h3 className="text-xl font-bold text-white">{title || "Delete Item"}</h3>
             </div>
           </div>
-          
+
           <div className="p-6">
             <p className="text-gray-600 mb-6">
               {message || `Are you sure you want to delete "${itemName}"? This action cannot be undone.`}
             </p>
-            
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={onClose}
@@ -82,9 +78,8 @@ const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isL
 
 const Banner = () => {
   const [activeTab, setActiveTab] = useState("create");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [error, setError] = useState(null);
 
   // Banner Form State
   const [formData, setFormData] = useState({
@@ -100,25 +95,55 @@ const Banner = () => {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
-  // Lists State
-  const [banners, setBanners] = useState([]);
-  const [loadingBanners, setLoadingBanners] = useState(false);
-  const [news, setNews] = useState([]);
-  const [loadingNews, setLoadingNews] = useState(false);
-  const [courses, setCourses] = useState([]);
-  const [loadingCourses, setLoadingCourses] = useState(false);
-
   // Search and Pagination
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.COURSES.default);
 
   // Modal States
   const [selectedItem, setSelectedItem] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [loadingNews, setLoadingNews] = useState(false);
+
   const [publishingId, setPublishingId] = useState(null);
+  // Fetch banners function
+  const fetchBanners = () => {
+    refetchBanners();
+  };
+
+  // Use optimized hooks with pagination
+  const { data: bannersData, isLoading: bannersLoading, refetch: refetchBanners } = useBanners(
+    currentPage,
+    pageSize,
+    { search: searchTerm },
+    { enabled: true }
+  );
+
+  const createBannerMutation = useCreateBanner();
+  const updateBannerMutation = useUpdateBanner();
+  const deleteBannerMutation = useDeleteBanner();
+
+  const banners = bannersData?.data || [];
+  const pagination = bannersData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalBanners = bannersData?.total || 0;
+
+  // Pagination variables for banners
+  const bannerTotalPages = pagination.totalPages;
+  const bannerIndexFirst = (currentPage - 1) * pageSize;
+  const bannerIndexLast = bannerIndexFirst + banners.length;
+
+  // Pagination handlers
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
 
   const courseTypes = [
     "regular_course",
@@ -128,97 +153,67 @@ const Banner = () => {
     "free_test_series",
   ];
 
+  const [courses, setCourses] = useState([]);
+  const [news, setNews] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+
   useEffect(() => {
-    fetchAllData();
+    const fetchCourses = async () => {
+      setLoadingCourses(true);
+      try {
+        let allCourses = [];
+        for (const type of courseTypes) {
+          try {
+            const response = await handleGetCourse(type);
+            if (response && Array.isArray(response)) {
+              allCourses = [...allCourses, ...response];
+            } else if (response && response.data && Array.isArray(response.data)) {
+              allCourses = [...allCourses, ...response.data];
+            }
+          } catch (err) {
+            console.error(`Failed to fetch ${type}:`, err);
+          }
+        }
+        const uniqueCourses = allCourses.filter(
+          (course, index, self) =>
+            index === self.findIndex((c) => c.id === course.id),
+        );
+        setCourses(uniqueCourses);
+      } catch (err) {
+        console.error("Failed to fetch courses:", err);
+        setCourses([]);
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+    fetchCourses();
   }, []);
 
-  const fetchAllData = async () => {
-    await Promise.all([fetchCourses(), fetchBanners(), fetchNews()]);
-  };
-
-  const fetchCourses = async () => {
-    setLoadingCourses(true);
-    try {
-      let allCourses = [];
-
-      for (const type of courseTypes) {
+  useEffect(() => {
+    if (activeTab === "news") {
+      const fetchNews = async () => {
+        setLoadingNews(true);
         try {
-          const response = await handleGetCourse(type);
-          
-          if (response.data && response.data && response.data) {
-            const coursesData = Array.isArray(response.data)
-              ? response.data
-              : [response.data];
-            allCourses = [...allCourses, ...coursesData];
-          } else if (response && Array.isArray(response)) {
-            allCourses = [...allCourses, ...response];
+          const response = await handleGetBanner(1, 50, { type: "news" });
+          let newsData = [];
+          if (response && Array.isArray(response)) {
+            newsData = response.filter((item) => item.type === "news");
+          } else if (response && response.data && Array.isArray(response.data)) {
+            newsData = response.data.filter((item) => item.type === "news");
+          } else if (response && response.success && response.data && Array.isArray(response.data)) {
+            newsData = response.data.filter((item) => item.type === "news");
           }
+          setNews(newsData);
         } catch (err) {
-          console.error(`Failed to fetch ${type}:`, err);
+          console.error("Failed to fetch news:", err);
+          setNews([]);
+        } finally {
+          setLoadingNews(false);
         }
-      }
-
-      const uniqueCourses = allCourses.filter(
-        (course, index, self) =>
-          index === self.findIndex((c) => c.id === course.id),
-      );
-
-      setCourses(uniqueCourses);
-      
-    } catch (err) {
-      console.error("Failed to fetch courses:", err);
-    } finally {
-      setLoadingCourses(false);
+      };
+      fetchNews();
     }
-  };
-
-  const fetchBanners = async () => {
-    setLoadingBanners(true);
-    try {
-      const response = await handleGetBanner("banner");
-      
-
-      let bannerData = [];
-      if (response && Array.isArray(response)) {
-        bannerData = response.filter((item) => item.type === "banner");
-      } else if (response && response.data && Array.isArray(response.data)) {
-        bannerData = response.data.filter((item) => item.type === "banner");
-      } else if (response && response.success && response.data && Array.isArray(response.data)) {
-        bannerData = response.data.filter((item) => item.type === "banner");
-      }
-      
-      setBanners(bannerData);
-    } catch (err) {
-      console.error("Failed to fetch banners:", err);
-      setBanners([]);
-    } finally {
-      setLoadingBanners(false);
-    }
-  };
-
-  const fetchNews = async () => {
-    setLoadingNews(true);
-    try {
-      const response = await handleGetBanner("news");
-     
-
-      let newsData = [];
-      if (response && Array.isArray(response)) {
-        newsData = response.filter((item) => item.type === "news");
-      } else if (response && response.data && Array.isArray(response.data)) {
-        newsData = response.data.filter((item) => item.type === "news");
-      } else if (response && response.success && response.data && Array.isArray(response.data)) {
-        newsData = response.data.filter((item) => item.type === "news");
-      }
-      
-      setNews(newsData);
-    } catch (err) {
-      console.error("Failed to fetch news:", err);
-      setNews([]);
-    } finally {
-      setLoadingNews(false);
-    }
-  };
+  }, [activeTab]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -237,8 +232,8 @@ const Banner = () => {
       courseId: courseId,
       courseName: selectedCourse
         ? selectedCourse.title ||
-          selectedCourse.coursename ||
-          selectedCourse.name
+        selectedCourse.coursename ||
+        selectedCourse.name
         : "",
       courseUrl: selectedCourse ? `/course/${selectedCourse.id}` : "",
     });
@@ -301,7 +296,6 @@ const Banner = () => {
       return;
     }
 
-    setLoading(true);
     setError(null);
     setSuccess(null);
 
@@ -331,31 +325,22 @@ const Banner = () => {
         formDataToSend.append("image", imageFile);
       }
 
-      
-      const response = await handleCreateBanner(formDataToSend);
-      
-
-      if (response && (response.success === true || response.status === 200)) {
-        setSuccess(`${formData.type === "banner" ? "Banner" : "News"} created successfully!`);
-        resetForm();
-        if (formData.type === "banner") {
-          await fetchBanners();
-        } else {
-          await fetchNews();
-        }
-        setTimeout(() => setSuccess(null), 3000);
+      await createBannerMutation.mutateAsync(formDataToSend);
+      setSuccess(`${formData.type === "banner" ? "Banner" : "News"} created successfully!`);
+      resetForm();
+      if (formData.type === "banner") {
+        refetchBanners();
       } else {
-        setError(response?.message || "Failed to create item");
+        fetchNews();
       }
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Failed to create:", err);
       setError(
         err.response?.data?.message ||
-          err.message ||
-          "Failed to create item. Please check console for details.",
+        err.message ||
+        "Failed to create item. Please check console for details.",
       );
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -392,24 +377,17 @@ const Banner = () => {
   const handleDeleteConfirm = async () => {
     if (!selectedItem) return;
 
-    setDeleteLoading(true);
     try {
-      const response = await handleDeleteBanner(selectedItem.id);
-      
-      if (response && (response.success === true || response.status === 200)) {
-        await Promise.all([fetchBanners(), fetchNews()]);
-        setSuccess("Item deleted successfully!");
-        setTimeout(() => setSuccess(null), 3000);
-      } else {
-        throw new Error(response?.message || "Failed to delete item");
-      }
+      await deleteBannerMutation.mutateAsync(selectedItem.id);
+      refetchBanners();
+      fetchNews();
+      setSuccess("Item deleted successfully!");
+      setTimeout(() => setSuccess(null), 3000);
+      setShowDeleteModal(false);
+      setSelectedItem(null);
     } catch (err) {
       console.error("Failed to delete:", err);
       setError(err.message || "Failed to delete");
-    } finally {
-      setDeleteLoading(false);
-      setShowDeleteModal(false);
-      setSelectedItem(null);
     }
   };
 
@@ -418,19 +396,18 @@ const Banner = () => {
       setPublishingId(item.id);
       const newStatus = !item.status;
       const statusToSend = newStatus ? "published" : "draft";
-      
+
       const response = await handlePublishBanner(item.id, statusToSend);
-      
+
       if (response && (response.success === true || response.status === 200)) {
+        await updateBannerMutation.mutateAsync({ id: item.id, publish: statusToSend });
         if (item.type === "banner") {
-          await fetchBanners();
+          refetchBanners();
         } else {
-          await fetchNews();
+          fetchNews();
         }
         setSuccess(`${item.type === "banner" ? "Banner" : "News"} ${newStatus ? 'published' : 'unpublished'} successfully!`);
         setTimeout(() => setSuccess(null), 3000);
-      } else {
-        setError(response?.message || "Failed to update status");
       }
     } catch (error) {
       console.error("Publish update failed:", error);
@@ -440,6 +417,7 @@ const Banner = () => {
     }
   };
 
+  // Filter banners for search (client-side for now, can be moved to server later)
   const filteredBanners = banners.filter((banner) => {
     const matchesSearch =
       (banner.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
@@ -447,6 +425,7 @@ const Banner = () => {
     return matchesSearch;
   });
 
+  // Filter news for search (client-side)
   const filteredNews = news.filter((item) => {
     const matchesSearch =
       (item.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
@@ -454,15 +433,13 @@ const Banner = () => {
     return matchesSearch;
   });
 
-  const bannerIndexLast = currentPage * itemsPerPage;
-  const bannerIndexFirst = bannerIndexLast - itemsPerPage;
-  const currentBanners = filteredBanners.slice(bannerIndexFirst, bannerIndexLast);
-  const bannerTotalPages = Math.ceil(filteredBanners.length / itemsPerPage);
-
-  const newsIndexLast = currentPage * itemsPerPage;
-  const newsIndexFirst = newsIndexLast - itemsPerPage;
+  // Pagination variables for news
+  const newsPageSize = 10;
+  const newsCurrentPage = 1;
+  const newsTotalPages = Math.ceil(filteredNews.length / newsPageSize);
+  const newsIndexFirst = (newsCurrentPage - 1) * newsPageSize;
+  const newsIndexLast = newsIndexFirst + Math.min(newsPageSize, filteredNews.length);
   const currentNews = filteredNews.slice(newsIndexFirst, newsIndexLast);
-  const newsTotalPages = Math.ceil(filteredNews.length / itemsPerPage);
 
   const getCourseDisplay = (courseId, courseName) => {
     if (courseName) return courseName;
@@ -531,11 +508,10 @@ const Banner = () => {
                 setCurrentPage(1);
                 setSearchTerm("");
               }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                activeTab === "create"
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === "create"
+                ? "bg-indigo-600 text-white shadow-md"
+                : "text-gray-600 hover:bg-gray-100"
+                }`}
             >
               <Plus className="w-4 h-4" />
               Create Banner/News
@@ -547,11 +523,10 @@ const Banner = () => {
                 setCurrentPage(1);
                 setSearchTerm("");
               }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                activeTab === "banners"
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === "banners"
+                ? "bg-indigo-600 text-white shadow-md"
+                : "text-gray-600 hover:bg-gray-100"
+                }`}
             >
               <Image className="w-4 h-4" />
               Banner List ({banners.length})
@@ -563,11 +538,10 @@ const Banner = () => {
                 setCurrentPage(1);
                 setSearchTerm("");
               }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                activeTab === "news"
-                  ? "bg-indigo-600 text-white shadow-md"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === "news"
+                ? "bg-indigo-600 text-white shadow-md"
+                : "text-gray-600 hover:bg-gray-100"
+                }`}
             >
               <Newspaper className="w-4 h-4" />
               News List ({news.length})
@@ -768,10 +742,10 @@ const Banner = () => {
               <div className="flex justify-end pt-4">
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={createBannerMutation.isLoading}
                   className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? (
+                  {createBannerMutation.isLoading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       Creating...
@@ -814,20 +788,20 @@ const Banner = () => {
                   />
                 </div>
                 <button
-                  onClick={fetchBanners}
+                  onClick={() => refetchBanners()}
                   className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2"
                 >
-                  <RefreshCw className={`w-4 h-4 ${loadingBanners ? "animate-spin" : ""}`} />
+                  <RefreshCw className={`w-4 h-4 ${bannersLoading ? "animate-spin" : ""}`} />
                   Refresh
                 </button>
               </div>
             </div>
 
-            {loadingBanners ? (
+            {bannersLoading ? (
               <div className="flex justify-center items-center h-64">
                 <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
               </div>
-            ) : currentBanners.length === 0 ? (
+            ) : filteredBanners.length === 0 ? (
               <div className="text-center py-12">
                 <Image className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500">No banners found</p>
@@ -847,7 +821,7 @@ const Banner = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {currentBanners.map((banner) => (
+                      {filteredBanners.map((banner) => (
                         <tr key={banner.id} className="hover:bg-gray-50 transition-colors">
                           <td className="px-6 py-4">
                             {banner.image && (
@@ -1080,7 +1054,7 @@ const Banner = () => {
                         </tr>
                       ))}
                     </tbody>
-                </table>
+                  </table>
                 </div>
 
                 {/* Pagination */}
@@ -1123,7 +1097,7 @@ const Banner = () => {
           title={`Delete ${selectedItem?.type === "banner" ? "Banner" : "News"}`}
           message={`Are you sure you want to delete "${selectedItem?.title}"? This action cannot be undone.`}
           itemName={selectedItem?.title}
-          isLoading={deleteLoading}
+          isLoading={deleteBannerMutation.isLoading}
           confirmText="Delete"
           cancelText="Cancel"
           size="md"

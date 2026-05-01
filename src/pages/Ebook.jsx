@@ -1,113 +1,79 @@
-import { useState, useEffect } from 'react';
-import { 
-  BookOpen, 
-  CheckCircle, 
-  FileText, 
-  Search, 
-  RefreshCw, 
-  XCircle, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  ChevronLeft, 
+import { useState } from 'react';
+import { useCourses, useUpdateCourse } from '../hooks/useOptimizedApi';
+import { PAGINATION_CONFIG } from '../utils/pagination';
+import {
+  BookOpen,
+  CheckCircle,
+  FileText,
+  Search,
+  RefreshCw,
+  XCircle,
+  Eye,
+  Edit,
+  Trash2,
+  ChevronLeft,
   ChevronRight,
   Image as ImageIcon
 } from 'lucide-react';
-import { handleGetCourse, handlePublishCourse } from '../api/allApi';
+import { handlePublishCourse } from '../api/allApi';
 
 const Ebook = () => {
-  const [ebooks, setEbooks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.COURSES.default);
+  const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [publishingId, setPublishingId] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-  
+
   const courseType = "ebook";
 
-  useEffect(() => {
-    fetchEbooks();
-  }, []);
+  // Use optimized hooks with pagination
+  const { data: coursesData, isLoading: coursesLoading, refetch: refetchCourses } = useCourses(
+    courseType,
+    currentPage,
+    pageSize,
+    { search: searchTerm },
+    { enabled: true }
+  );
 
-  const fetchEbooks = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await handleGetCourse(courseType);
-      console.log('Ebooks response:', response);
-      
-      let ebooksData = [];
-      
-      // Handle the response structure correctly
-      if (response && response.data && response.data.course) {
-        ebooksData = Array.isArray(response.data.course) ? response.data.course : [];
-      } else if (response && response.data && Array.isArray(response.data)) {
-        ebooksData = response.data;
-      } else if (response && response.course && Array.isArray(response.course)) {
-        ebooksData = response.course;
-      } else if (Array.isArray(response)) {
-        ebooksData = response;
-      } else if (response && response.data && response.data.data && Array.isArray(response.data.data)) {
-        ebooksData = response.data.data;
-      }
-      
-      // Transform the data to ensure consistent field names
-      const transformedEbooks = ebooksData.map(ebook => ({
-        ...ebook,
-        id: ebook.id || ebook._id,
-        title: ebook.title || ebook.name || ebook.courseName,
-        description: ebook.description || ebook.courseDescription,
-        courseImage: ebook.courseImage || ebook.image || ebook.thumbnail,
-        streamId: ebook.streamId || ebook.stream_id || ebook.streamid,
-        currentPrice: ebook.currentPrice || ebook.price || ebook.current_price,
-        strikeoutPrice: ebook.strikeoutPrice || ebook.originalPrice || ebook.strikeout_price,
-        durationDescription: ebook.durationDescription || ebook.duration || ebook.courseDuration,
-        status: ebook.status === true || ebook.status === 'published' || ebook.isPublished === true,
-        createdAt: ebook.createdAt || ebook.created_at || ebook.created
-      }));
-      
-      setEbooks(transformedEbooks);
-    } catch (err) {
-      console.error("Failed to fetch ebooks:", err);
-      setError(err.message || "Failed to fetch ebooks");
-      setEbooks([]);
-    } finally {
-      setLoading(false);
+  const updateCourseMutation = useUpdateCourse();
+
+  const ebooks = coursesData?.data || [];
+  const pagination = coursesData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalEbooks = coursesData?.total || 0;
+
+  // Pagination handlers
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setCurrentPage(newPage);
     }
+  };
+
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
   };
 
   const handlePublishToggle = async (ebook) => {
     try {
       setPublishingId(ebook.id);
-      setError(null);
 
       const newPublishStatus = !ebook.status;
       const statusToSend = newPublishStatus ? "published" : "draft";
 
-      console.log(`Toggling ebook ${ebook.id} to ${statusToSend}`);
-
       const response = await handlePublishCourse(ebook.id, statusToSend);
 
-      console.log('Publish response:', response);
-
       if (response && (response.success === true || response.status === 200)) {
-        // Update local state
-        setEbooks((prev) =>
-          prev.map((e) =>
-            e.id === ebook.id ? { ...e, status: newPublishStatus } : e,
-          ),
-        );
+        await updateCourseMutation.mutateAsync({
+          id: ebook.id,
+          data: { status: statusToSend }
+        });
+        refetchCourses();
         setSuccessMessage(`E-book ${newPublishStatus ? 'published' : 'unpublished'} successfully!`);
         setTimeout(() => setSuccessMessage(null), 3000);
-      } else {
-        setError(response?.message || "Failed to update publish status");
       }
     } catch (err) {
       console.error("Failed to publish/unpublish ebook:", err);
-      setError(err.message || "Failed to update publish status");
     } finally {
       setPublishingId(null);
     }
@@ -120,21 +86,15 @@ const Ebook = () => {
       (ebook.description?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
       (ebook.streamId?.toString().toLowerCase() || "").includes(searchTerm.toLowerCase());
 
-    const matchesFilter = filterStatus === 'all' || 
+    const matchesFilter = filterStatus === 'all' ||
       (filterStatus === 'published' && ebook.status === true) ||
       (filterStatus === 'draft' && ebook.status === false);
 
     return matchesSearch && matchesFilter;
   });
 
-  // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentEbooks = filteredEbooks.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredEbooks.length / itemsPerPage);
-
   // Stats
-  const totalEbooks = ebooks.length;
+  const totalEbooksCount = ebooks.length;
   const publishedEbooks = ebooks.filter(e => e.status === true).length;
   const draftEbooks = ebooks.filter(e => e.status === false).length;
 
@@ -159,7 +119,7 @@ const Ebook = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
-        
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -265,38 +225,24 @@ const Ebook = () => {
               </select>
 
               <button
-                onClick={fetchEbooks}
-                disabled={loading}
+                onClick={() => refetchCourses()}
+                disabled={coursesLoading}
                 className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${coursesLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
             </div>
           </div>
         </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3 animate-slideDown">
-            <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <p className="text-red-700 flex-1">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="p-1 hover:bg-red-200 rounded-lg transition-colors"
-            >
-              <XCircle className="w-4 h-4 text-red-600" />
-            </button>
-          </div>
-        )}
-
         {/* E-books Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {loading ? (
+          {coursesLoading ? (
             <div className="flex justify-center items-center h-64">
               <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
             </div>
-          ) : currentEbooks.length === 0 ? (
+          ) : filteredEbooks.length === 0 ? (
             <div className="text-center py-12">
               <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">
@@ -338,7 +284,7 @@ const Ebook = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {currentEbooks.map((ebook, index) => (
+                    {filteredEbooks.map((ebook, index) => (
                       <tr key={ebook.id || index} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3">
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
@@ -427,10 +373,10 @@ const Ebook = () => {
                           {ebook.createdAt
                             ? new Date(ebook.createdAt).toLocaleDateString()
                             : "N/A"}
-                         </td>
+                        </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1">
-                            <button 
+                            <button
                               onClick={() => handleView(ebook)}
                               className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-colors"
                               title="View Details"
@@ -452,48 +398,47 @@ const Ebook = () => {
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
-                         </td>
-                       </tr>
+                        </td>
+                      </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
+              {pagination.totalPages > 1 && (
                 <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between flex-wrap gap-4">
                   <div className="text-sm text-gray-600">
-                    Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredEbooks.length)} of {filteredEbooks.length} e-books
+                    Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalEbooks)} of {totalEbooks} e-books
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
                       className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
 
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                       let pageNum;
-                      if (totalPages <= 5) {
+                      if (pagination.totalPages <= 5) {
                         pageNum = i + 1;
                       } else if (currentPage <= 3) {
                         pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
+                      } else if (currentPage >= pagination.totalPages - 2) {
+                        pageNum = pagination.totalPages - 4 + i;
                       } else {
                         pageNum = currentPage - 2 + i;
                       }
                       return (
                         <button
                           key={pageNum}
-                          onClick={() => setCurrentPage(pageNum)}
-                          className={`w-8 h-8 rounded-lg transition-colors ${
-                            currentPage === pageNum
-                              ? "bg-indigo-600 text-white"
-                              : "hover:bg-gray-100 text-gray-600"
-                          }`}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`w-8 h-8 rounded-lg transition-colors ${currentPage === pageNum
+                            ? "bg-indigo-600 text-white"
+                            : "hover:bg-gray-100 text-gray-600"
+                            }`}
                         >
                           {pageNum}
                         </button>
@@ -501,8 +446,8 @@ const Ebook = () => {
                     })}
 
                     <button
-                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === pagination.totalPages}
                       className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight className="w-4 h-4" />
@@ -517,21 +462,22 @@ const Ebook = () => {
 
       {/* Animation styles */}
       <style>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
+          @keyframes slideDown {
+            from {
+              opacity: 0;
+              transform: translateY(-10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
           }
-          to {
-            opacity: 1;
-            transform: translateY(0);
+          .animate-slideDown {
+            animation: slideDown 0.3s ease-out;
           }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
+        `}</style>
     </div>
+
   );
 };
 

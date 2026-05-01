@@ -5,11 +5,10 @@ import {
   AlertCircle,
   BookOpen,
   CheckCircle,
-
+  ChevronLeft,
+  ChevronRight,
   Download,
-
   Edit,
-
   FolderTree,
   ImageIcon,
   Plus,
@@ -17,7 +16,6 @@ import {
   Search,
   Trash2,
   Users,
-
 } from "lucide-react";
 
 import { useDispatch } from "react-redux";
@@ -188,6 +186,10 @@ const ViewStream = () => {
   const activeStreams = streams?.filter((s) => s.status === "active").length || 0;
   const totalCourses = streams?.reduce(
     (acc, s) => acc + (s.courseCount || s.courses?.length || 0),
+    0,
+  ) || 0;
+  const totalStudents = streams?.reduce(
+    (acc, s) => acc + (s.studentCount || s.students?.length || 0),
     0,
   ) || 0;
 

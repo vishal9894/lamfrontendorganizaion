@@ -288,6 +288,21 @@ export const useCreateQuiz = () => {
   });
 };
 
+export const useDeleteQuiz = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => api.quiz.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.quizzes });
+      toast.success('Quiz deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete quiz');
+    },
+  });
+};
+
 // Optimized teacher hooks with pagination
 export const useTeachers = (page = 1, limit = PAGINATION_CONFIG.TEACHERS.default, additionalParams = {}, options = {}) => {
   const queryKey = getPaginatedQueryKey(apiKeys.teachers, page, limit, additionalParams);
@@ -591,6 +606,465 @@ export const useNotifications = (page = 1, limit = PAGINATION_CONFIG.NOTIFICATIO
   });
 };
 
+// Optimized assigned course hooks with pagination
+export const useAssignedCourses = (page = 1, limit = PAGINATION_CONFIG.COURSES.default, additionalParams = {}, options = {}) => {
+  const queryKey = getPaginatedQueryKey(apiKeys.assignedCourses, page, limit, additionalParams);
+
+  return useQuery({
+    queryKey,
+    queryFn: () => api.assignedCourse.getAll(page, limit, additionalParams),
+    ...CACHE_CONFIG.USER,
+    ...options,
+    select: (data) => ({
+      ...data,
+      totalAssignedCourses: data.data?.length || 0,
+      pagination: calculatePagination(data.total, data.page, data.limit),
+      pageNumbers: generatePageNumbers(data.page, data.totalPages),
+    }),
+  });
+};
+
+export const useDeleteAssignedCourse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (courseId, userId) => api.assignedCourse.delete(courseId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.assignedCourses });
+      toast.success('Assigned course deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete assigned course');
+    },
+  });
+};
+
+// Optimized super stream hooks with pagination
+export const useSuperStreams = (page = 1, limit = PAGINATION_CONFIG.STREAMS.default, additionalParams = {}, options = {}) => {
+  const queryKey = getPaginatedQueryKey(apiKeys.superStreams, page, limit, additionalParams);
+
+  return useQuery({
+    queryKey,
+    queryFn: () => api.superStream.getAll(page, limit, additionalParams),
+    ...CACHE_CONFIG.USER,
+    ...options,
+    select: (data) => ({
+      ...data,
+      totalSuperStreams: data.data?.length || 0,
+      pagination: calculatePagination(data.total, data.page, data.limit),
+      pageNumbers: generatePageNumbers(data.page, data.totalPages),
+    }),
+  });
+};
+
+export const useCreateSuperStream = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => api.superStream.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.superStreams });
+      toast.success('Super stream created successfully');
+    },
+    onError: () => {
+      toast.error('Failed to create super stream');
+    },
+  });
+};
+
+export const useUpdateSuperStream = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }) => api.superStream.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.superStreams });
+      toast.success('Super stream updated successfully');
+    },
+    onError: () => {
+      toast.error('Failed to update super stream');
+    },
+  });
+};
+
+export const useDeleteSuperStream = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => api.superStream.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.superStreams });
+      toast.success('Super stream deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete super stream');
+    },
+  });
+};
+
+// Optimized top teacher hooks with pagination
+export const useTopTeachers = (page = 1, limit = PAGINATION_CONFIG.TEACHERS.default, additionalParams = {}, options = {}) => {
+  const queryKey = getPaginatedQueryKey(apiKeys.topTeachers, page, limit, additionalParams);
+
+  return useQuery({
+    queryKey,
+    queryFn: () => api.topTeacher.getAll(page, limit, additionalParams),
+    ...CACHE_CONFIG.USER,
+    ...options,
+    select: (data) => ({
+      ...data,
+      totalTopTeachers: data.data?.length || 0,
+      pagination: calculatePagination(data.total, data.page, data.limit),
+      pageNumbers: generatePageNumbers(data.page, data.totalPages),
+    }),
+  });
+};
+
+export const useCreateTopTeacher = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => api.topTeacher.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.topTeachers });
+      toast.success('Top teacher created successfully');
+    },
+    onError: () => {
+      toast.error('Failed to create top teacher');
+    },
+  });
+};
+
+export const useUpdateTopTeacher = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }) => api.topTeacher.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.topTeachers });
+      toast.success('Top teacher updated successfully');
+    },
+    onError: () => {
+      toast.error('Failed to update top teacher');
+    },
+  });
+};
+
+export const useDeleteTopTeacher = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => api.topTeacher.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.topTeachers });
+      toast.success('Top teacher deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete top teacher');
+    },
+  });
+};
+
+// Optimized top student hooks with pagination
+export const useTopStudents = (page = 1, limit = PAGINATION_CONFIG.USERS.default, additionalParams = {}, options = {}) => {
+  const queryKey = getPaginatedQueryKey(apiKeys.topStudents, page, limit, additionalParams);
+
+  return useQuery({
+    queryKey,
+    queryFn: () => api.topStudent.getAll(page, limit, additionalParams),
+    ...CACHE_CONFIG.USER,
+    ...options,
+    select: (data) => ({
+      ...data,
+      totalTopStudents: data.data?.length || 0,
+      pagination: calculatePagination(data.total, data.page, data.limit),
+      pageNumbers: generatePageNumbers(data.page, data.totalPages),
+    }),
+  });
+};
+
+export const useCreateTopStudent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => api.topStudent.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.topStudents });
+      toast.success('Top student created successfully');
+    },
+    onError: () => {
+      toast.error('Failed to create top student');
+    },
+  });
+};
+
+export const useUpdateTopStudent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }) => api.topStudent.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.topStudents });
+      toast.success('Top student updated successfully');
+    },
+    onError: () => {
+      toast.error('Failed to update top student');
+    },
+  });
+};
+
+export const useDeleteTopStudent = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => api.topStudent.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.topStudents });
+      toast.success('Top student deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete top student');
+    },
+  });
+};
+
+// Optimized banner hooks with pagination
+export const useBanners = (page = 1, limit = PAGINATION_CONFIG.COURSES.default, additionalParams = {}, options = {}) => {
+  const queryKey = getPaginatedQueryKey(apiKeys.banners, page, limit, additionalParams);
+
+  return useQuery({
+    queryKey,
+    queryFn: () => api.banner.getAll(page, limit, additionalParams),
+    ...CACHE_CONFIG.USER,
+    ...options,
+    select: (data) => ({
+      ...data,
+      totalBanners: data.data?.length || 0,
+      pagination: calculatePagination(data.total, data.page, data.limit),
+      pageNumbers: generatePageNumbers(data.page, data.totalPages),
+    }),
+  });
+};
+
+export const useCreateBanner = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => api.banner.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.banners });
+      toast.success('Banner created successfully');
+    },
+    onError: () => {
+      toast.error('Failed to create banner');
+    },
+  });
+};
+
+export const useUpdateBanner = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, publish }) => api.banner.update(id, publish),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.banners });
+      toast.success('Banner updated successfully');
+    },
+    onError: () => {
+      toast.error('Failed to update banner');
+    },
+  });
+};
+
+export const useDeleteBanner = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => api.banner.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.banners });
+      toast.success('Banner deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete banner');
+    },
+  });
+};
+
+// Optimized social media hooks with pagination
+export const useSocialMedia = (page = 1, limit = PAGINATION_CONFIG.COURSES.default, additionalParams = {}, options = {}) => {
+  const queryKey = getPaginatedQueryKey(apiKeys.socialMedia, page, limit, additionalParams);
+
+  return useQuery({
+    queryKey,
+    queryFn: () => api.socialMedia.getAll(page, limit, additionalParams),
+    ...CACHE_CONFIG.USER,
+    ...options,
+    select: (data) => ({
+      ...data,
+      totalSocialMedia: data.data?.length || 0,
+      pagination: calculatePagination(data.total, data.page, data.limit),
+      pageNumbers: generatePageNumbers(data.page, data.totalPages),
+    }),
+  });
+};
+
+export const useCreateSocialMedia = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => api.socialMedia.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.socialMedia });
+      toast.success('Social media created successfully');
+    },
+    onError: () => {
+      toast.error('Failed to create social media');
+    },
+  });
+};
+
+export const useUpdateSocialMedia = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }) => api.socialMedia.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.socialMedia });
+      toast.success('Social media updated successfully');
+    },
+    onError: () => {
+      toast.error('Failed to update social media');
+    },
+  });
+};
+
+export const useDeleteSocialMedia = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => api.socialMedia.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.socialMedia });
+      toast.success('Social media deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete social media');
+    },
+  });
+};
+
+// Optimized bulk question hooks with pagination
+export const useBulkQuestions = (page = 1, limit = PAGINATION_CONFIG.QUIZZES.default, additionalParams = {}, options = {}) => {
+  const queryKey = getPaginatedQueryKey(apiKeys.bulkQuestions, page, limit, additionalParams);
+
+  return useQuery({
+    queryKey,
+    queryFn: () => api.bulkQuestion.getAll(page, limit, additionalParams),
+    ...CACHE_CONFIG.USER,
+    ...options,
+    select: (data) => ({
+      ...data,
+      totalBulkQuestions: data.data?.length || 0,
+      pagination: calculatePagination(data.total, data.page, data.limit),
+      pageNumbers: generatePageNumbers(data.page, data.totalPages),
+    }),
+  });
+};
+
+export const useCreateBulkQuestion = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => api.bulkQuestion.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.bulkQuestions });
+      toast.success('Bulk question created successfully');
+    },
+    onError: () => {
+      toast.error('Failed to create bulk question');
+    },
+  });
+};
+
+export const useDeleteBulkQuestion = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => api.bulkQuestion.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.bulkQuestions });
+      toast.success('Bulk question deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete bulk question');
+    },
+  });
+};
+
+export const useDeleteAllBulkQuestions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => api.bulkQuestion.deleteAll(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.bulkQuestions });
+      toast.success('All bulk questions deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete all bulk questions');
+    },
+  });
+};
+
+// Optimized OMR sheet hooks with pagination
+export const useOmrSheets = (page = 1, limit = PAGINATION_CONFIG.COURSES.default, additionalParams = {}, options = {}) => {
+  const queryKey = getPaginatedQueryKey(apiKeys.omrSheets, page, limit, additionalParams);
+
+  return useQuery({
+    queryKey,
+    queryFn: () => api.omrSheet.getAll(page, limit, additionalParams),
+    ...CACHE_CONFIG.USER,
+    ...options,
+    select: (data) => ({
+      ...data,
+      totalOmrSheets: data.data?.length || 0,
+      pagination: calculatePagination(data.total, data.page, data.limit),
+      pageNumbers: generatePageNumbers(data.page, data.totalPages),
+    }),
+  });
+};
+
+export const useCreateOmrSheet = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data) => api.omrSheet.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.omrSheets });
+      toast.success('OMR sheet created successfully');
+    },
+    onError: () => {
+      toast.error('Failed to create OMR sheet');
+    },
+  });
+};
+
+export const useDeleteOmrSheet = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => api.omrSheet.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: apiKeys.omrSheets });
+      toast.success('OMR sheet deleted successfully');
+    },
+    onError: () => {
+      toast.error('Failed to delete OMR sheet');
+    },
+  });
+};
+
 // Infinite scroll pagination hook for smooth loading
 export const useInfiniteUsers = (limit = PAGINATION_CONFIG.USERS.default, additionalParams = {}, options = {}) => {
   return useInfiniteQuery({
@@ -804,6 +1278,51 @@ export default {
 
   // Notification hooks
   useNotifications,
+
+  // Assigned Course hooks
+  useAssignedCourses,
+  useDeleteAssignedCourse,
+
+  // Super Stream hooks
+  useSuperStreams,
+  useCreateSuperStream,
+  useUpdateSuperStream,
+  useDeleteSuperStream,
+
+  // Top Teacher hooks
+  useTopTeachers,
+  useCreateTopTeacher,
+  useUpdateTopTeacher,
+  useDeleteTopTeacher,
+
+  // Top Student hooks
+  useTopStudents,
+  useCreateTopStudent,
+  useUpdateTopStudent,
+  useDeleteTopStudent,
+
+  // Banner hooks
+  useBanners,
+  useCreateBanner,
+  useUpdateBanner,
+  useDeleteBanner,
+
+  // Social Media hooks
+  useSocialMedia,
+  useCreateSocialMedia,
+  useUpdateSocialMedia,
+  useDeleteSocialMedia,
+
+  // Bulk Question hooks
+  useBulkQuestions,
+  useCreateBulkQuestion,
+  useDeleteBulkQuestion,
+  useDeleteAllBulkQuestions,
+
+  // OMR Sheet hooks
+  useOmrSheets,
+  useCreateOmrSheet,
+  useDeleteOmrSheet,
 
   // Utility hooks
   usePrefetchDashboard,

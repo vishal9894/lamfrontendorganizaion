@@ -782,9 +782,21 @@ export const handleCreateBanner = async (formData) => {
   }
 }
 
-export const handleGetBanner = async (type = 'banner') => {
+export const handleGetBanner = async (page = 1, limit = 10, additionalParams = {}) => {
   try {
-    const res = await api.get(`/banners?type=${type}`);
+    const params = new URLSearchParams();
+    params.append('page', page);
+    params.append('limit', limit);
+
+    // Add additional params if provided
+    if (additionalParams.search) {
+      params.append('search', additionalParams.search);
+    }
+    if (additionalParams.type) {
+      params.append('type', additionalParams.type);
+    }
+
+    const res = await api.get(`/banners?${params.toString()}`);
     return res.data;
   } catch (error) {
     console.log("Get Banner Error:", error.response?.data || error.message);

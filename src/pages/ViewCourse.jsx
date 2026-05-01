@@ -89,9 +89,10 @@ const ViewCourse = () => {
 
   // Use optimized hooks with pagination
   const { data: coursesData, isLoading: coursesLoading, refetch: refetchCourses } = useCourses(
+    activeTab,
     currentPage,
     pageSize,
-    { type: activeTab, search: searchTerm },
+    { search: searchTerm },
     { enabled: true }
   );
 

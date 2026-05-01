@@ -61,9 +61,25 @@ const UserPage = () => {
   const updateUserMutation = useUpdateUser();
   const deleteUserMutation = useDeleteUser();
 
-  const users = usersData?.data || [];
-  const pagination = usersData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
-  const totalUsers = usersData?.total || 0;
+  // Extract data from response
+  const allUsers = usersData?.data || [];
+  const pagination = usersData?.pagination || { total: 0, page: 1, limit: 10, totalPages: 1 };
+  const totalUsers = pagination?.total || allUsers.length || 0;
+
+  // Client-side pagination: slice users based on current page and page size
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const users = allUsers.slice(startIndex, endIndex);
+
+  // Recalculate totalPages based on total users and page size
+  const calculatedTotalPages = Math.ceil(totalUsers / pageSize) || 1;
+  const effectivePagination = {
+    ...pagination,
+    total: totalUsers,
+    totalPages: calculatedTotalPages,
+    page: currentPage,
+    limit: pageSize
+  };
 
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -76,6 +92,15 @@ const UserPage = () => {
   const [notificationHistory, setNotificationHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [notificationFilter, setNotificationFilter] = useState("all");
+  const [notificationCurrentPage, setNotificationCurrentPage] = useState(1);
+  const [notificationPageSize] = useState(10);
+
+  // Notification history pagination
+  const notificationTotal = notificationHistory.length;
+  const notificationTotalPages = Math.ceil(notificationTotal / notificationPageSize) || 1;
+  const notificationStartIndex = (notificationCurrentPage - 1) * notificationPageSize;
+  const notificationEndIndex = notificationStartIndex + notificationPageSize;
+  const paginatedNotifications = notificationHistory.slice(notificationStartIndex, notificationEndIndex);
   const [itemsPerPage, setItemsPerPage] = useState(PAGINATION_CONFIG.USERS.default);
   const [pageSizeOptions] = useState([5, 10, 25, 50, 100]);
 
@@ -191,6 +216,16 @@ const UserPage = () => {
     }
   };
 
+  // Update analytics when users data changes
+  useEffect(() => {
+    if (usersData) {
+      setAnalytics(prev => ({
+        ...prev,
+        totalUsers: totalUsers
+      }));
+    }
+  }, [totalUsers, usersData]);
+
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -202,7 +237,9 @@ const UserPage = () => {
 
   // Handle page change
   const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
+    if (newPage >= 1 && newPage <= effectivePagination.totalPages) {
+      setCurrentPage(newPage);
+    }
   };
 
   // Handle page size change
@@ -228,7 +265,7 @@ const UserPage = () => {
     refetchUsers();
     fetchStreams();
     fetchCourses();
-  }, [currentPage, pageSize, searchTerm]);
+  }, [currentPage, pageSize, debouncedSearchTerm]);
 
   /* ================= FETCH NOTIFICATION HISTORY ================= */
   const fetchNotificationHistory = async () => {
@@ -239,9 +276,7 @@ const UserPage = () => {
         params.type = notificationFilter;
       }
       const response = await handleGetNotificationHistory(params);
-
-      setNotificationHistory(response.data);
-
+      setNotificationHistory(response.data || []);
     } catch (error) {
       console.error("Error fetching notification history:", error);
       setNotificationHistory([]);
@@ -290,12 +325,10 @@ const UserPage = () => {
   const handleDeleteNotification = async (id) => {
     try {
       const response = await handleDeleteNotifications(id);
-
       setShowNotificationDeleteModal(false);
       setNotificationToDelete(null);
       await fetchNotificationHistory();
       return response.data;
-
     } catch (error) {
       console.error("Error deleting notification:", error);
       alert("Error deleting notification");
@@ -336,17 +369,19 @@ const UserPage = () => {
       setSaving(true);
       const formData = new FormData();
       Object.keys(selectedUser).forEach((key) => {
-        formData.append(key, selectedUser[key]);
+        if (selectedUser[key] !== null && selectedUser[key] !== undefined) {
+          formData.append(key, selectedUser[key]);
+        }
       });
       const res = await updateUserMutation.mutateAsync({ id: selectedUser.id, data: formData });
-      refreshData();
-
       if (res.success) {
+        refreshData();
         setShowModal(false);
         setSelectedUser(null);
       }
     } catch (error) {
       console.error("Update error:", error);
+      alert("Error updating user");
     } finally {
       setSaving(false);
     }
@@ -358,14 +393,14 @@ const UserPage = () => {
     try {
       setDeleting(true);
       const res = await deleteUserMutation.mutateAsync(userToDelete.id);
-      refreshData();
-
       if (res.success) {
+        refreshData();
         setShowDeleteModal(false);
         setUserToDelete(null);
       }
     } catch (error) {
       console.error("Delete error:", error);
+      alert("Error deleting user");
     } finally {
       setDeleting(false);
     }
@@ -383,13 +418,15 @@ const UserPage = () => {
 
   /* ================= PAGINATION HANDLERS ================= */
   const goToPage = (page) => {
-    if (page >= 1 && page <= pagination.totalPages) {
+    if (page >= 1 && page <= effectivePagination.totalPages) {
       setCurrentPage(page);
     }
   };
 
   const handleItemsPerPageChange = (e) => {
-    setItemsPerPage(Number(e.target.value));
+    const newSize = Number(e.target.value);
+    setItemsPerPage(newSize);
+    setPageSize(newSize);
     setCurrentPage(1);
   };
 
@@ -399,8 +436,8 @@ const UserPage = () => {
     const rangeWithDots = [];
     let l;
 
-    for (let i = 1; i <= pagination.totalPages; i++) {
-      if (i === 1 || i === pagination.totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+    for (let i = 1; i <= effectivePagination.totalPages; i++) {
+      if (i === 1 || i === effectivePagination.totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
         range.push(i);
       }
     }
@@ -418,6 +455,12 @@ const UserPage = () => {
     });
 
     return rangeWithDots;
+  };
+
+  const handleNotificationPageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= notificationTotalPages) {
+      setNotificationCurrentPage(newPage);
+    }
   };
 
   /* ================= NOTIFICATION FUNCTIONS ================= */
@@ -767,7 +810,7 @@ const UserPage = () => {
   ];
 
   return (
-    <div className=" p-6">
+    <div className="p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -896,16 +939,24 @@ const UserPage = () => {
                   </table>
                 </div>
 
-                {pagination.totalPages > 0 && users.length > 0 && (
+                {effectivePagination.totalPages > 0 && users.length > 0 && (
                   <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="text-sm text-gray-600">
-                      Showing {users.length} of {totalUsers} users
+                      Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalUsers)} of {totalUsers} users
                     </div>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => goToPage(1)} disabled={currentPage === 1} className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50">
+                      <button
+                        onClick={() => goToPage(1)}
+                        disabled={currentPage === 1}
+                        className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         <ChevronsLeft className="w-4 h-4" />
                       </button>
-                      <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50">
+                      <button
+                        onClick={() => goToPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         <ChevronLeft className="w-4 h-4" />
                       </button>
                       <div className="flex items-center gap-1">
@@ -923,10 +974,18 @@ const UserPage = () => {
                           )
                         ))}
                       </div>
-                      <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === pagination.totalPages} className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50">
+                      <button
+                        onClick={() => goToPage(currentPage + 1)}
+                        disabled={currentPage === effectivePagination.totalPages}
+                        className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         <ChevronRight className="w-4 h-4" />
                       </button>
-                      <button onClick={() => goToPage(pagination.totalPages)} disabled={currentPage === pagination.totalPages} className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50">
+                      <button
+                        onClick={() => goToPage(effectivePagination.totalPages)}
+                        disabled={currentPage === effectivePagination.totalPages}
+                        className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
                         <ChevronsRight className="w-4 h-4" />
                       </button>
                     </div>
@@ -989,6 +1048,34 @@ const UserPage = () => {
             </h2>
             <div className="space-y-6">
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="pushType"
+                      value="all"
+                      checked={pushNotification.type === "all"}
+                      onChange={() => setPushNotification(prev => ({ ...prev, type: "all", streams: [] }))}
+                      className="w-4 h-4 text-indigo-600"
+                    />
+                    <span>All Users</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="pushType"
+                      value="stream_specific"
+                      checked={pushNotification.type === "stream_specific"}
+                      onChange={() => setPushNotification(prev => ({ ...prev, type: "stream_specific" }))}
+                      className="w-4 h-4 text-indigo-600"
+                    />
+                    <span>Stream Specific</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Title *</label>
                 <input
                   type="text"
@@ -1029,6 +1116,16 @@ const UserPage = () => {
                   placeholder="Notification message"
                   rows="4"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Expire At (Optional)</label>
+                <input
+                  type="datetime-local"
+                  value={pushNotification.expireAt}
+                  onChange={(e) => setPushNotification(prev => ({ ...prev, expireAt: e.target.value }))}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                 />
               </div>
 
@@ -1368,7 +1465,10 @@ const UserPage = () => {
                   <span className="text-sm text-gray-600">Filter:</span>
                   <select
                     value={notificationFilter}
-                    onChange={(e) => setNotificationFilter(e.target.value)}
+                    onChange={(e) => {
+                      setNotificationFilter(e.target.value);
+                      setNotificationCurrentPage(1);
+                    }}
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 bg-white"
                   >
                     <option value="all">All Notifications</option>
@@ -1396,8 +1496,8 @@ const UserPage = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {notificationHistory.length > 0 ? (
-                      notificationHistory.map((notif) => (
+                    {paginatedNotifications.length > 0 ? (
+                      paginatedNotifications.map((notif) => (
                         <tr key={notif.id} className="border-b hover:bg-gray-50">
                           <td className="p-4 font-medium">{notif.title}</td>
                           <td className="p-4 max-w-xs truncate">{notif.description || 'No message'}</td>
@@ -1432,6 +1532,52 @@ const UserPage = () => {
                     )}
                   </tbody>
                 </table>
+                {notificationTotalPages > 1 && (
+                  <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-sm text-gray-600">
+                      Showing {notificationStartIndex + 1} to {Math.min(notificationEndIndex, notificationTotal)} of {notificationTotal} notifications
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleNotificationPageChange(notificationCurrentPage - 1)}
+                        disabled={notificationCurrentPage === 1}
+                        className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(notificationTotalPages, 5) }, (_, i) => {
+                          let pageNum;
+                          if (notificationTotalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (notificationCurrentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (notificationCurrentPage >= notificationTotalPages - 2) {
+                            pageNum = notificationTotalPages - 4 + i;
+                          } else {
+                            pageNum = notificationCurrentPage - 2 + i;
+                          }
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => handleNotificationPageChange(pageNum)}
+                              className={`px-3 py-1 rounded-lg ${notificationCurrentPage === pageNum ? "bg-indigo-600 text-white" : "hover:bg-gray-100"}`}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <button
+                        onClick={() => handleNotificationPageChange(notificationCurrentPage + 1)}
+                        disabled={notificationCurrentPage === notificationTotalPages}
+                        className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1549,10 +1695,7 @@ const UserPage = () => {
               <p>Are you sure you want to delete notification <strong>{notificationToDelete.title}</strong>?</p>
               <div className="flex justify-end gap-3">
                 <button onClick={closeNotificationDeleteModal} className="px-4 py-2 border rounded-lg">Cancel</button>
-                <button onClick={() => {
-                  console.log("Delete button clicked!");
-                  handleDeleteNotification(notificationToDelete.id);
-                }} className="px-4 py-2 bg-red-600 text-white rounded-lg flex items-center gap-2">
+                <button onClick={() => handleDeleteNotification(notificationToDelete.id)} className="px-4 py-2 bg-red-600 text-white rounded-lg flex items-center gap-2">
                   <Trash2 className="w-4 h-4" />
                   Delete
                 </button>

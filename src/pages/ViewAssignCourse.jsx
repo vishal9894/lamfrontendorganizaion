@@ -1,39 +1,14 @@
-import { useState, useEffect } from 'react';
-import { 
-  handleGetAssignCourse,
-  handleGetAllUsers,
-  handleGetCourse, 
-  handleDeleteAssignCourse
-} from '../api/allApi';
-import { AlertCircle, Award, BookOpen, CheckCircle, ChevronDown, Download, RefreshCw, Search, Trash2, User, Users } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useAssignedCourses, useUsers, useCourses, useDeleteAssignedCourse } from '../hooks/useOptimizedApi';
+import { PAGINATION_CONFIG } from '../utils/pagination';
+import { AlertCircle, Award, BookOpen, Calendar, CheckCircle, ChevronDown, ChevronUp, Download, DollarSign, Mail, Package, Phone, RefreshCw, Search, Trash2, User, Users } from 'lucide-react';
 
 
 
 const ViewAssignCourse = () => {
-  const [assignments, setAssignments] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState({
-    assignments: false,
-    users: false,
-    courses: false,
-    delete: false
-  });
-  const [error, setError] = useState({
-    assignments: null,
-    users: null,
-    courses: null,
-    delete: null
-  });
-  const [success, setSuccess] = useState({
-    delete: null
-  });
-  
-  // Delete confirmation modal state
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [assignmentToDelete, setAssignmentToDelete] = useState(null);
-  
-  // Search and filter states
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.COURSES.default);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUser, setSelectedUser] = useState('all');
   const [selectedCourse, setSelectedCourse] = useState('all');
@@ -41,118 +16,51 @@ const ViewAssignCourse = () => {
     from: '',
     to: ''
   });
-  
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [expandedRows, setExpandedRows] = useState(new Set());
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [assignmentToDelete, setAssignmentToDelete] = useState(null);
 
-  // Fetch data on component mount
-  useEffect(() => {
-    fetchAllData();
-  }, []);
+  // Use optimized hooks with pagination
+  const { data: assignmentsData, isLoading: assignmentsLoading, refetch: refetchAssignments } = useAssignedCourses(
+    currentPage,
+    pageSize,
+    { search: searchTerm, user: selectedUser, course: selectedCourse },
+    { enabled: true }
+  );
 
-  const fetchAllData = async () => {
-    await Promise.all([
-      fetchAssignments(),
-      fetchUsers(),
-      fetchCourses()
-    ]);
-  };
+  const { data: usersData, isLoading: usersLoading } = useUsers(1, 100, {}, { enabled: true });
+  const { data: coursesData, isLoading: coursesLoading } = useCourses('regular_course', 1, 100, {}, { enabled: true });
 
-  const fetchAssignments = async () => {
-    setLoading(prev => ({ ...prev, assignments: true }));
-    setError(prev => ({ ...prev, assignments: null }));
-    try {
-      const res = await handleGetAssignCourse();
-      if (res.success) {
-        setAssignments(res.data || []);
-      } else {
-        setError(prev => ({ ...prev, assignments: res.message || "Failed to fetch assignments" }));
-      }
-    } catch (error) {
-      console.error("Fetch assignments error:", error);
-      setError(prev => ({ ...prev, assignments: "Failed to fetch assignments" }));
-    } finally {
-      setLoading(prev => ({ ...prev, assignments: false }));
-    }
-  };
+  const deleteAssignmentMutation = useDeleteAssignedCourse();
 
-  const fetchUsers = async () => {
-    setLoading(prev => ({ ...prev, users: true }));
-    try {
-      const res = await handleGetAllUsers();
-      if (res.success) {
-        setUsers(res.data || []);
-      }
-    } catch (error) {
-      console.error("Fetch users error:", error);
-    } finally {
-      setLoading(prev => ({ ...prev, users: false }));
-    }
-  };
+  const assignments = assignmentsData?.data || [];
+  const pagination = assignmentsData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalAssignments = assignmentsData?.total || 0;
 
-  const fetchCourses = async () => {
-    setLoading(prev => ({ ...prev, courses: true }));
-    try {
-      const res = await handleGetCourse("regular_course");
-      if (res.success) {
-        setCourses(res.data || []);
-      }
-    } catch (error) {
-      console.error("Fetch courses error:", error);
-    } finally {
-      setLoading(prev => ({ ...prev, courses: false }));
-    }
-  };
+  const users = usersData?.data || [];
+  const courses = coursesData?.data || [];
 
   const handleDeleteClick = (assignment) => {
     setAssignmentToDelete(assignment);
     setShowDeleteModal(true);
-    setError(prev => ({ ...prev, delete: null }));
-    setSuccess(prev => ({ ...prev, delete: null }));
   };
 
   const handleDeleteConfirm = async () => {
     if (!assignmentToDelete) return;
 
-    setLoading(prev => ({ ...prev, delete: true }));
-    setError(prev => ({ ...prev, delete: null }));
-    setSuccess(prev => ({ ...prev, delete: null }));
-
     try {
-      const res = await handleDeleteAssignCourse(assignmentToDelete.course_id, assignmentToDelete.user_id);
-      
-      if (res.success) {
-        setSuccess(prev => ({ ...prev, delete: "Assignment deleted successfully!" }));
-        
-        // Remove the deleted assignment from the list
-        setAssignments(prev => prev.filter(a => 
-          !(a.userId === assignmentToDelete.userId && a.courseId === assignmentToDelete.courseId)
-        ));
-       await fetchAllData()
-        // Close modal after 2 seconds
-        setTimeout(() => {
-          setShowDeleteModal(false);
-          setAssignmentToDelete(null);
-          setSuccess(prev => ({ ...prev, delete: null }));
-        }, 2000);
-      } else {
-        setError(prev => ({ ...prev, delete: res.message || "Failed to delete assignment" }));
-      }
+      await deleteAssignmentMutation.mutateAsync(assignmentToDelete.course_id, assignmentToDelete.user_id);
+      refetchAssignments();
+      setShowDeleteModal(false);
+      setAssignmentToDelete(null);
     } catch (error) {
       console.error("Delete assignment error:", error);
-      setError(prev => ({ ...prev, delete: "Failed to delete assignment" }));
-    } finally {
-      setLoading(prev => ({ ...prev, delete: false }));
     }
   };
 
   const handleDeleteCancel = () => {
     setShowDeleteModal(false);
     setAssignmentToDelete(null);
-    setError(prev => ({ ...prev, delete: null }));
-    setSuccess(prev => ({ ...prev, delete: null }));
   };
 
   const toggleRow = (assignmentId) => {
@@ -190,39 +98,17 @@ const ViewAssignCourse = () => {
     return course || null;
   };
 
-  // Filter assignments
-  const filteredAssignments = assignments.filter(assignment => {
-    const user = users.find(u => u.id === assignment.userId);
-    const course = courses.find(c => c.id === assignment.courseId);
-    
-    const matchesSearch = searchTerm === "" ||
-      (user?.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (user?.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (course?.coursename?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (assignment.packageType?.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesUser = selectedUser === 'all' || assignment.userId === selectedUser;
-    const matchesCourse = selectedCourse === 'all' || assignment.courseId === selectedCourse;
-    
-    // Date filtering
-    let matchesDate = true;
-    if (dateRange.from) {
-      matchesDate = matchesDate && new Date(assignment.enrolled_at) >= new Date(dateRange.from);
+  // Pagination handlers
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setCurrentPage(newPage);
     }
-    if (dateRange.to) {
-      const toDate = new Date(dateRange.to);
-      toDate.setHours(23, 59, 59, 999);
-      matchesDate = matchesDate && new Date(assignment.enrolled_at) <= toDate;
-    }
-    
-    return matchesSearch && matchesUser && matchesCourse && matchesDate;
-  });
+  };
 
-  // Pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentAssignments = filteredAssignments.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredAssignments.length / itemsPerPage);
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -246,7 +132,7 @@ const ViewAssignCourse = () => {
 
   const exportToCSV = () => {
     const headers = ['User Name', 'User Email', 'Course Name', 'Package Type', 'Amount', 'About', 'Assigned Date'];
-    const data = filteredAssignments.map(assignment => {
+    const data = assignments.map(assignment => {
       const user = users.find(u => u.id === assignment.userId);
       const course = courses.find(c => c.id === assignment.courseId);
       return [
@@ -282,7 +168,7 @@ const ViewAssignCourse = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Confirm Deletion</h3>
-              
+
               {success.delete ? (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                   <div className="flex items-center gap-3">
@@ -295,7 +181,7 @@ const ViewAssignCourse = () => {
                   <p className="text-sm text-gray-600 mb-4">
                     Are you sure you want to delete this assignment?
                   </p>
-                  
+
                   {assignmentToDelete && (
                     <div className="bg-gray-50 rounded-lg p-3 mb-4">
                       <div className="flex items-center gap-3 mb-2">
@@ -412,7 +298,7 @@ const ViewAssignCourse = () => {
             {/* Export Button */}
             <button
               onClick={exportToCSV}
-              disabled={filteredAssignments.length === 0}
+              disabled={assignments.length === 0}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 justify-center text-sm"
             >
               <Download className="w-4 h-4" />
@@ -461,28 +347,15 @@ const ViewAssignCourse = () => {
                 </tr>
               </thead>
               <tbody>
-                {loading.assignments ? (
+                {assignmentsLoading ? (
                   <tr>
                     <td colSpan="8" className="p-8 text-center text-gray-500">
                       <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2" />
                       <p>Loading assignments...</p>
                     </td>
                   </tr>
-                ) : error.assignments ? (
-                  <tr>
-                    <td colSpan="8" className="p-8 text-center text-red-500">
-                      <AlertCircle className="w-8 h-8 mx-auto mb-2" />
-                      <p>{error.assignments}</p>
-                      <button 
-                        onClick={fetchAssignments}
-                        className="mt-2 text-sm text-indigo-600 hover:text-indigo-800"
-                      >
-                        Try again
-                      </button>
-                    </td>
-                  </tr>
-                ) : currentAssignments.length > 0 ? (
-                  currentAssignments.map((assignment) => (
+                ) : assignments.length > 0 ? (
+                  assignments.map((assignment) => (
                     <React.Fragment key={`${assignment.userId}-${assignment.courseId}`}>
                       <tr className="border-b hover:bg-gray-50 transition">
                         <td className="p-4">
@@ -549,7 +422,7 @@ const ViewAssignCourse = () => {
                           </button>
                         </td>
                       </tr>
-                      
+
                       {/* Expanded Details */}
                       {expandedRows.has(`${assignment.user_id}-${assignment.course_id}`) && (
                         <tr className="bg-gray-50">
@@ -588,8 +461,8 @@ const ViewAssignCourse = () => {
                                         <span className="font-medium">Price:</span> {formatCurrency(course.currentprice)}
                                       </p>
                                       {course.courseimage && (
-                                        <img 
-                                          src={course.courseimage} 
+                                        <img
+                                          src={course.courseimage}
                                           alt={course.coursename}
                                           className="w-16 h-16 object-cover rounded-lg mt-2"
                                         />
@@ -640,81 +513,78 @@ const ViewAssignCourse = () => {
                 )}
               </tbody>
             </table>
-          </div>
 
-          {/* Pagination */}
-          {filteredAssignments.length > 0 && (
-            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-sm text-gray-600">
-                Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredAssignments.length)} of {filteredAssignments.length} assignments
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <select
-                  value={itemsPerPage}
-                  onChange={(e) => {
-                    setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                  className="px-2 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 bg-white"
-                >
-                  <option value={5}>5 per page</option>
-                  <option value={10}>10 per page</option>
-                  <option value={20}>20 per page</option>
-                  <option value={50}>50 per page</option>
-                </select>
-
-                <div className="flex items-center gap-1">
+            {/* Pagination */}
+            {assignments.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-sm text-gray-600">
+                    Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalAssignments)} of {totalAssignments} assignments
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm text-gray-600">Items per page:</label>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 bg-white"
+                    >
+                      <option value="10">10</option>
+                      <option value="25">25</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200">
                   <button
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <ChevronLeft className="w-4 h-4" />
+                    Previous
                   </button>
-                  
-                  <span className="px-3 py-1 text-sm">
-                    Page {currentPage} of {totalPages}
+                  <span className="text-sm text-gray-600">
+                    Page {currentPage} of {pagination.totalPages}
                   </span>
-                  
                   <button
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === pagination.totalPages}
+                    className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <ChevronRight className="w-4 h-4" />
+                    Next
                   </button>
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* Summary Cards */}
+          {assignments.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <p className="text-sm text-gray-500 mb-1">Total Assignments</p>
+                <p className="text-2xl font-bold text-gray-800">{totalAssignments}</p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <p className="text-sm text-gray-500 mb-1">Unique Users</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {new Set(assignments.map(a => a.userId)).size}
+                </p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                <p className="text-sm text-gray-500 mb-1">Total Courses Assigned</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  {new Set(assignments.map(a => a.courseId)).size}
+                </p>
               </div>
             </div>
           )}
         </div>
-
-        {/* Summary Cards */}
-        {filteredAssignments.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-              <p className="text-sm text-gray-500 mb-1">Total Assignments</p>
-              <p className="text-2xl font-bold text-gray-800">{filteredAssignments.length}</p>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-              <p className="text-sm text-gray-500 mb-1">Unique Users</p>
-              <p className="text-2xl font-bold text-gray-800">
-                {new Set(filteredAssignments.map(a => a.userId)).size}
-              </p>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-              <p className="text-sm text-gray-500 mb-1">Total Courses Assigned</p>
-              <p className="text-2xl font-bold text-gray-800">
-                {new Set(filteredAssignments.map(a => a.courseId)).size}
-              </p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
+
   );
 };
 

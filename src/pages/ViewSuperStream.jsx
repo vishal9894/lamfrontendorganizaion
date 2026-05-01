@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useSuperStreams, useUpdateSuperStream, useDeleteSuperStream } from "../hooks/useOptimizedApi";
+import { PAGINATION_CONFIG } from "../utils/pagination";
 import { FiSearch, FiEye, FiEdit, FiTrash2, FiX } from "react-icons/fi";
-import { handleGetSuperStream, handleUpdateSuperStream, handleDeleteSuperStream } from "../api/allApi";
 import { toast } from "react-toastify";
 
 const ViewSuperStream = () => {
-  const [superStreams, setSuperStreams] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.STREAMS.default);
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteModal, setDeleteModal] = useState({
     isOpen: false,
@@ -18,39 +19,33 @@ const ViewSuperStream = () => {
     name: "",
   });
   const [editName, setEditName] = useState("");
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fetch super streams data
-  const fetchSuperStreams = async () => {
-    try {
-      setLoading(true);
-      const response = await handleGetSuperStream();
-      
-      // Handle different response formats
-      let streamsData = [];
-      if (Array.isArray(response)) {
-        streamsData = response;
-      } else if (response?.data && Array.isArray(response.data)) {
-        streamsData = response.data;
-      } else if (response?.streams && Array.isArray(response.streams)) {
-        streamsData = response.streams;
-      } else if (response?.superStreams && Array.isArray(response.superStreams)) {
-        streamsData = response.superStreams;
-      }
-      
-      setSuperStreams(streamsData);
-    } catch (error) {
-      console.error('Error fetching super streams:', error);
-      toast.error(error?.response?.data?.message || error?.message || 'Failed to fetch super streams');
-    } finally {
-      setLoading(false);
+  // Use optimized hooks with pagination
+  const { data: superStreamsData, isLoading: superStreamsLoading, refetch: refetchSuperStreams } = useSuperStreams(
+    currentPage,
+    pageSize,
+    { search: searchTerm },
+    { enabled: true }
+  );
+
+  const updateSuperStreamMutation = useUpdateSuperStream();
+  const deleteSuperStreamMutation = useDeleteSuperStream();
+
+  const superStreams = superStreamsData?.data || [];
+  const pagination = superStreamsData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const totalSuperStreams = superStreamsData?.total || 0;
+
+  // Pagination handlers
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setCurrentPage(newPage);
     }
   };
 
-  useEffect(() => {
-    fetchSuperStreams();
-  }, []);
+  const handlePageSizeChange = (newSize) => {
+    setPageSize(newSize);
+    setCurrentPage(1);
+  };
 
   /* ================= UPDATE ================= */
   const handleEditClick = (id, name) => {
@@ -64,23 +59,15 @@ const ViewSuperStream = () => {
       return;
     }
 
-    setIsUpdating(true);
     try {
-      const response = await handleUpdateSuperStream(editModal.id, { name: editName });
-      
-      if (response?.success || response?.status === 200) {
-        toast.success("Super stream updated successfully!");
-        await fetchSuperStreams(); // Refresh the list
-        setEditModal({ isOpen: false, id: null, name: "" });
-        setEditName("");
-      } else {
-        toast.error(response?.message || "Failed to update super stream");
-      }
+      await updateSuperStreamMutation.mutateAsync({ id: editModal.id, data: { name: editName } });
+      refetchSuperStreams();
+      toast.success("Super stream updated successfully!");
+      setEditModal({ isOpen: false, id: null, name: "" });
+      setEditName("");
     } catch (error) {
       console.error('Error updating super stream:', error);
       toast.error(error?.response?.data?.message || error?.message || "Failed to update super stream");
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -95,22 +82,14 @@ const ViewSuperStream = () => {
   };
 
   const confirmDelete = async () => {
-    setIsDeleting(true);
     try {
-      const response = await handleDeleteSuperStream(deleteModal.id);
-      
-      if (response?.success || response?.status === 200) {
-        toast.success("Super stream deleted successfully!");
-        await fetchSuperStreams(); // Refresh the list
-        setDeleteModal({ isOpen: false, id: null, name: "" });
-      } else {
-        toast.error(response?.message || "Failed to delete super stream");
-      }
+      await deleteSuperStreamMutation.mutateAsync(deleteModal.id);
+      refetchSuperStreams();
+      toast.success("Super stream deleted successfully!");
+      setDeleteModal({ isOpen: false, id: null, name: "" });
     } catch (error) {
       console.error('Error deleting super stream:', error);
       toast.error(error?.response?.data?.message || error?.message || "Failed to delete super stream");
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -153,7 +132,7 @@ const ViewSuperStream = () => {
       </div>
 
       {/* Table */}
-      {loading ? (
+      {superStreamsLoading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
@@ -194,11 +173,10 @@ const ViewSuperStream = () => {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          stream.status === "Active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        }`}
+                        className={`px-2 py-1 text-xs rounded-full ${stream.status === "Active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-gray-100 text-gray-800"
+                          }`}
                       >
                         {stream.status || "Active"}
                       </span>
@@ -242,6 +220,47 @@ const ViewSuperStream = () => {
         </div>
       )}
 
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="mt-4 bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalSuperStreams)} of {totalSuperStreams} streams
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-sm text-gray-600">Items per page:</label>
+            <select
+              value={pageSize}
+              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 bg-white"
+            >
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-gray-600">
+              Page {currentPage} of {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === pagination.totalPages}
+              className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Edit Modal */}
       {editModal.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -277,10 +296,10 @@ const ViewSuperStream = () => {
               </button>
               <button
                 onClick={handleUpdate}
-                disabled={isUpdating}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={updateSuperStreamMutation.isPending}
+                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isUpdating ? "Updating..." : "Update"}
+                {updateSuperStreamMutation.isPending ? "Updating..." : "Update"}
               </button>
             </div>
           </div>
@@ -314,10 +333,10 @@ const ViewSuperStream = () => {
                 </button>
                 <button
                   onClick={confirmDelete}
-                  disabled={isDeleting}
+                  disabled={deleteSuperStreamMutation.isPending}
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isDeleting ? "Deleting..." : "Delete"}
+                  {deleteSuperStreamMutation.isPending ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </div>
