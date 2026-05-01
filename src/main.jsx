@@ -8,18 +8,41 @@ import { Provider } from "react-redux";
 import App from "./App.jsx";
 import { ToastContainer } from "react-toastify";
 import { UseApiProvider } from "./context/AppState.jsx";
+import { QueryDevTools } from "./utils/reactQueryDevtools";
 
-// Create a client
+// Create a client with optimized caching
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
+      gcTime: 10 * 60 * 1000, // 10 minutes (previously cacheTime)
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors
+        if (error?.response?.status >= 400 && error?.response?.status < 500) {
+          return false;
+        }
+        return failureCount < 2;
+      },
       refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      networkMode: 'online',
     },
     mutations: {
-      retry: 1,
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors
+        if (error?.response?.status >= 400 && error?.response?.status < 500) {
+          return false;
+        }
+        return failureCount < 1;
+      },
+      networkMode: 'online',
     },
+  },
+  logger: {
+    log: console.log,
+    warn: console.warn,
+    error: process.env.NODE_ENV === 'development' ? console.error : () => { },
   },
 });
 
@@ -46,6 +69,7 @@ createRoot(document.getElementById("root")).render(
           </Provider>
         </UseApiProvider>
       </BrowserRouter>
+      <QueryDevTools />
     </QueryClientProvider>
   </StrictMode>,
 );

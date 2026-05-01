@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useStreams, useDeleteStream } from "../hooks/useOptimizedApi";
+import { useStreams, useDeleteStream } from "../hooks/useApiQueries";
+import { useApiError } from "../hooks/useApiError";
 import { PAGINATION_CONFIG } from "../utils/pagination";
 import {
   AlertCircle,
@@ -38,13 +39,13 @@ const ViewStream = () => {
   const [selectAll, setSelectAll] = useState(false);
 
   const dispatch = useDispatch();
+  const { handleError, handleSuccess } = useApiError();
 
   // Use optimized hooks with pagination
-  const { data: streamsData, isLoading: streamsLoading, refetch: refetchStreams } = useStreams(
+  const { data: streamsData, isLoading: streamsLoading, error: streamsError, refetch: refetchStreams } = useStreams(
     currentPage,
     pageSize,
-    { search: searchTerm, status: filterStatus },
-    { enabled: true }
+    { search: searchTerm, status: filterStatus }
   );
 
   const deleteStreamMutation = useDeleteStream();
@@ -83,11 +84,11 @@ const ViewStream = () => {
     setDeleteLoading(true);
     try {
       await deleteStreamMutation.mutateAsync(id);
-      refreshData();
+      handleSuccess("Stream deleted successfully");
       setShowDeleteModal(false);
       setSelectedStream(null);
     } catch (err) {
-      setError(err.message || "Failed to delete stream");
+      handleError(err, "Failed to delete stream");
     } finally {
       setDeleteLoading(false);
     }
@@ -105,14 +106,12 @@ const ViewStream = () => {
 
     setDeleteLoading(true);
     try {
-      for (const id of selectedRows) {
-        await deleteStreamMutation.mutateAsync(id);
-      }
-      refreshData();
+      await Promise.all(selectedRows.map(id => deleteStreamMutation.mutateAsync(id)));
+      handleSuccess(`${selectedRows.length} streams deleted successfully`);
       setSelectedRows([]);
       setSelectAll(false);
     } catch (err) {
-      setError(err.message || "Failed to delete streams");
+      handleError(err, "Failed to delete streams");
     } finally {
       setDeleteLoading(false);
     }

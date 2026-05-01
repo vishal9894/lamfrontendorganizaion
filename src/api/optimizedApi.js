@@ -50,6 +50,7 @@ export const api = {
     create: (data) => allApi.handleCreateCourse(data),
     update: (data) => allApi.handleUpdateCourse(data),
     delete: (courseId) => allApi.handleDeleteCourse(courseId),
+    publish: (id, status) => allApi.handlePublishCourse(id, status),
     getAssigned: (page = 1, limit = PAGINATION_CONFIG.COURSES.default, additionalParams = {}) =>
       allApi.handleGetAssignCourse(page, limit, additionalParams),
   },

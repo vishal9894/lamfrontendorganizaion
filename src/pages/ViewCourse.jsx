@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useCourses, useDeleteCourse, usePublishCourse } from "../hooks/useOptimizedApi";
+import { useCourses, useDeleteCourse, usePublishCourse } from "../hooks/useApiQueries";
+import { useApiError } from "../hooks/useApiError";
 import { PAGINATION_CONFIG } from "../utils/pagination";
 import {
   BookOpen,
@@ -84,16 +85,15 @@ const ViewCourse = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
-  const [error, setError] = useState(null);
+
+  const { handleError, handleSuccess } = useApiError();
 
   // Use optimized hooks with pagination
   const { data: coursesData, isLoading: coursesLoading, refetch: refetchCourses } = useCourses(
     activeTab,
     currentPage,
     pageSize,
-    { search: searchTerm },
-    { enabled: true }
+    { search: searchTerm }
   );
 
   const deleteCourseMutation = useDeleteCourse();
@@ -142,17 +142,17 @@ const ViewCourse = () => {
   const handlePublishToggle = async (course) => {
     try {
       setPublishingId(course.id);
-      setError(null);
 
       const newPublishStatus = !course.status;
-      const statusToSend = newPublishStatus ? true : false;
 
-      await publishCourseMutation.mutateAsync({ id: course.id, status: statusToSend });
-      refreshData();
-      setSuccessMessage(`Course ${newPublishStatus ? 'published' : 'unpublished'} successfully!`);
-      setTimeout(() => setSuccessMessage(null), 3000);
+      await publishCourseMutation.mutateAsync({
+        id: course.id,
+        status: newPublishStatus
+      });
+
+      handleSuccess(`Course ${newPublishStatus ? 'published' : 'unpublished'} successfully!`);
     } catch (err) {
-      setError(err.message || "Failed to update publish status");
+      handleError(err, "Failed to update publish status");
     } finally {
       setPublishingId(null);
     }
@@ -173,13 +173,11 @@ const ViewCourse = () => {
     setDeleteLoading(true);
     try {
       await deleteCourseMutation.mutateAsync(selectedCourse.id);
-      refreshData();
+      handleSuccess("Course deleted successfully!");
       setShowDeleteModal(false);
       setSelectedCourse(null);
-      setSuccessMessage("Course deleted successfully!");
-      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      setError(err.message || "Failed to delete course");
+      handleError(err, "Failed to delete course");
     } finally {
       setDeleteLoading(false);
     }
@@ -218,38 +216,6 @@ const ViewCourse = () => {
           </p>
         </div>
 
-        {/* Success Message */}
-        {successMessage && (
-          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 animate-slideDown">
-            <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <CheckCircle className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-emerald-800">Success!</h3>
-              <p className="text-sm text-emerald-600">{successMessage}</p>
-            </div>
-            <button
-              onClick={() => setSuccessMessage(null)}
-              className="p-1 hover:bg-emerald-200 rounded-lg transition-colors"
-            >
-              <XCircle className="w-4 h-4 text-emerald-600" />
-            </button>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 animate-slideDown">
-            <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <p className="text-red-700 flex-1">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="p-1 hover:bg-red-200 rounded-lg transition-colors"
-            >
-              <XCircle className="w-4 h-4 text-red-600" />
-            </button>
-          </div>
-        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
