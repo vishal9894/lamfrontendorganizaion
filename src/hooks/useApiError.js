@@ -1,22 +1,28 @@
 import { toast } from 'react-toastify';
+import { handleAuthError } from '../utils/authUtils';
 
 export const useApiError = () => {
   const handleError = (error, customMessage = null) => {
     const message = customMessage || error?.response?.data?.message || error?.message || 'An error occurred';
-    
+
     // Log error for debugging
     console.error('API Error:', error);
-    
-    // Show user-friendly toast
-    toast.error(message, {
-      position: 'top-right',
-      autoClose: 3000,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-    
+
+    // Handle authentication errors using the utility function
+    const isAuthError = handleAuthError(error, customMessage);
+
+    // If it's not an auth error, show normal error toast
+    if (!isAuthError) {
+      toast.error(message, {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
+
     return message;
   };
 

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import { buildPaginationParams, parsePaginatedResponse, PAGINATION_CONFIG } from "../utils/pagination";
+import { handleAuthError } from "../utils/authUtils";
 
 const BaseUrl = import.meta.env.VITE_BACKEND_API;
 
@@ -18,6 +19,23 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// Response interceptor for handling authentication errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Handle authentication errors using the utility function
+    const isAuthError = handleAuthError(error);
+
+    // If it's not an auth error, continue with normal error handling
+    if (!isAuthError) {
+      return Promise.reject(error);
+    }
+
+    // For auth errors, we still reject to allow components to handle if needed
+    return Promise.reject(error);
+  }
 );
 
 /* ================= USER ================= */
