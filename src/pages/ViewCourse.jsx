@@ -115,12 +115,14 @@ const ViewCourse = () => {
   // Handle page change
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Handle page size change
   const handlePageSizeChange = (newSize) => {
     setPageSize(newSize);
     setCurrentPage(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Handle search
@@ -183,21 +185,9 @@ const ViewCourse = () => {
     }
   };
 
-  // Filter courses based on search
-  const filteredCourses = courses.filter((course) => {
-    const matchesSearch =
-      (course.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (course.description?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (course.streamId?.toString().toLowerCase() || "").includes(searchTerm.toLowerCase());
-
-    return matchesSearch;
-  });
-
-  // Pagination
-  const indexOfLastItem = currentPage * pageSize;
-  const indexOfFirstItem = indexOfLastItem - pageSize;
-  const currentCourses = filteredCourses.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredCourses.length / pageSize);
+  // Use API-driven pagination - no client-side filtering needed
+  const currentCourses = courses;
+  const totalPages = pagination.totalPages || 1;
 
   // Stats
   const publishedCourses = courses.filter((c) => c.status === true).length;
@@ -310,8 +300,8 @@ const ViewCourse = () => {
                 placeholder={`Search ${tabs.find((t) => t.id === activeTab)?.label}...`}
                 value={searchTerm}
                 onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
+                  handleSearch(e.target.value);
+                  handlePageSizeChange(10);
                 }}
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
               />
@@ -489,58 +479,79 @@ const ViewCourse = () => {
                 </table>
               </div>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between flex-wrap gap-4">
-                  <div className="text-sm text-gray-600">
-                    Showing {indexOfFirstItem + 1} to{" "}
-                    {Math.min(indexOfLastItem, filteredCourses.length)} of{" "}
-                    {filteredCourses.length} courses
+              {/* Custom Pagination UI */}
+              {totalPages > 0 && (
+                <div className="flex items-center justify-between px-6 py-4 mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <span>Page {currentPage} of {totalPages}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-600">Show:</span>
+                      <select
+                        value={pageSize}
+                        onChange={(e) => {
+                          handlePageSizeChange(Number(e.target.value));
+                        }}
+                        className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                      </select>
+                      <span className="text-sm text-gray-600">per page</span>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
+
+                  <div className="flex items-center gap-2">
                     <button
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      onClick={() => {
+                        handlePageChange(currentPage - 1);
+                      }}
                       disabled={currentPage === 1}
-                      className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft className="w-4 h-4" />
+                      Previous
                     </button>
 
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNum;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
-                      return (
+                    {/* Page number buttons */}
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
                         <button
                           key={pageNum}
-                          onClick={() => setCurrentPage(pageNum)}
-                          className={`w-8 h-8 rounded-lg transition-colors ${currentPage === pageNum
-                            ? "bg-indigo-600 text-white"
-                            : "hover:bg-gray-100 text-gray-600"
+                          onClick={() => {
+                            handlePageChange(pageNum);
+                          }}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${pageNum === currentPage
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
                             }`}
                         >
                           {pageNum}
                         </button>
-                      );
-                    })}
+                      ))}
+                    </div>
 
                     <button
-                      onClick={() =>
-                        setCurrentPage((p) => Math.min(totalPages, p + 1))
-                      }
+                      onClick={() => {
+                        handlePageChange(currentPage + 1);
+                      }}
                       disabled={currentPage === totalPages}
-                      className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
+                      Next
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
+                </div>
+              )}
+
+              {/* Show total items info */}
+              {totalCourses > 0 && (
+                <div className="mt-4 text-center text-sm text-gray-500">
+                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCourses)} of {totalCourses} courses
                 </div>
               )}
             </>

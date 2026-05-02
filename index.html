@@ -3,14 +3,94 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/src/assets/fabicon.png" sizes="48" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>admin panal</title>
+  <title>LMS Application</title>
+
+  <!-- Content Security Policy (basic directives that work in meta tags) -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    img-src 'self' data: https: blob:;
+    font-src 'self' data: https://fonts.gstatic.com;
+    connect-src 'self' https://api.khansirlearning.com http://localhost:3000 ws://localhost:3000 wss://api.khansirlearning.com;
+    media-src 'self' blob:;
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    upgrade-insecure-requests;
+  ">
+
+  <!-- Note: Headers like frame-ancestors, X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, Referrer-Policy 
+       must be set via HTTP headers, not meta tags. See vite.config.js for proper implementation. -->
+  <meta name="csrf-token" content="{{csrf_token}}">
+
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- DNS prefetch for external resources -->
+  <link rel="dns-prefetch" href="//api.khansirlearning.com">
+
+  <!-- Theme and appearance -->
+  <meta name="theme-color" content="#1976d2">
+  <meta name="color-scheme" content="light dark">
+
+  <!-- SEO and discovery -->
+  <meta name="description" content="Learning Management System for modern education">
+  <meta name="keywords" content="LMS, education, learning, courses, online learning">
+  <meta name="author" content="LMS Team">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="LMS Application">
+  <meta property="og:description" content="Learning Management System for modern education">
+  <meta property="og:image" content="/og-image.png">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="LMS Application">
+  <meta property="twitter:description" content="Learning Management System for modern education">
+  <meta property="twitter:image" content="/og-image.png">
 </head>
 
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
+
+  <!-- Fallback script for CSP violations -->
+  <script>
+    // Report CSP violations to monitoring service
+    document.addEventListener('securitypolicyviolation', function (e) {
+      const violation = {
+        violatedDirective: e.violatedDirective,
+        blockedURI: e.blockedURI,
+        originalPolicy: e.originalPolicy,
+        referrer: e.referrer,
+        documentURI: e.documentURI,
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      };
+
+      // Send to error monitoring service
+      if (window.fetch && process.env.NODE_ENV === 'production') {
+        fetch('/api/security/csp-violation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(violation)
+        }).catch(() => {
+          // Fallback: store in localStorage
+          const violations = JSON.parse(localStorage.getItem('cspViolations') || '[]');
+          violations.push(violation);
+          if (violations.length > 100) violations.splice(0, violations.length - 100);
+          localStorage.setItem('cspViolations', JSON.stringify(violations));
+        });
+      }
+    });
+  </script>
 </body>
 
 </html>

@@ -9,6 +9,7 @@ import App from "./App.jsx";
 import { ToastContainer } from "react-toastify";
 import { UseApiProvider } from "./context/AppState.jsx";
 import { QueryDevTools } from "./utils/reactQueryDevtools";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 // Create a client with optimized caching
 const queryClient = new QueryClient({
@@ -48,28 +49,30 @@ const queryClient = new QueryClient({
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <UseApiProvider>
-          <Provider store={store}>
-            <App />
-            <ToastContainer
-              position="top-right"
-              autoClose={2500}
-              hideProgressBar={true}
-              newestOnTop
-              closeOnClick
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-              theme="dark"
-              toastClassName="custom-toast"
-              bodyClassName="custom-toast-body"
-            />
-          </Provider>
-        </UseApiProvider>
-      </BrowserRouter>
-      <QueryDevTools />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <UseApiProvider>
+            <Provider store={store}>
+              <App />
+              <ToastContainer
+                position="top-right"
+                autoClose={2500}
+                hideProgressBar={true}
+                newestOnTop
+                closeOnClick
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="dark"
+                toastClassName="custom-toast"
+                bodyClassName="custom-toast-body"
+              />
+            </Provider>
+          </UseApiProvider>
+        </BrowserRouter>
+        <QueryDevTools />
+      </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );

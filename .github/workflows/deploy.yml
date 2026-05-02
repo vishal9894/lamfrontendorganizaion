@@ -1,0 +1,415 @@
+# Zero-downtime CI/CD Pipeline for Enterprise Deployment
+
+name: 🚀 Zero-Downtime Deployment
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+
+env:
+  NODE_VERSION: '18'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # 🧪 Comprehensive Testing Suite
+  test:
+    name: 🧪 Comprehensive Testing
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18, 20]
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 🔍 Lint Code
+        run: npm run lint
+
+      - name: 🏗️ Type Check
+        run: npm run type-check
+
+      - name: 🧪 Unit Tests
+        run: npm run test:unit -- --coverage --watchAll=false
+        env:
+          NODE_ENV: test
+
+      - name: 🔧 Integration Tests
+        run: npm run test:integration
+        env:
+          NODE_ENV: test
+
+      - name: 🎭 E2E Tests
+        run: npm run test:e2e
+        env:
+          NODE_ENV: test
+          CYPRESS_BASE_URL: http://localhost:3000
+
+      - name: 📊 Upload Coverage Reports
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+
+      - name: 🎯 Accessibility Tests
+        run: npm run test:a11y
+
+      - name: ⚡ Performance Tests
+        run: npm run test:performance
+
+      - name: 🔒 Security Audit
+        run: npm audit --audit-level high
+
+  # 🏗️ Build and Package
+  build:
+    name: 🏗️ Build Application
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 🔧 Build Application
+        run: npm run build
+        env:
+          NODE_ENV: production
+          VITE_BACKEND_API: ${{ secrets.API_URL }}
+
+      - name: 📦 Build Docker Image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} .
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: 🐳 Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📤 Push Docker Image
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: 📋 Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            dist/
+            coverage/
+          retention-days: 30
+
+  # 🚀 Zero-Downtime Deployment
+  deploy:
+    name: 🚀 Zero-Downtime Deployment
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🚀 Deploy to Production
+        id: deploy
+        run: |
+          # Zero-downtime deployment script
+          echo "🚀 Starting zero-downtime deployment..."
+          
+          # Create new deployment
+          DEPLOYMENT_ID="deploy-$(date +%s)-${{ github.sha }}"
+          echo "📋 Deployment ID: $DEPLOYMENT_ID"
+          
+          # Deploy to staging first
+          echo "🔄 Deploying to staging environment..."
+          kubectl apply -f k8s/staging/
+          kubectl set image deployment/app app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} -n staging
+          
+          # Wait for staging to be ready
+          kubectl rollout status deployment/app -n staging --timeout=300s
+          
+          # Health check on staging
+          STAGING_URL=$(kubectl get service app-staging -n staging -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          echo "🏥 Running health checks on staging..."
+          curl -f $STAGING_URL/health || exit 1
+          
+          # Blue-green deployment to production
+          echo "🔄 Starting blue-green deployment..."
+          
+          # Create green deployment
+          sed "s/PLACEHOLDER/${{ github.sha }}/g" k8s/green-deployment.yaml | kubectl apply -f -
+          
+          # Wait for green to be ready
+          kubectl rollout status deployment/app-green -n production --timeout=600s
+          
+          # Health check on green
+          GREEN_URL=$(kubectl get service app-green -n production -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          echo "🏥 Running health checks on green environment..."
+          curl -f $GREEN_URL/health || exit 1
+          
+          # Switch traffic to green
+          echo "🔄 Switching traffic to green environment..."
+          kubectl patch service app -n production -p '{"spec":{"selector":{"version":"green"}}}'
+          
+          # Wait for traffic switch
+          sleep 30
+          
+          # Final health check
+          echo "🏥 Running final health checks..."
+          curl -f ${{ secrets.PRODUCTION_URL }}/health || exit 1
+          
+          # Clean up blue deployment
+          echo "🧹 Cleaning up blue deployment..."
+          kubectl delete deployment app-blue -n production --ignore-not-found=true
+          
+          echo "✅ Zero-downtime deployment completed successfully!"
+          echo "url=${{ secrets.PRODUCTION_URL }}" >> $GITHUB_OUTPUT
+
+      - name: 📊 Post-Deployment Health Check
+        run: |
+          echo "🏥 Running comprehensive health checks..."
+          
+          # Check application health
+          curl -f ${{ secrets.PRODUCTION_URL }}/health || exit 1
+          
+          # Check API endpoints
+          curl -f ${{ secrets.PRODUCTION_URL }}/api/health || exit 1
+          
+          # Check database connectivity
+          curl -f ${{ secrets.PRODUCTION_URL }}/api/health/db || exit 1
+          
+          # Check external services
+          curl -f ${{ secrets.PRODUCTION_URL }}/api/health/external || exit 1
+          
+          echo "✅ All health checks passed!"
+
+      - name: 📈 Performance Monitoring
+        run: |
+          echo "📊 Starting performance monitoring..."
+          
+          # Run Lighthouse audit
+          npx lighthouse ${{ secrets.PRODUCTION_URL }} \
+            --output=json \
+            --output-path=./lighthouse-report.json \
+            --chrome-flags="--headless" \
+            --quiet
+          
+          # Check performance scores
+          PERFORMANCE_SCORE=$(cat lighthouse-report.json | jq '.categories.performance.score * 100')
+          ACCESSIBILITY_SCORE=$(cat lighthouse-report.json | jq '.categories.accessibility.score * 100')
+          
+          echo "📊 Performance Score: $PERFORMANCE_SCORE"
+          echo "♿ Accessibility Score: $ACCESSIBILITY_SCORE"
+          
+          # Fail if scores are below threshold
+          if (( $(echo "$PERFORMANCE_SCORE < 90" | bc -l) )); then
+            echo "❌ Performance score too low: $PERFORMANCE_SCORE"
+            exit 1
+          fi
+          
+          if (( $(echo "$ACCESSIBILITY_SCORE < 95" | bc -l) )); then
+            echo "❌ Accessibility score too low: $ACCESSIBILITY_SCORE"
+            exit 1
+          fi
+          
+          echo "✅ Performance and accessibility scores are acceptable!"
+
+      - name: 📧 Deployment Notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          text: |
+            🚀 **Deployment Successful!**
+            • **Branch**: ${{ github.ref_name }}
+            • **Commit**: ${{ github.sha }}
+            • **URL**: ${{ secrets.PRODUCTION_URL }}
+            • **Performance**: $PERFORMANCE_SCORE/100
+            • **Accessibility**: $ACCESSIBILITY_SCORE/100
+
+  # 🔒 Security Scanning
+  security:
+    name: 🔒 Security Scanning
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: 📤 Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: 🔍 Run CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: javascript
+
+      - name: 🔍 OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          target: ${{ secrets.STAGING_URL }}
+
+  # 📊 Quality Gates
+  quality-gates:
+    name: 📊 Quality Gates
+    runs-on: ubuntu-latest
+    needs: [test, build, security]
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📊 Code Quality Analysis
+        run: |
+          echo "📊 Running code quality analysis..."
+          
+          # Calculate code coverage
+          COVERAGE=$(cat coverage/lcov.info | grep -o 'LF:[0-9]*' | cut -d':' -f2 | awk '{sum+=$1} END {print sum}')
+          LINES=$(cat coverage/lcov.info | grep -o 'LH:[0-9]*' | cut -d':' -f2 | awk '{sum+=$1} END {print sum}')
+          COVERAGE_PERCENTAGE=$(echo "scale=2; $COVERAGE * 100 / $LINES" | bc)
+          
+          echo "📊 Code Coverage: $COVERAGE_PERCENTAGE%"
+          
+          # Check quality gates
+          if (( $(echo "$COVERAGE_PERCENTAGE < 95" | bc -l) )); then
+            echo "❌ Code coverage below 95%: $COVERAGE_PERCENTAGE%"
+            exit 1
+          fi
+          
+          # Check bundle size
+          BUNDLE_SIZE=$(du -sk dist/assets | cut -f1)
+          echo "📦 Bundle Size: ${BUNDLE_SIZE}KB"
+          
+          if [ "$BUNDLE_SIZE" -gt 500 ]; then
+            echo "❌ Bundle size too large: ${BUNDLE_SIZE}KB (max 500KB)"
+            exit 1
+          fi
+          
+          echo "✅ All quality gates passed!"
+
+  # 🔄 Rollback Plan
+  rollback:
+    name: 🔄 Rollback Plan
+    runs-on: ubuntu-latest
+    if: failure() && needs.deploy.result == 'failure'
+    
+    steps:
+      - name: 🔄 Automatic Rollback
+        run: |
+          echo "🔄 Starting automatic rollback..."
+          
+          # Get previous stable version
+          PREVIOUS_VERSION=$(kubectl get deployment app -n production -o jsonpath='{.spec.template.spec.containers[0].image}' | cut -d':' -f2)
+          
+          echo "🔄 Rolling back to version: $PREVIOUS_VERSION"
+          
+          # Rollback to previous version
+          kubectl rollout undo deployment/app -n production
+          
+          # Wait for rollback to complete
+          kubectl rollout status deployment/app -n production --timeout=300s
+          
+          # Health check
+          curl -f ${{ secrets.PRODUCTION_URL }}/health || exit 1
+          
+          echo "✅ Rollback completed successfully!"
+
+      - name: 📧 Rollback Notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'failure'
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          text: |
+            🔄 **Rollback Triggered!**
+            • **Reason**: Deployment failure
+            • **Previous Version**: $PREVIOUS_VERSION
+            • **URL**: ${{ secrets.PRODUCTION_URL }}
+
+  # 📋 Post-Deployment Tasks
+  post-deploy:
+    name: 📋 Post-Deployment Tasks
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: success()
+    
+    steps:
+      - name: 📊 Update Deployment Metrics
+        run: |
+          echo "📊 Updating deployment metrics..."
+          
+          # Record deployment
+          curl -X POST ${{ secrets.METRICS_SERVICE }}/deployments \
+            -H "Content-Type: application/json" \
+            -d '{
+              "version": "${{ github.sha }}",
+              "environment": "production",
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
+              "success": true
+            }'
+
+      - name: 🏷️ Create Release Tag
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          TAG="v$(date +%Y.%m.%d)-$(git rev-parse --short HEAD)"
+          git tag $TAG
+          git push origin $TAG
+
+      - name: 📧 Success Notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'success'
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          text: |
+            🎉 **Deployment Completed Successfully!**
+            • **Version**: ${{ github.sha }}
+            • **Environment**: Production
+            • **URL**: ${{ secrets.PRODUCTION_URL }}
+            • **Duration**: ${{ job.status }}

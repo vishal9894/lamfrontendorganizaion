@@ -7,7 +7,7 @@ export const PAGINATION_CONFIG = {
 
   // Page sizes for different data types
   USERS: { default: 10, max: 50 },
-  COURSES: { default: 12, max: 48 },
+  COURSES: { default: 10, max: 48 },
   QUIZZES: { default: 15, max: 60 },
   TEACHERS: { default: 8, max: 32 },
   STUDENTS: { default: 20, max: 100 },
