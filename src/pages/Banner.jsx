@@ -22,7 +22,7 @@ import {
   ChevronRight,
   Search
 } from "lucide-react";
-import { handlePublishBanner, handleGetCourse } from "../api/allApi";
+import { handlePublishBanner, handleGetBanner, handleGetShortCourseDetails } from "../api/allApi";
 
 // Delete Modal Component
 const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isLoading, confirmText, cancelText, size }) => {
@@ -145,13 +145,7 @@ const Banner = () => {
     setCurrentPage(1);
   };
 
-  const courseTypes = [
-    "regular_course",
-    "ebook",
-    "free_video_course",
-    "free_pdf_course",
-    "free_test_series",
-  ];
+
 
   const [courses, setCourses] = useState([]);
   const [news, setNews] = useState([]);
@@ -162,18 +156,18 @@ const Banner = () => {
       setLoadingCourses(true);
       try {
         let allCourses = [];
-        for (const type of courseTypes) {
-          try {
-            const response = await handleGetCourse(type);
-            if (response && Array.isArray(response)) {
-              allCourses = [...allCourses, ...response];
-            } else if (response && response.data && Array.isArray(response.data)) {
-              allCourses = [...allCourses, ...response.data];
-            }
-          } catch (err) {
-            console.error(`Failed to fetch ${type}:`, err);
+
+        try {
+          const response = await handleGetShortCourseDetails();
+          if (response && Array.isArray(response)) {
+            allCourses = [...allCourses, ...response];
+          } else if (response && response.data && Array.isArray(response.data)) {
+            allCourses = [...allCourses, ...response.data];
           }
+        } catch (err) {
+          console.error("Failed to fetch courses:", err);
         }
+
         const uniqueCourses = allCourses.filter(
           (course, index, self) =>
             index === self.findIndex((c) => c.id === course.id),
@@ -189,28 +183,29 @@ const Banner = () => {
     fetchCourses();
   }, []);
 
+  const fetchNews = async () => {
+    setLoadingNews(true);
+    try {
+      const response = await handleGetBanner(1, 50, { type: "news" });
+      let newsData = [];
+      if (response && Array.isArray(response)) {
+        newsData = response.filter((item) => item.type === "news");
+      } else if (response && response.data && Array.isArray(response.data)) {
+        newsData = response.data.filter((item) => item.type === "news");
+      } else if (response && response.success && response.data && Array.isArray(response.data)) {
+        newsData = response.data.filter((item) => item.type === "news");
+      }
+      setNews(newsData);
+    } catch (err) {
+      console.error("Failed to fetch news:", err);
+      setNews([]);
+    } finally {
+      setLoadingNews(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "news") {
-      const fetchNews = async () => {
-        setLoadingNews(true);
-        try {
-          const response = await handleGetBanner(1, 50, { type: "news" });
-          let newsData = [];
-          if (response && Array.isArray(response)) {
-            newsData = response.filter((item) => item.type === "news");
-          } else if (response && response.data && Array.isArray(response.data)) {
-            newsData = response.data.filter((item) => item.type === "news");
-          } else if (response && response.success && response.data && Array.isArray(response.data)) {
-            newsData = response.data.filter((item) => item.type === "news");
-          }
-          setNews(newsData);
-        } catch (err) {
-          console.error("Failed to fetch news:", err);
-          setNews([]);
-        } finally {
-          setLoadingNews(false);
-        }
-      };
       fetchNews();
     }
   }, [activeTab]);

@@ -19,9 +19,6 @@ import {
   ChevronRight,
   Image as ImageIcon
 } from "lucide-react";
-import {
-  handleGetCourse,
-} from "../api/allApi";
 
 // Delete Modal Component
 const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isLoading, confirmText, cancelText, size }) => {
@@ -525,8 +522,8 @@ const ViewCourse = () => {
                             handlePageChange(pageNum);
                           }}
                           className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${pageNum === currentPage
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
                             }`}
                         >
                           {pageNum}

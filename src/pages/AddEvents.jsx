@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import {
-  handleGetCourse,
   handleGetFolders,
-  handleCreateEvent
+  handleCreateEvent,
+  handleGetShortCourseDetails
 } from "../api/allApi";
 import {
   FiBookOpen,
@@ -46,14 +46,6 @@ const AddEvents = () => {
     courseName: ""
   });
 
-  const courseTypes = [
-    "regular_course",
-    "ebook",
-    "free_video_course",
-    "free_pdf_course",
-    "free_test_series"
-  ];
-
   useEffect(() => {
     fetchCourses();
   }, []);
@@ -62,34 +54,19 @@ const AddEvents = () => {
   const fetchCourses = async () => {
     try {
       setFetchingCourses(true);
+      const res = await handleGetShortCourseDetails();
+
+      console.log("Short course details response:", res);
+
       let allCourses = [];
+      if (res?.data && Array.isArray(res.data)) {
+        allCourses = res.data;
+      } else if (Array.isArray(res)) {
+        allCourses = res;
+      }
 
-      const promises = courseTypes.map(type => handleGetCourse(type));
-      const results = await Promise.all(promises);
-
-      results.forEach(res => {
-        // Handle different response formats
-        if (res?.data?.course) {
-          if (Array.isArray(res.data.course)) {
-            allCourses = [...allCourses, ...res.data.course];
-          } else if (typeof res.data.course === 'object' && res.data.course !== null) {
-            allCourses = [...allCourses, res.data.course];
-          }
-        } else if (res?.data && Array.isArray(res.data)) {
-          allCourses = [...allCourses, ...res.data];
-        } else if (Array.isArray(res)) {
-          allCourses = [...allCourses, ...res];
-        } else if (res?.course && Array.isArray(res.course)) {
-          allCourses = [...allCourses, ...res.course];
-        }
-      });
-
-      // Remove duplicates
-      const uniqueCourses = allCourses.filter((course, index, self) =>
-        index === self.findIndex((c) => c.id === course.id)
-      );
-
-      setCourses(uniqueCourses);
+      console.log("Parsed courses:", allCourses);
+      setCourses(allCourses);
     } catch (error) {
       console.error("Error fetching courses:", error);
       showNotification("error", "Failed to load courses");
@@ -109,36 +86,25 @@ const AddEvents = () => {
       setLoading(true);
       const res = await handleGetFolders(courseId);
 
+      console.log("Folders API response:", res);
+
       // Handle different response structures
       let folderData = [];
-      if (res?.folder) {
-        if (Array.isArray(res.folder)) {
-          folderData = res.folder;
-        } else if (typeof res.folder === 'object') {
-          folderData = [res.folder];
-        }
+      if (res?.data && Array.isArray(res.data)) {
+        folderData = res.data;
+      } else if (res?.folder && Array.isArray(res.folder)) {
+        folderData = res.folder;
       } else if (res?.folders && Array.isArray(res.folders)) {
         folderData = res.folders;
       } else if (Array.isArray(res)) {
         folderData = res;
-      } else if (res?.data && Array.isArray(res.data)) {
-        folderData = res.data;
+      } else if (res?.folder && typeof res.folder === 'object') {
+        folderData = [res.folder];
       }
 
-      // Filter to show only folders (items without file extensions or with folder indicators)
-      const onlyFolders = folderData.filter(item => {
-        return (
-          (item.type && item.type.toLowerCase() === 'folder') ||
-          item.isFolder === true ||
-          item.is_directory === true ||
-          (item.name && !item.name.includes('.')) ||
-          (item.children && Array.isArray(item.children)) ||
-          (item.items && Array.isArray(item.items))
-        );
-      });
+      console.log("Parsed folder data:", folderData);
 
-
-      setFolders(onlyFolders);
+      setFolders(folderData);
     } catch (error) {
       console.error("Error fetching folders:", error);
       showNotification("error", "Failed to load folders");
@@ -163,6 +129,9 @@ const AddEvents = () => {
       const selectedCourse = courses.find(course => course.id === value);
       const courseName = selectedCourse ? (selectedCourse.courseName || selectedCourse.coursename || selectedCourse.title) : "";
       setSelectedCourseName(courseName);
+
+      console.log("Selected course:", selectedCourse);
+      console.log("Course ID being sent to fetchFolders:", value);
 
       setFormData((prev) => ({
         ...prev,
@@ -319,7 +288,7 @@ const AddEvents = () => {
 
   return (
     <div className=" bg-gray-100 p-6">
-     
+
       <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg">
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 rounded-t-xl">
           <h2 className="text-2xl font-bold flex items-center gap-2">

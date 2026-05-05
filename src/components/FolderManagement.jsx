@@ -9,6 +9,7 @@ import ClickAwayListener from "@mui/material/ClickAwayListener";
 import MenuList from "@mui/material/MenuList";
 import AddContentCourse from "./AddContentCourse";
 import Toast from "./ui/Toast";
+import DeleteModal from "./DeleteModal";
 import { calculatePagination, generatePageNumbers, PAGINATION_CONFIG } from "../utils/pagination";
 
 const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
@@ -50,6 +51,8 @@ const FolderManagement = ({
   const [anchorEl, setAnchorEl] = useState(null);
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const [formData, setFormData] = useState({ name: "", image: null });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteItem, setDeleteItem] = useState(null);
 
   // Pagination for combined content
   const [contentPagination, setContentPagination] = useState({
@@ -164,21 +167,37 @@ const FolderManagement = ({
   };
 
   const handleDelete = async (folder) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete "${folder.name}"? This will also delete all subfolders and files inside it.`
-      )
-    ) {
-      await onDeleteFolder(folder);
-      handleDropdownClose();
-    }
+    setDeleteItem({ ...folder, type: 'folder' });
+    setShowDeleteModal(true);
   };
 
   const handleDeleteContent = async (item) => {
-    if (window.confirm(`Are you sure you want to delete "${item.name}"?`)) {
-      await onDeleteContent(item);
+    setDeleteItem({ ...item, type: 'content' });
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteItem) return;
+
+    try {
+      if (deleteItem.type === 'folder') {
+        await onDeleteFolder(deleteItem);
+      } else {
+        await onDeleteContent(deleteItem);
+      }
       handleDropdownClose();
+      setShowDeleteModal(false);
+      setDeleteItem(null);
+    } catch (error) {
+      console.error('Delete error:', error);
+      showToast('Failed to delete item', 'error');
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setDeleteItem(null);
+    handleDropdownClose();
   };
 
   const handleCreateFileSubmit = async (formData) => {
@@ -538,13 +557,7 @@ const FolderManagement = ({
 
   return (
     <div>
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={hideToast}
-        />
-      )}
+
 
       {/* Header */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -791,6 +804,21 @@ const FolderManagement = ({
           onSubmit={handleCreateFileSubmit}
         />
       )}
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title={`Delete ${deleteItem?.type === 'folder' ? 'Folder' : 'Content'}`}
+        message={deleteItem?.type === 'folder'
+          ? `Are you sure you want to delete "${deleteItem?.name}"? This will also delete all subfolders and files inside it.`
+          : `Are you sure you want to delete "${deleteItem?.name}"?`}
+        itemName={deleteItem?.name}
+        confirmText="Delete"
+        cancelText="Cancel"
+        size="md"
+      />
     </div>
   );
 };

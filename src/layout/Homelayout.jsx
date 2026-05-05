@@ -21,7 +21,7 @@ const Homelayout = () => {
 
         {/* Page Content */}
 
-        <div className="overflow-y-auto scrollbar-thin  ">
+        <div className="overflow-y-auto h-full scrollbar-thin  ">
           <Outlet />
         </div>
 

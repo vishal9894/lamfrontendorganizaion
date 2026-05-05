@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
 
 import { toast } from 'react-toastify';
+import DeleteModal from '../components/DeleteModal';
 
 
 
 const CourseManagement = () => {
-  
+
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
@@ -40,7 +42,7 @@ const CourseManagement = () => {
     total: 0
   });
 
-  
+
 
   const fetchCourses = async () => {
     try {
@@ -50,11 +52,11 @@ const CourseManagement = () => {
         page: pagination.page,
         limit: pagination.limit
       };
-      
+
       let response;
-    
-      
-    
+
+
+
       setCourses(response.courses || []);
       setPagination(prev => ({
         ...prev,
@@ -109,18 +111,29 @@ const CourseManagement = () => {
   };
 
   const handleDeleteCourse = async (courseId) => {
-    if (!window.confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
-      return;
-    }
+    const course = courses.find(c => c.id === courseId);
+    setSelectedCourse(course);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteCourse = async () => {
+    if (!selectedCourse) return;
 
     try {
-      await courseApiCalls.deleteCourse(courseId);
+      await courseApiCalls.deleteCourse(selectedCourse.id);
       fetchCourses();
       toast.success('Course deleted successfully');
+      setShowDeleteModal(false);
+      setSelectedCourse(null);
     } catch (error) {
       console.error('Failed to delete course:', error);
       toast.error(error.message || 'Failed to delete course');
     }
+  };
+
+  const cancelDeleteCourse = () => {
+    setShowDeleteModal(false);
+    setSelectedCourse(null);
   };
 
   const handleDuplicateCourse = async (course) => {
@@ -131,7 +144,7 @@ const CourseManagement = () => {
         status: 'draft',
         id: undefined // Remove ID to create new course
       };
-      
+
       await organizationApiCalls.createOrganizationCourse(duplicatedData);
       fetchCourses();
       toast.success('Course duplicated successfully');
@@ -278,7 +291,7 @@ const CourseManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {courses.length > 0 
+              {courses.length > 0
                 ? (courses.reduce((sum, course) => sum + (course.rating || 0), 0) / courses.length).toFixed(1)
                 : '0.0'
               }
@@ -310,7 +323,7 @@ const CourseManagement = () => {
                 />
               </div>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium mb-2">Category</label>
               <Select
@@ -382,7 +395,7 @@ const CourseManagement = () => {
                         <BookOpen className="h-12 w-12 text-gray-400" />
                       </div>
                     )}
-                    <Badge 
+                    <Badge
                       variant={getStatusBadge(course.status)}
                       className="absolute top-2 right-2"
                     >
@@ -394,7 +407,7 @@ const CourseManagement = () => {
                   <div className="p-4">
                     <h3 className="font-semibold text-lg mb-2 line-clamp-2">{course.title}</h3>
                     <p className="text-gray-600 text-sm mb-3 line-clamp-2">{course.description}</p>
-                    
+
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-2">
                         <Badge variant={getLevelBadge(course.level)}>
@@ -435,7 +448,7 @@ const CourseManagement = () => {
                         <Eye className="h-4 w-4 mr-1" />
                         View
                       </Button>
-                      
+
                       {hasPermission('manage_own_courses') && canAccessResource('course', course.id) && (
                         <Button
                           variant="outline"
@@ -655,11 +668,11 @@ const CourseManagement = () => {
                   <BookOpen className="h-12 w-12 text-gray-400" />
                 </div>
               )}
-              
+
               <div className="flex-1">
                 <h3 className="text-2xl font-bold mb-2">{selectedCourse.title}</h3>
                 <p className="text-gray-600 mb-4">{selectedCourse.description}</p>
-                
+
                 <div className="flex flex-wrap gap-2 mb-4">
                   <Badge variant={getStatusBadge(selectedCourse.status)}>
                     {selectedCourse.status}
@@ -719,6 +732,19 @@ const CourseManagement = () => {
           </div>
         )}
       </Modal>
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={cancelDeleteCourse}
+        onConfirm={confirmDeleteCourse}
+        title="Delete Course"
+        message={`Are you sure you want to delete "${selectedCourse?.title}"? This action cannot be undone.`}
+        itemName={selectedCourse?.title}
+        confirmText="Delete"
+        cancelText="Cancel"
+        size="md"
+      />
     </div>
   );
 };

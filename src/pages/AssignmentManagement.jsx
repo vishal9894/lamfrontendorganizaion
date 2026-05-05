@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { toast } from 'react-toastify';
+import DeleteModal from '../components/DeleteModal';
 
 
 
@@ -13,6 +14,7 @@ const AssignmentManagement = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showGradeModal, setShowGradeModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [filters, setFilters] = useState({
@@ -108,18 +110,29 @@ const AssignmentManagement = () => {
   };
 
   const handleDeleteAssignment = async (assignmentId) => {
-    if (!window.confirm('Are you sure you want to delete this assignment?')) {
-      return;
-    }
+    const assignment = assignments.find(a => a.id === assignmentId);
+    setSelectedAssignment(assignment);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAssignment = async () => {
+    if (!selectedAssignment) return;
 
     try {
-      await organizationApiCalls.deleteAssignment(assignmentId);
+      await organizationApiCalls.deleteAssignment(selectedAssignment.id);
       fetchAssignments();
       toast.success('Assignment deleted successfully');
+      setShowDeleteModal(false);
+      setSelectedAssignment(null);
     } catch (error) {
       console.error('Failed to delete assignment:', error);
       toast.error(error.message || 'Failed to delete assignment');
     }
+  };
+
+  const cancelDeleteAssignment = () => {
+    setShowDeleteModal(false);
+    setSelectedAssignment(null);
   };
 
   const handleGradeSubmission = async () => {
@@ -668,6 +681,19 @@ const AssignmentManagement = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={cancelDeleteAssignment}
+        onConfirm={confirmDeleteAssignment}
+        title="Delete Assignment"
+        message={`Are you sure you want to delete "${selectedAssignment?.title}"? This action cannot be undone.`}
+        itemName={selectedAssignment?.title}
+        confirmText="Delete"
+        cancelText="Cancel"
+        size="md"
+      />
     </div>
   );
 };

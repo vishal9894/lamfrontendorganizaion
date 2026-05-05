@@ -7,6 +7,7 @@ import {
   handleUpdateAdmin,
 } from '../api/allApi';
 import { FiCheckCircle, FiEdit2, FiMail, FiPhone, FiPlus, FiSave, FiShield, FiTrash2, FiUpload, FiUser, FiUsers, FiX, FiXCircle } from 'react-icons/fi';
+import Toast from '../components/ui/Toast';
 
 const AdminUserPage = () => {
   const [admins, setAdmins] = useState([]);
@@ -29,6 +30,17 @@ const AdminUserPage = () => {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [existingImage, setExistingImage] = useState('');
+
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ show: false, message: "", type: "" });
+  };
 
   /* ================= FETCH ================= */
 
@@ -134,12 +146,12 @@ const AdminUserPage = () => {
     if (file) {
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
-        alert('Invalid file type. Please upload JPEG, PNG, GIF, or WEBP images only.');
+        showToast('Invalid file type. Please upload JPEG, PNG, GIF, or WEBP images only.', 'error');
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size too large. Maximum size is 5MB.');
+        showToast('File size too large. Maximum size is 5MB.', 'error');
         return;
       }
 
@@ -175,23 +187,23 @@ const AdminUserPage = () => {
 
     // Validation
     if (!name.trim()) {
-      alert('Name is required');
+      showToast('Name is required', 'error');
       return;
     }
     if (!email.trim()) {
-      alert('Email is required');
+      showToast('Email is required', 'error');
       return;
     }
     if (modalType === 'create' && !password.trim()) {
-      alert('Password is required');
+      showToast('Password is required', 'error');
       return;
     }
     if (!roleId) {
-      alert('Please select a role');
+      showToast('Please select a role', 'error');
       return;
     }
     if (!organizationId) {
-      alert('Organization ID is required');
+      showToast('Organization ID is required', 'error');
       return;
     }
 
@@ -223,16 +235,16 @@ const AdminUserPage = () => {
         await handleCreateAdmin(formData);
         await fetchAllAdmins();
         closeModal();
-        alert('Admin created successfully!');
+        showToast('Admin created successfully!');
       } else {
         await handleUpdateAdmin(currentAdmin.id, formData);
         await fetchAllAdmins();
         closeModal();
-        alert('Admin updated successfully!');
+        showToast('Admin updated successfully!');
       }
     } catch (error) {
       console.error('Error:', error.response?.data || error.message);
-      alert(error.response?.data?.message || 'An error occurred. Please try again.');
+      showToast(error.response?.data?.message || 'An error occurred. Please try again.', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -245,10 +257,10 @@ const AdminUserPage = () => {
       try {
         await handleDeleteAdminAccount(id);
         await fetchAllAdmins();
-        alert('Admin deleted successfully!');
+        showToast('Admin deleted successfully!');
       } catch (error) {
         console.error('Delete failed:', error);
-        alert('Failed to delete admin. Please try again.');
+        showToast('Failed to delete admin. Please try again.', 'error');
       }
     }
   };
@@ -398,8 +410,8 @@ const AdminUserPage = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${admin.status === true
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
                           }`}>
                           {admin.status === true ? (
                             <FiCheckCircle className="w-3 h-3 mr-1" />
@@ -630,8 +642,8 @@ const AdminUserPage = () => {
                       type="button"
                       onClick={() => setStatus(!status)}
                       className={`w-full py-2.5 rounded-xl font-medium transition-all ${status
-                          ? 'bg-green-500 text-white hover:bg-green-600'
-                          : 'bg-gray-400 text-white hover:bg-gray-500'
+                        ? 'bg-green-500 text-white hover:bg-green-600'
+                        : 'bg-gray-400 text-white hover:bg-gray-500'
                         }`}
                     >
                       {status ? 'Active' : 'Inactive'}
@@ -670,6 +682,14 @@ const AdminUserPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
       )}
     </div>
   );

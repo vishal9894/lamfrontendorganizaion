@@ -111,6 +111,7 @@ export const api = {
     getById: (id) => allApi.handleGetRoleById(id),
     create: (data) => allApi.handleCreateRole(data),
     update: (id, data) => allApi.handleUpdateRole(id, data),
+    updatePermissions: (id, data) => allApi.handleUpdateRolePermissions(id, data.permissions, data.name, data.description),
     delete: (id) => allApi.handleDeleteRoleById(id),
   },
 

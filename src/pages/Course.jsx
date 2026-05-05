@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import React from "react";
 import {
   handleCreateFolder,
   handleGetCourse,
@@ -28,7 +27,6 @@ const Course = () => {
   const [files, setFiles] = useState([]);
   const [currentFolder, setCurrentFolder] = useState(null);
   const [folderStack, setFolderStack] = useState([]);
-  const [contents, setContents] = useState([]);
 
   const { setTestData } = useApi();
 
@@ -51,10 +49,8 @@ const Course = () => {
   const fetchCourses = async (page, limit) => {
     try {
       setLoading(true);
-      console.log("Fetching courses with page:", page, "limit:", limit);
 
       const response = await handleGetCourse("regular_course", page, limit);
-      console.log("API Response:", response);
 
       let coursesData = [];
       let totalCount = 0;
@@ -98,11 +94,6 @@ const Course = () => {
         totalPages = Math.ceil(totalCount / limit);
       }
 
-      console.log("Setting courses:", coursesData);
-      console.log("Total count:", totalCount);
-      console.log("Total pages:", totalPages);
-      console.log("Current page from API:", currentPage);
-
       setCourses(coursesData);
       setPagination({
         page: currentPage,
@@ -125,11 +116,7 @@ const Course = () => {
 
 
   const handlePageChange = (newPage) => {
-    console.log("Attempting to change to page:", newPage);
-    console.log("Current pagination:", pagination);
-
     if (newPage >= 1 && newPage <= pagination.totalPages) {
-      console.log("Changing to page:", newPage);
       // Update pagination state first
       setPagination(prev => ({
         ...prev,
@@ -138,13 +125,10 @@ const Course = () => {
       // Then fetch data for the new page
       fetchCourses(newPage, pagination.limit);
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      console.log("Invalid page:", newPage);
     }
   };
 
   const handleLimitChange = (newLimit) => {
-    console.log("Changing limit to:", newLimit);
     setPagination(prev => ({
       ...prev,
       page: 1,
@@ -200,10 +184,6 @@ const Course = () => {
         filesArray = [...filesArray, ...res.files];
       }
 
-      if (res?.data?.fileContents && Array.isArray(res.data.fileContents)) {
-        setContents(res.data.fileContents);
-      }
-
       setFolders(foldersArray);
       setEvents(eventsArray);
       setFiles(filesArray);
@@ -214,7 +194,6 @@ const Course = () => {
       setFolders([]);
       setEvents([]);
       setFiles([]);
-      setContents([]);
       return [];
     } finally {
       setContentLoading(false);
@@ -227,7 +206,7 @@ const Course = () => {
     fetchFolders(parentId);
   }, [selectedCourse, currentFolder]);
 
-  const handleCreateFolder = async (formData, parentFolder) => {
+  const handleCreateFolderLocal = async (formData, parentFolder) => {
     try {
       const form = new FormData();
       form.append("name", formData.name);
@@ -282,7 +261,7 @@ const Course = () => {
     }
   };
 
-  const handleDeleteFolder = async (folder) => {
+  const handleDeleteFolderLocal = async (folder) => {
     try {
       await handleDeleteFolder(folder.id);
       setFolders((prev) => prev.filter((f) => f.id !== folder.id));
@@ -415,10 +394,7 @@ const Course = () => {
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    console.log("Previous button clicked");
-                    handlePageChange(pagination.page - 1);
-                  }}
+                  onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page === 1}
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
@@ -443,10 +419,7 @@ const Course = () => {
                 </div>
 
                 <button
-                  onClick={() => {
-                    console.log("Next button clicked");
-                    handlePageChange(pagination.page + 1);
-                  }}
+                  onClick={() => handlePageChange(pagination.page + 1)}
                   disabled={pagination.page === pagination.totalPages}
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
@@ -467,10 +440,10 @@ const Course = () => {
           onBack={handleBack}
           onBreadcrumbClick={handleBreadcrumbClick}
           onOpenFolder={handleOpenFolder}
-          onCreateFolder={handleCreateFolder}
+          onCreateFolder={handleCreateFolderLocal}
           onCreateContent={handleCreateContent}
           onEditFolder={handleEditFolder}
-          onDeleteFolder={handleDeleteFolder}
+          onDeleteFolder={handleDeleteFolderLocal}
           onDeleteContent={handleDeleteContent}
           folders={folders}
           events={events}

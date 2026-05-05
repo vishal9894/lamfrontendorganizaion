@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   handleGetAllUsers,
-  handleGetCourse,
+  handleGetShortCourseDetails,
   handleAssignMultipleCourses,
 } from "../api/allApi";
 import {
@@ -163,12 +163,12 @@ const AssignMultipleCourses = () => {
     setLoading((prev) => ({ ...prev, courses: true }));
     setError((prev) => ({ ...prev, courses: null }));
     try {
-      const res = await handleGetCourse(type);
-
+      const res = await handleGetShortCourseDetails();
 
       // Handle different response structures
       let coursesData = [];
-      if (res && res.data) {
+      if (res?.data && Array.isArray(res.data)) {
+        coursesData = res.data;
         coursesData = res.data;
       } else if (res && Array.isArray(res)) {
         coursesData = res;

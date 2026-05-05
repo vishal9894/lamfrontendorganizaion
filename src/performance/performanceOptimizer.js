@@ -44,15 +44,15 @@ export class AdvancedCache {
     // Fetch from network
     this.cacheStats.misses++;
     const data = await fetchFn();
-    
+
     // Store in both caches
     this.memoryCache.set(key, {
       data,
       timestamp: Date.now()
     });
-    
+
     await this.setToPersistentCache(key, data, persistentTTL);
-    
+
     return data;
   }
 
@@ -61,7 +61,6 @@ export class AdvancedCache {
       const result = await this.getIndexedDB('cache', key);
       return result;
     } catch (error) {
-      console.warn('Persistent cache read failed:', error);
       return null;
     }
   }
@@ -74,7 +73,7 @@ export class AdvancedCache {
         ttl
       });
     } catch (error) {
-      console.warn('Persistent cache write failed:', error);
+      // Silent fail for cache write
     }
   }
 
@@ -82,18 +81,18 @@ export class AdvancedCache {
   async getIndexedDB(store, key) {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('AppCache', 1);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         const db = request.result;
         const transaction = db.transaction([store], 'readonly');
         const objectStore = transaction.objectStore(store);
         const getRequest = objectStore.get(key);
-        
+
         getRequest.onerror = () => reject(getRequest.error);
         getRequest.onsuccess = () => resolve(getRequest.result);
       };
-      
+
       request.onupgradeneeded = () => {
         const db = request.result;
         if (!db.objectStoreNames.contains(store)) {
@@ -106,14 +105,14 @@ export class AdvancedCache {
   async setIndexedDB(store, key, value) {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('AppCache', 1);
-      
+
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         const db = request.result;
         const transaction = db.transaction([store], 'readwrite');
         const objectStore = transaction.objectStore(store);
         const putRequest = objectStore.put(value, key);
-        
+
         putRequest.onerror = () => reject(putRequest.error);
         putRequest.onsuccess = () => resolve(putRequest.result);
       };
@@ -122,10 +121,10 @@ export class AdvancedCache {
 
   // Cache statistics
   getCacheStats() {
-    const hitRate = this.cacheStats.totalRequests > 0 
+    const hitRate = this.cacheStats.totalRequests > 0
       ? (this.cacheStats.hits / this.cacheStats.totalRequests * 100).toFixed(2)
       : 0;
-    
+
     return {
       ...this.cacheStats,
       hitRate: `${hitRate}%`,
@@ -136,7 +135,7 @@ export class AdvancedCache {
   // Clear expired cache entries
   clearExpiredCache() {
     const now = Date.now();
-    
+
     // Clear expired memory cache
     for (const [key, value] of this.memoryCache.entries()) {
       if (now - value.timestamp > 5 * 60 * 1000) { // 5 minutes
@@ -157,7 +156,7 @@ export class PerformanceMonitor {
       cumulativeLayoutShift: null,
       firstInputDelay: null
     };
-    
+
     this.setupPerformanceObservers();
   }
 
@@ -195,13 +194,13 @@ export class PerformanceMonitor {
     const startTime = performance.now();
     const result = renderFn();
     const endTime = performance.now();
-    
+
     this.logMetric('componentRender', {
       component: componentName,
       duration: endTime - startTime,
       timestamp: Date.now()
     });
-    
+
     return result;
   }
 
@@ -211,18 +210,18 @@ export class PerformanceMonitor {
     try {
       const result = await apiCall();
       const endTime = performance.now();
-      
+
       this.logMetric('apiCall', {
         api: apiName,
         duration: endTime - startTime,
         success: true,
         timestamp: Date.now()
       });
-      
+
       return result;
     } catch (error) {
       const endTime = performance.now();
-      
+
       this.logMetric('apiCall', {
         api: apiName,
         duration: endTime - startTime,
@@ -230,7 +229,7 @@ export class PerformanceMonitor {
         error: error.message,
         timestamp: Date.now()
       });
-      
+
       throw error;
     }
   }
@@ -238,22 +237,22 @@ export class PerformanceMonitor {
   logMetric(type, data) {
     const metrics = JSON.parse(localStorage.getItem('performanceMetrics') || '[]');
     metrics.push({ type, data, timestamp: Date.now() });
-    
+
     // Keep only last 1000 metrics
     if (metrics.length > 1000) {
       metrics.splice(0, metrics.length - 1000);
     }
-    
+
     localStorage.setItem('performanceMetrics', JSON.stringify(metrics));
   }
 
   // Get performance report
   getPerformanceReport() {
     const metrics = JSON.parse(localStorage.getItem('performanceMetrics') || '[]');
-    
+
     const apiCalls = metrics.filter(m => m.type === 'apiCall');
     const componentRenders = metrics.filter(m => m.type === 'componentRender');
-    
+
     const avgApiResponseTime = apiCalls.length > 0
       ? apiCalls.reduce((sum, m) => sum + m.data.duration, 0) / apiCalls.length
       : 0;
@@ -298,7 +297,7 @@ export class ResourceOptimizer {
       };
       img.onerror = reject;
       img.src = src;
-      
+
       if (options.loading === 'lazy') {
         img.loading = 'lazy';
       }
@@ -313,7 +312,7 @@ export class ResourceOptimizer {
         link.rel = 'preload';
         link.href = resource.url;
         link.as = resource.type;
-        
+
         if (resource.type === 'script') {
           link.as = 'script';
         } else if (resource.type === 'style') {
@@ -321,13 +320,13 @@ export class ResourceOptimizer {
         } else if (resource.type === 'image') {
           link.as = 'image';
         }
-        
+
         link.onload = resolve;
         link.onerror = reject;
         document.head.appendChild(link);
       });
     });
-    
+
     return Promise.all(promises);
   }
 
@@ -341,12 +340,12 @@ export class ResourceOptimizer {
       const script = document.createElement('script');
       script.src = `/assets/${bundleName}.js`;
       script.async = true;
-      
+
       script.onload = () => {
         this.loadedScripts.add(bundleName);
         resolve();
       };
-      
+
       script.onerror = reject;
       document.head.appendChild(script);
     });
@@ -392,10 +391,10 @@ export class NetworkOptimizer {
 
   async executeRequest(request) {
     const { url, options = {} } = request;
-    
+
     // Add performance monitoring
     const startTime = performance.now();
-    
+
     try {
       const response = await fetch(url, {
         ...options,
@@ -404,12 +403,12 @@ export class NetworkOptimizer {
           ...options.headers
         }
       });
-      
+
       const endTime = performance.now();
-      
+
       // Log performance
       this.logRequestPerformance(url, endTime - startTime, response.status);
-      
+
       return response;
     } catch (error) {
       const endTime = performance.now();
@@ -430,14 +429,14 @@ export class NetworkOptimizer {
       error: error?.message,
       timestamp: Date.now()
     };
-    
+
     const logs = JSON.parse(localStorage.getItem('networkPerformance') || '[]');
     logs.push(performanceData);
-    
+
     if (logs.length > 500) {
       logs.splice(0, logs.length - 500);
     }
-    
+
     localStorage.setItem('networkPerformance', JSON.stringify(logs));
   }
 }
@@ -459,10 +458,8 @@ export class ServiceWorkerManager {
     if ('serviceWorker' in navigator) {
       try {
         const registration = await navigator.serviceWorker.register('/sw.js');
-        console.log('Service Worker registered:', registration);
         return registration;
       } catch (error) {
-        console.error('Service Worker registration failed:', error);
         throw error;
       }
     }

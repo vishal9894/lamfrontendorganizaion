@@ -22,6 +22,7 @@ import {
 import { useDispatch } from "react-redux";
 import { setStream } from "../redux/features/courseSlice";
 import DeleteModal from "../components/DeleteModal";
+import Toast from "../components/ui/Toast";
 
 
 const ViewStream = () => {
@@ -37,6 +38,17 @@ const ViewStream = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
+
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ show: false, message: "", type: "" });
+  };
 
   const dispatch = useDispatch();
   const { handleError, handleSuccess } = useApiError();
@@ -195,7 +207,7 @@ const ViewStream = () => {
   // Export to CSV
   const exportToCSV = () => {
     if (!streams || streams.length === 0) {
-      alert("No streams to export");
+      showToast("No streams to export", "error");
       return;
     }
 
@@ -616,6 +628,14 @@ const ViewStream = () => {
           />
         )}
       </div>
+
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </div>
   );
 };

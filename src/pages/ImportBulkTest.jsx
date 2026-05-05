@@ -5,6 +5,7 @@ import {
   handleDeleteBulkQuestion,
   handleDeleteAllBulkQuestions
 } from "../api/allApi";
+import DeleteModal from "../components/DeleteModal";
 
 const ImportBulkTest = () => {
   const [file, setFile] = useState(null);
@@ -13,6 +14,9 @@ const ImportBulkTest = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("success");
   const [questions, setQuestions] = useState([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const [deleteMode, setDeleteMode] = useState("single"); // "single" or "all"
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -110,39 +114,54 @@ const ImportBulkTest = () => {
   };
 
   const handleDeleteQuestion = async (id) => {
-    if (!window.confirm("Delete this question?")) return;
-
-    try {
-      const response = await handleDeleteBulkQuestion(id);
-
-      if (response && response.success) {
-        showMessage("Question deleted successfully.", "success");
-        fetchQuestions();
-      } else {
-        showMessage(response?.message || "Failed to delete question.", "error");
-      }
-    } catch (error) {
-      console.error("Delete error:", error);
-      showMessage("Failed to delete question.", "error");
-    }
+    const question = questions.find(q => q.id === id);
+    setSelectedQuestion(question);
+    setDeleteMode("single");
+    setShowDeleteModal(true);
   };
 
   const handleDeleteAll = async () => {
-    if (!window.confirm("Delete ALL questions? This action cannot be undone.")) return;
+    setDeleteMode("all");
+    setShowDeleteModal(true);
+  };
 
+  const confirmDelete = async () => {
     try {
-      const response = await handleDeleteAllBulkQuestions();
+      let response;
 
-      if (response && response.success) {
-        showMessage("All questions deleted successfully.", "success");
-        fetchQuestions();
-      } else {
-        showMessage(response?.message || "Failed to delete all questions.", "error");
+      if (deleteMode === "single" && selectedQuestion) {
+        response = await handleDeleteBulkQuestion(selectedQuestion.id);
+
+        if (response && response.success) {
+          showMessage("Question deleted successfully.", "success");
+          fetchQuestions();
+        } else {
+          showMessage(response?.message || "Failed to delete question.", "error");
+        }
+      } else if (deleteMode === "all") {
+        response = await handleDeleteAllBulkQuestions();
+
+        if (response && response.success) {
+          showMessage("All questions deleted successfully.", "success");
+          fetchQuestions();
+        } else {
+          showMessage(response?.message || "Failed to delete all questions.", "error");
+        }
       }
+
+      setShowDeleteModal(false);
+      setSelectedQuestion(null);
+      setDeleteMode("single");
     } catch (error) {
-      console.error("Delete all error:", error);
-      showMessage("Failed to delete all questions.", "error");
+      console.error("Delete error:", error);
+      showMessage(`Failed to delete ${deleteMode === "all" ? "all questions" : "question"}.`, "error");
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setSelectedQuestion(null);
+    setDeleteMode("single");
   };
 
   useEffect(() => {
@@ -231,8 +250,8 @@ const ImportBulkTest = () => {
           {message && (
             <div
               className={`mt-5 rounded-xl px-4 py-3 text-sm font-medium border ${messageType === "success"
-                  ? "bg-green-50 text-green-700 border-green-200"
-                  : "bg-red-50 text-red-700 border-red-200"
+                ? "bg-green-50 text-green-700 border-green-200"
+                : "bg-red-50 text-red-700 border-red-200"
                 }`}
             >
               {message}
@@ -318,6 +337,21 @@ const ImportBulkTest = () => {
           )}
         </div>
       </div>
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title={deleteMode === "all" ? "Delete All Questions" : "Delete Question"}
+        message={deleteMode === "all"
+          ? "Are you sure you want to delete ALL questions? This action cannot be undone."
+          : `Are you sure you want to delete this question?`}
+        itemName={deleteMode === "all" ? "All Questions" : selectedQuestion?.questionText || "Question"}
+        confirmText="Delete"
+        cancelText="Cancel"
+        size="md"
+      />
     </div>
   );
 };

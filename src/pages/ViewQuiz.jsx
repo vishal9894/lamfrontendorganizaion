@@ -21,6 +21,7 @@ import {
 
 import BulkQuestionCreator from "../components/BulkQuestionCreator";
 import { useNavigate } from "react-router-dom";
+import DeleteModal from "../components/DeleteModal";
 
 // Toast notification component
 const Toast = ({ message, type, onClose }) => {
@@ -57,6 +58,7 @@ const ViewQuiz = () => {
   // Modal states
   const [selectedQuiz, setSelectedQuiz] = useState(null);
   const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentQuestionsCount, setCurrentQuestionsCount] = useState(0);
 
   const navigate = useNavigate();
@@ -177,16 +179,28 @@ const ViewQuiz = () => {
 
   // Handle delete quiz
   const handleDelete = async (quiz) => {
-    if (window.confirm(`Are you sure you want to delete "${quiz.name}"? This action cannot be undone.`)) {
-      try {
-        await deleteQuizMutation.mutateAsync(quiz.id);
-        refetchQuizzes();
-        showToast("Quiz deleted successfully!", "success");
-      } catch (error) {
-        console.error("Error deleting quiz:", error);
-        showToast("Failed to delete quiz", "error");
-      }
+    setSelectedQuiz(quiz);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteQuiz = async () => {
+    if (!selectedQuiz) return;
+
+    try {
+      await deleteQuizMutation.mutateAsync(selectedQuiz.id);
+      refetchQuizzes();
+      showToast("Quiz deleted successfully!", "success");
+      setShowDeleteModal(false);
+      setSelectedQuiz(null);
+    } catch (error) {
+      console.error("Error deleting quiz:", error);
+      showToast("Failed to delete quiz", "error");
     }
+  };
+
+  const cancelDeleteQuiz = () => {
+    setShowDeleteModal(false);
+    setSelectedQuiz(null);
   };
 
   // Stats
@@ -526,6 +540,19 @@ const ViewQuiz = () => {
           animation: slideDown 0.3s ease-out;
         }
       `}</style>
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={cancelDeleteQuiz}
+        onConfirm={confirmDeleteQuiz}
+        title="Delete Quiz"
+        message={`Are you sure you want to delete "${selectedQuiz?.name}"? This action cannot be undone.`}
+        itemName={selectedQuiz?.name}
+        confirmText="Delete"
+        cancelText="Cancel"
+        size="md"
+      />
     </div >
   );
 };

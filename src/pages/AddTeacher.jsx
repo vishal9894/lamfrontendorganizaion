@@ -22,7 +22,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { handleGetCourse } from '../api/allApi';
+import { handleGetShortCourseDetails } from '../api/allApi';
 
 // Delete Modal Component
 const DeleteModal = ({ isOpen, onClose, onConfirm, title, itemName, isLoading, confirmText, cancelText, size }) => {
@@ -121,15 +121,6 @@ const AddTeacher = () => {
   const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
 
-  // Course types to fetch
-  const courseTypes = [
-    "regular_course",
-    "ebook",
-    "free_video_course",
-    "free_pdf_course",
-    "free_test_series"
-  ];
-
   // Handle page change
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
@@ -164,33 +155,18 @@ const AddTeacher = () => {
   const fetchAllCourses = async () => {
     setLoadingCourses(true);
     try {
+      const res = await handleGetShortCourseDetails();
+
       let allCourses = [];
-
-      // Fetch courses for each course type
-      for (const type of courseTypes) {
-        try {
-          const response = await handleGetCourse(type);
-
-          if (response?.data?.course && Array.isArray(response.data.course)) {
-            allCourses.push(...response.data.course);
-          } else if (response?.data && Array.isArray(response.data)) {
-            allCourses.push(...response.data);
-          } else if (Array.isArray(response)) {
-            allCourses.push(...response);
-          } else if (response?.course && Array.isArray(response.course)) {
-            allCourses.push(...response.course);
-          }
-        } catch (err) {
-        }
+      if (res?.data && Array.isArray(res.data)) {
+        allCourses = res.data;
+      } else if (Array.isArray(res)) {
+        allCourses = res;
       }
 
-      // Remove duplicates by ID if any
-      const uniqueCourses = allCourses.filter((course, index, self) =>
-        index === self.findIndex((c) => c.id === course.id)
-      );
-
-      setCourses(uniqueCourses);
+      setCourses(allCourses);
     } catch (err) {
+      console.error("Error fetching courses:", err);
     } finally {
       setLoadingCourses(false);
     }

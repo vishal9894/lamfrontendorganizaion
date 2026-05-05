@@ -23,6 +23,7 @@ import {
   Save,
 } from "lucide-react";
 import { handleCreateCourse, handleGetStream, handleGetTeacher } from "../api/allApi";
+import Toast from "../components/ui/Toast";
 
 const AddCourse = () => {
   // Initial empty form state - FIXED with all required fields
@@ -85,6 +86,17 @@ const AddCourse = () => {
   const [currentChapter, setCurrentChapter] = useState("");
   const [selectedUnitIndex, setSelectedUnitIndex] = useState(null);
   const [expandedUnits, setExpandedUnits] = useState([]);
+
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ show: false, message: "", type: "" });
+  };
 
   // Track if component is mounted
   const [isMounted, setIsMounted] = useState(true);
@@ -237,20 +249,20 @@ const AddCourse = () => {
     if (file) {
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
-        alert("File size should be less than 5MB");
+        showToast("File size should be less than 5MB", "error");
         e.target.value = '';
         return;
       }
 
       // Validate file type
       if (fileName === "courseimage" && !file.type.startsWith("image/")) {
-        alert("Please upload an image file");
+        showToast("Please upload an image file", "error");
         e.target.value = '';
         return;
       }
 
       if ((fileName === "timetable" || fileName === "batchinfo") && file.type !== "application/pdf") {
-        alert("Please upload a PDF file");
+        showToast("Please upload a PDF file", "error");
         e.target.value = '';
         return;
       }
@@ -528,10 +540,6 @@ const AddCourse = () => {
         data.append("batchinfo", files.batchinfo);
       }
 
-      // Log FormData contents for debugging
-      for (let pair of data.entries()) {
-      }
-
       const response = await handleCreateCourse(data);
 
       setSubmitSuccess(true);
@@ -611,7 +619,7 @@ const AddCourse = () => {
           </button>
         </div>
 
-       
+
 
         {/* Validation Summary */}
         {Object.keys(validationErrors).length > 0 && (
@@ -641,8 +649,8 @@ const AddCourse = () => {
                 type="button"
                 onClick={(e) => handleTabChange(tab.id, e)}
                 className={`flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative whitespace-nowrap ${activeTab === tab.id
-                    ? "text-indigo-600"
-                    : "text-gray-500 hover:text-gray-700"
+                  ? "text-indigo-600"
+                  : "text-gray-500 hover:text-gray-700"
                   }`}
               >
                 <div className="flex items-center justify-center gap-1 sm:gap-2">
@@ -690,8 +698,8 @@ const AddCourse = () => {
                             }
                           }}
                           className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${formData.coursetype === type.value
-                              ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                              : "border-gray-200 hover:border-indigo-300 hover:bg-gray-50"
+                            ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                            : "border-gray-200 hover:border-indigo-300 hover:bg-gray-50"
                             }`}
                         >
                           <div className="flex flex-col items-center text-center">
@@ -724,8 +732,8 @@ const AddCourse = () => {
                       })()}
                       onChange={handleStreamChange}
                       className={`w-full px-4 py-3 rounded-xl border transition-all bg-white ${validationErrors.streamname
-                          ? "border-red-500 focus:border-red-500 focus:ring-red-200"
-                          : "border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-200"
+                        : "border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                         }`}
                       required
                     >
@@ -765,8 +773,8 @@ const AddCourse = () => {
                       onKeyDown={handleKeyPress}
                       placeholder="e.g., Full Stack Web Development"
                       className={`w-full px-4 py-3 rounded-xl border transition-all ${validationErrors.coursename
-                          ? "border-red-500 focus:border-red-500 focus:ring-red-200"
-                          : "border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                        ? "border-red-500 focus:border-red-500 focus:ring-red-200"
+                        : "border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                         }`}
                       required
                     />
@@ -859,8 +867,8 @@ const AddCourse = () => {
                             });
                           }}
                           className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${isSelected
-                              ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                              : "border-gray-200 hover:border-indigo-300"
+                            ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                            : "border-gray-200 hover:border-indigo-300"
                             }`}
                         >
                           <div className="flex flex-col items-center">
@@ -937,8 +945,8 @@ const AddCourse = () => {
                         <div
                           key={unit.id}
                           className={`border rounded-xl overflow-hidden ${selectedUnitIndex === index
-                              ? "border-indigo-500 ring-2 ring-indigo-200"
-                              : "border-gray-200"
+                            ? "border-indigo-500 ring-2 ring-indigo-200"
+                            : "border-gray-200"
                             }`}
                         >
                           <div className="flex items-center justify-between p-3 bg-gray-50">
@@ -1305,8 +1313,8 @@ const AddCourse = () => {
                     <p className="text-xs text-red-500 mt-1">{validationErrors.courseimage}</p>
                   )}
                   <div className={`border-2 border-dashed rounded-xl p-4 sm:p-6 text-center transition-colors ${validationErrors.courseimage
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-300 hover:border-indigo-500"
+                    ? "border-red-500 bg-red-50"
+                    : "border-gray-300 hover:border-indigo-500"
                     }`}>
                     {filePreview.courseimage ? (
                       <div className="relative">
@@ -1500,6 +1508,14 @@ const AddCourse = () => {
           }
         }
       `}</style>
+
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </div>
   );
 };

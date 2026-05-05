@@ -63,7 +63,7 @@ export const handleGetAllUsers = async (page = 1, limit = PAGINATION_CONFIG.USER
 
 export const handleUpdateUser = async (id, data) => {
   try {
-    const res = await api.put(`/auth/${id}`, data);
+    const res = await api.patch(`/users/profile/${id}`, data);
     toast.success("User updated successfully");
     return { success: true, data: res.data };
   } catch (error) {
@@ -292,6 +292,16 @@ export const handleGetCourse = async (courseType, page = 1, limit = PAGINATION_C
     };
   }
 };
+
+export const handleGetShortCourseDetails = async ()=>{
+  try {
+    const res = await api.get("/courses/short-details");
+    return res.data
+    
+  } catch (error) {
+    
+  }
+}
 
 export const handlePublishCourse = async (id, publish) => {
   try {

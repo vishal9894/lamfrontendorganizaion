@@ -562,12 +562,14 @@ export const useUpdateRolePermissions = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }) => api.role.updatePermissions(id, data),
+    mutationFn: ({ id, name, description, permissions }) =>
+      api.role.updatePermissions(id, { name, description, permissions }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: apiKeys.roles });
       toast.success('Role permissions updated successfully');
     },
-    onError: () => {
+    onError: (error) => {
+      console.error('Failed to update role permissions:', error);
       toast.error('Failed to update role permissions');
     },
   });

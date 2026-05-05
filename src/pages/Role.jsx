@@ -12,6 +12,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import PermissionsUI from "../components/PermissionsUI";
+import Toast from "../components/ui/Toast";
 
 const Role = () => {
   // Pagination state
@@ -45,6 +46,17 @@ const Role = () => {
   const [creating, setCreating] = useState(false);
   const [rolePermissions, setRolePermissions] = useState([]);
   const [loadingRolePermissions, setLoadingRolePermissions] = useState(false);
+
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ show: false, message: "", type: "" });
+  };
 
   useEffect(() => {
     refetchRoles();
@@ -130,13 +142,13 @@ const Role = () => {
   const handleSaveRole = async () => {
     // Validate role name
     if (!newRoleName.trim()) {
-      alert("Please enter a role name");
+      showToast("Please enter a role name", "error");
       return;
     }
 
     // Validate that at least one permission is selected
     if (!selectedPermissions || selectedPermissions.length === 0) {
-      alert("Please select at least one permission for the role");
+      showToast("Please select at least one permission for the role", "error");
       return;
     }
 
@@ -167,20 +179,21 @@ const Role = () => {
       ) {
         handleCloseCreateModal();
         refreshData();
-        alert(
+        showToast(
           selectedRole
             ? "Role updated successfully"
-            : "Role created successfully",
+            : "Role created successfully"
         );
       } else {
         const errorMsg = response?.message || "Failed to save role";
-        alert(Array.isArray(errorMsg) ? errorMsg.join("\n") : errorMsg);
+        showToast(Array.isArray(errorMsg) ? errorMsg.join(" ") : errorMsg, "error");
       }
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || error.message || "An error occurred";
-      alert(
-        Array.isArray(errorMessage) ? errorMessage.join("\n") : errorMessage,
+      showToast(
+        Array.isArray(errorMessage) ? errorMessage.join(" ") : errorMessage,
+        "error"
       );
     } finally {
       setCreating(false);
@@ -193,7 +206,7 @@ const Role = () => {
         await deleteRoleMutation.mutateAsync(roleId);
         refreshData();
       } catch (error) {
-        alert("Failed to delete role");
+        showToast("Failed to delete role", "error");
       }
     }
   };
@@ -468,6 +481,14 @@ const Role = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
       )}
     </div>
   );

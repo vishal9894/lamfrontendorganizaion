@@ -41,8 +41,9 @@ import {
   handleGetNotificationHistory,
   handleGetStream,
   handleDeleteNotifications,
-  handleGetCourse
+  handleGetShortCourseDetails
 } from "../api/allApi";
+import Toast from "../components/ui/Toast";
 
 const UserPage = () => {
   // Pagination state
@@ -70,6 +71,17 @@ const UserPage = () => {
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const users = allUsers.slice(startIndex, endIndex);
+
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ show: false, message: "", type: "" });
+  };
 
   // Recalculate totalPages based on total users and page size
   const calculatedTotalPages = Math.ceil(totalUsers / pageSize) || 1;
@@ -205,9 +217,11 @@ const UserPage = () => {
   const fetchCourses = async () => {
     setCoursesLoading(true);
     try {
-      const response = await handleGetCourse();
-      if (response.success && response.data) {
+      const response = await handleGetShortCourseDetails();
+      if (response?.data && Array.isArray(response.data)) {
         setAvailableCourses(response.data);
+      } else if (Array.isArray(response)) {
+        setAvailableCourses(response);
       }
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -344,7 +358,7 @@ const UserPage = () => {
       return response.data;
     } catch (error) {
       console.error("Error deleting notification:", error);
-      alert("Error deleting notification");
+      showToast("Error deleting notification", "error");
     }
   };
 
@@ -394,7 +408,7 @@ const UserPage = () => {
       }
     } catch (error) {
       console.error("Update error:", error);
-      
+
     } finally {
       setSaving(false);
     }
@@ -406,14 +420,14 @@ const UserPage = () => {
     try {
       setDeleting(true);
       const res = await deleteUserMutation.mutateAsync(userToDelete.id);
-     
-        refreshData();
-        setShowDeleteModal(false);
-        setUserToDelete(null);
-      
+
+      refreshData();
+      setShowDeleteModal(false);
+      setUserToDelete(null);
+
     } catch (error) {
       console.error("Delete error:", error);
-      
+
     } finally {
       setDeleting(false);
     }
@@ -507,15 +521,15 @@ const UserPage = () => {
 
   const validatePushNotification = () => {
     if (!pushNotification.title.trim()) {
-      alert("Please enter notification title");
+      showToast("Please enter notification title", "error");
       return false;
     }
     if (!pushNotification.message.trim()) {
-      alert("Please enter notification message");
+      showToast("Please enter notification message", "error");
       return false;
     }
     if (pushNotification.type === "stream_specific" && pushNotification.streams.length === 0) {
-      alert("Please select at least one stream for stream-specific notification");
+      showToast("Please select at least one stream for stream-specific notification", "error");
       return false;
     }
     return true;
@@ -556,19 +570,19 @@ const UserPage = () => {
           expireAt: "",
           streams: []
         });
-        alert("Push notification sent successfully!");
+        showToast("Push notification sent successfully!");
         await fetchNotificationHistory();
       } else {
-        alert("Failed to send push notification: " + response.message);
+        showToast("Failed to send push notification: " + response.message, "error");
       }
     } catch (error) {
       console.error("Error sending push notification:", error);
-      alert("Error sending push notification");
+      showToast("Error sending push notification", "error");
     }
   };
 
   const validateInAppNotification = () => {
-  
+
     return true;
   };
 
@@ -615,7 +629,7 @@ const UserPage = () => {
       const response = await handleSendInAppNotification(formData);
 
       if (response.success) {
-        alert("In-app notification sent successfully!");
+        showToast("In-app notification sent successfully!");
         setInAppNotification({
           title: "",
           message: "",
@@ -636,29 +650,29 @@ const UserPage = () => {
         });
         await fetchNotificationHistory();
       } else {
-        alert("Failed to send in-app notification: " + response.message);
+        showToast("Failed to send in-app notification: " + response.message, "error");
       }
     } catch (error) {
       console.error("Error sending in-app notification:", error);
-      alert("Error sending notification");
+      showToast("Error sending notification", "error");
     }
   };
 
   const validateCourseNotification = () => {
     if (!courseNotification.title.trim()) {
-      alert("Please enter notification title");
+      showToast("Please enter notification title", "error");
       return false;
     }
     if (!courseNotification.message.trim()) {
-      alert("Please enter notification message");
+      showToast("Please enter notification message", "error");
       return false;
     }
     if (courseNotification.type === 'course_specific' && courseNotification.courses.length === 0) {
-      alert("Please select at least one course for course-specific notification");
+      showToast("Please select at least one course for course-specific notification", "error");
       return false;
     }
     if (courseNotification.type === 'stream_specific' && courseNotification.streams.length === 0) {
-      alert("Please select at least one stream for stream-specific notification");
+      showToast("Please select at least one stream for stream-specific notification", "error");
       return false;
     }
     return true;
@@ -703,14 +717,14 @@ const UserPage = () => {
           streams: [],
           expireAt: ""
         });
-        alert("Course notification sent successfully!");
+        showToast("Course notification sent successfully!");
         await fetchNotificationHistory();
       } else {
-        alert("Failed to send course notification: " + response.message);
+        showToast("Failed to send course notification: " + response.message, "error");
       }
     } catch (error) {
       console.error("Error sending course notification:", error);
-      alert("Error sending course notification");
+      showToast("Error sending course notification", "error");
     }
   };
 
@@ -1682,6 +1696,14 @@ const UserPage = () => {
           </div>
         )}
       </div>
+
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </div>
   );
 };

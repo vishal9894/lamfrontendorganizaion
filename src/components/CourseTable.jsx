@@ -1,11 +1,4 @@
-import { useState } from "react";
-import { calculatePagination, generatePageNumbers, PAGINATION_CONFIG } from "../utils/pagination";
-
 const CourseTable = ({ courses, onCourseSelect, loading }) => {
-  // Show all courses without pagination since pagination is handled in parent
-  const paginatedCourses = courses;
-
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -35,7 +28,7 @@ const CourseTable = ({ courses, onCourseSelect, loading }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {paginatedCourses.map((course) => (
+            {courses.map((course) => (
               <tr
                 key={course.id}
                 onClick={() => onCourseSelect(course)}

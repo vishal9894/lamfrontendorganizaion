@@ -32,6 +32,7 @@ import {
 import { handleGetOmrSheet, handleDeleteOmrSheet } from "../api/allApi";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Toast from "../components/ui/Toast";
 
 const ViewOmrSheet = () => {
   const [omrSheets, setOmrSheets] = useState([]);
@@ -47,6 +48,17 @@ const ViewOmrSheet = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ show: false, message: "", type: "" });
+  };
 
   // Fetch OMR Sheets
   useEffect(() => {
@@ -85,11 +97,10 @@ const ViewOmrSheet = () => {
       setShowDeleteModal(false);
       setSheetToDelete(null);
 
-      // Show success message (you can add a toast notification here)
-      alert("OMR Sheet deleted successfully!");
+      showToast("OMR Sheet deleted successfully!");
     } catch (err) {
       console.error("Error deleting OMR sheet:", err);
-      alert("Failed to delete OMR sheet. Please try again.");
+      showToast("Failed to delete OMR sheet. Please try again.", "error");
     }
   };
 
@@ -229,7 +240,7 @@ const ViewOmrSheet = () => {
     );
   }
 
-  
+
 
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6">
@@ -470,8 +481,8 @@ const ViewOmrSheet = () => {
                           key={number}
                           onClick={() => paginate(number)}
                           className={`px-3 py-1 rounded-lg transition-colors ${currentPage === number
-                              ? "bg-blue-600 text-white"
-                              : "border border-gray-300 hover:bg-gray-50"
+                            ? "bg-blue-600 text-white"
+                            : "border border-gray-300 hover:bg-gray-50"
                             }`}
                         >
                           {number}
@@ -639,6 +650,14 @@ const ViewOmrSheet = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
       )}
     </div>
   );

@@ -12,6 +12,7 @@ import {
   Plus
 } from 'lucide-react';
 import { useApiError } from '../hooks/useApiError';
+import DeleteModal from './DeleteModal';
 
 const OptimizedDataTable = ({
   useQueryHook,
@@ -29,6 +30,9 @@ const OptimizedDataTable = ({
   const [pageSize, setPageSize] = useState(10);
   const [selectedRows, setSelectedRows] = useState([]);
   const [filters, setFilters] = useState({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteMode, setDeleteMode] = useState("single"); // "single" or "bulk"
+  const [selectedItem, setSelectedItem] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const { handleError, handleSuccess } = useApiError();
 
@@ -91,31 +95,43 @@ const OptimizedDataTable = ({
 
   // Handle delete
   const handleDelete = async (id) => {
-    if (!deleteMutation) return;
-
-    if (!window.confirm('Are you sure you want to delete this item?')) return;
-
-    try {
-      await deleteMutation.mutateAsync(id);
-      handleSuccess('Item deleted successfully');
-    } catch (err) {
-      handleError(err, 'Failed to delete item');
-    }
+    const item = data?.data?.find(item => item.id === id);
+    setSelectedItem(item);
+    setDeleteMode("single");
+    setShowDeleteModal(true);
   };
 
   // Handle bulk delete
   const handleBulkDelete = async () => {
     if (!deleteMutation || selectedRows.length === 0) return;
+    setDeleteMode("bulk");
+    setShowDeleteModal(true);
+  };
 
-    if (!window.confirm(`Are you sure you want to delete ${selectedRows.length} items?`)) return;
+  const confirmDelete = async () => {
+    if (!deleteMutation) return;
 
     try {
-      await Promise.all(selectedRows.map(id => deleteMutation.mutateAsync(id)));
-      handleSuccess(`${selectedRows.length} items deleted successfully`);
-      setSelectedRows([]);
+      if (deleteMode === "single" && selectedItem) {
+        await deleteMutation.mutateAsync(selectedItem.id);
+        handleSuccess('Item deleted successfully');
+      } else if (deleteMode === "bulk") {
+        await Promise.all(selectedRows.map(id => deleteMutation.mutateAsync(id)));
+        handleSuccess(`${selectedRows.length} items deleted successfully`);
+        setSelectedRows([]);
+      }
+      setShowDeleteModal(false);
+      setSelectedItem(null);
+      setDeleteMode("single");
     } catch (err) {
-      handleError(err, 'Failed to delete items');
+      handleError(err, `Failed to delete ${deleteMode === "bulk" ? "items" : "item"}`);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setSelectedItem(null);
+    setDeleteMode("single");
   };
 
   // Handle export
@@ -362,6 +378,21 @@ const OptimizedDataTable = ({
           </div>
         </div>
       </div>
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title={deleteMode === "bulk" ? "Delete Items" : "Delete Item"}
+        message={deleteMode === "bulk"
+          ? `Are you sure you want to delete ${selectedRows.length} items?`
+          : "Are you sure you want to delete this item?"}
+        itemName={deleteMode === "bulk" ? `${selectedRows.length} Items` : selectedItem?.name || "Item"}
+        confirmText="Delete"
+        cancelText="Cancel"
+        size="md"
+      />
     </div>
   );
 };

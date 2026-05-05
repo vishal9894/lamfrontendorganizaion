@@ -16,6 +16,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { handlePublishCourse } from '../api/allApi';
+import Toast from '../components/ui/Toast';
 
 const Ebook = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -24,6 +25,17 @@ const Ebook = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [publishingId, setPublishingId] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
+
+  // Toast state
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+  };
+
+  const hideToast = () => {
+    setToast({ show: false, message: "", type: "" });
+  };
 
   const courseType = "ebook";
 
@@ -100,17 +112,17 @@ const Ebook = () => {
 
   const handleView = (ebook) => {
     // Add your view logic here
-    alert(`Viewing: ${ebook.title}`);
+    showToast(`Viewing: ${ebook.title}`);
   }
 
   const handleEdit = (ebook) => {
     // Add your edit logic here
-    alert(`Edit: ${ebook.title}`);
+    showToast(`Edit: ${ebook.title}`);
   }
 
   const handleDelete = (ebook) => {
     // Add your delete logic here
-    alert(`Delete: ${ebook.title}`);
+    showToast(`Delete: ${ebook.title}`);
   }
 
   return (
@@ -473,6 +485,14 @@ const Ebook = () => {
             animation: slideDown 0.3s ease-out;
           }
         `}</style>
+
+      {toast.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
+        />
+      )}
     </div>
 
   );

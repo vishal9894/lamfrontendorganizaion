@@ -15,6 +15,7 @@ import {
   FileQuestion
 } from "lucide-react";
 import { handleCreateQuestions } from "../api/allApi";
+import DeleteModal from "./DeleteModal";
 
 // Image Uploader Component
 const ImageUploader = ({ field, preview, onUpload, onRemove, label }) => {
@@ -71,9 +72,8 @@ const OptionInput = React.memo(
             placeholder={`Option ${letter} text`}
             value={value}
             onChange={onChange}
-            className={`flex-1 border-2 rounded-lg px-3 py-2 text-sm ${
-              error ? "border-red-300 bg-red-50" : "border-gray-200"
-            }`}
+            className={`flex-1 border-2 rounded-lg px-3 py-2 text-sm ${error ? "border-red-300 bg-red-50" : "border-gray-200"
+              }`}
           />
         </div>
         <div className="mt-2">
@@ -96,20 +96,20 @@ const OptionInput = React.memo(
   }
 );
 
-const BulkQuestionCreator = ({ 
-  isOpen, 
-  onClose, 
-  quizId, 
-  categories, 
+const BulkQuestionCreator = ({
+  isOpen,
+  onClose,
+  quizId,
+  categories,
   totalQuestions,
-  onComplete 
+  onComplete
 }) => {
   // Build question queue with proper counts for each category
   const [questionQueue, setQuestionQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     question: "",
     questionImage: null,
@@ -132,6 +132,7 @@ const BulkQuestionCreator = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [previewImages, setPreviewImages] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSaveButton, setShowSaveButton] = useState(false);
 
   // Build question queue when modal opens - using the count from each category
@@ -195,12 +196,12 @@ const BulkQuestionCreator = ({
   const handleImageChange = (e, field) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     if (file.size > 5 * 1024 * 1024) {
       setErrors((prev) => ({ ...prev, [field]: "Image must be less than 5MB" }));
       return;
     }
-    
+
     setFormData((prev) => ({ ...prev, [field]: file }));
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -273,7 +274,7 @@ const BulkQuestionCreator = ({
         "option_d_image",
         "solutionImage",
       ];
-      
+
       imageFields.forEach((field) => {
         if (formData[field] && formData[field] instanceof File) {
           submitData.append(field, formData[field]);
@@ -290,8 +291,8 @@ const BulkQuestionCreator = ({
       }
     } catch (err) {
       console.error("Error creating question:", err);
-      setErrors({ 
-        general: err.response?.data?.message || err.message || "An unexpected error occurred." 
+      setErrors({
+        general: err.response?.data?.message || err.message || "An unexpected error occurred."
       });
       return false;
     }
@@ -300,18 +301,18 @@ const BulkQuestionCreator = ({
   const handleSaveAndNext = async () => {
     setLoading(true);
     setErrors({});
-    
+
     const saved = await saveCurrentQuestion();
-    
+
     if (saved) {
       // Mark current question as completed
       const updatedQueue = [...questionQueue];
       updatedQueue[currentIndex] = { ...updatedQueue[currentIndex], isCompleted: true };
       setQuestionQueue(updatedQueue);
-      
+
       const newCompletedCount = completedCount + 1;
       setCompletedCount(newCompletedCount);
-      
+
       if (isLastQuestion) {
         // All questions completed - show save button
         setShowSaveButton(true);
@@ -325,14 +326,14 @@ const BulkQuestionCreator = ({
         setTimeout(() => setSuccessMessage(""), 2000);
       }
     }
-    
+
     setLoading(false);
   };
 
   const handleSaveAll = async () => {
     setIsSubmitting(true);
     setErrors({});
-    
+
     // Save the last question if not already saved
     if (!questionQueue[currentIndex]?.isCompleted) {
       const saved = await saveCurrentQuestion();
@@ -341,7 +342,7 @@ const BulkQuestionCreator = ({
         return;
       }
     }
-    
+
     // All questions are saved
     setTimeout(() => {
       setIsSubmitting(false);
@@ -352,12 +353,19 @@ const BulkQuestionCreator = ({
 
   const handleClose = () => {
     if (completedCount > 0 && completedCount < questionQueue.length) {
-      if (window.confirm(`You have created ${completedCount} of ${questionQueue.length} questions. Are you sure you want to cancel?`)) {
-        onClose();
-      }
+      setShowDeleteModal(true);
     } else {
       onClose();
     }
+  };
+
+  const confirmClose = () => {
+    setShowDeleteModal(false);
+    onClose();
+  };
+
+  const cancelClose = () => {
+    setShowDeleteModal(false);
   };
 
   if (!isOpen) return null;
@@ -372,14 +380,14 @@ const BulkQuestionCreator = ({
             <h2 className="text-2xl font-bold">All Questions Created!</h2>
             <p className="text-green-100 mt-1">You have successfully created all {questionQueue.length} questions</p>
           </div>
-          
+
           <div className="p-6 text-center">
             <div className="bg-green-50 rounded-lg p-4 mb-6">
               <div className="text-3xl font-bold text-green-600">{completedCount}</div>
               <div className="text-sm text-green-700">Questions Created</div>
               <div className="text-xs text-green-600 mt-1">out of {questionQueue.length} total</div>
             </div>
-            
+
             <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
               {questionQueue.map((q, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-sm">
@@ -388,7 +396,7 @@ const BulkQuestionCreator = ({
                 </div>
               ))}
             </div>
-            
+
             <button
               onClick={handleSaveAll}
               disabled={isSubmitting}
@@ -406,7 +414,7 @@ const BulkQuestionCreator = ({
                 </>
               )}
             </button>
-            
+
             <button
               onClick={onClose}
               className="w-full mt-3 px-6 py-2 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition"
@@ -462,7 +470,7 @@ const BulkQuestionCreator = ({
 
         {/* Progress Bar */}
         <div className="w-full bg-gray-100 h-1">
-          <div 
+          <div
             className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all duration-500"
             style={{ width: `${progressPercentage}%` }}
           />
@@ -475,17 +483,16 @@ const BulkQuestionCreator = ({
               const catQuestions = questionQueue.filter(q => q.categoryIndex === idx);
               const completedInCat = catQuestions.filter(q => q.isCompleted).length;
               const isCurrentCat = currentQuestion.categoryIndex === idx;
-              
+
               return (
-                <div 
+                <div
                   key={idx}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                    isCurrentCat 
-                      ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-300' 
-                      : completedInCat === catQuestions.length && catQuestions.length > 0
-                        ? 'bg-green-100 text-green-700 border border-green-200'
-                        : 'bg-gray-100 text-gray-500 border border-gray-200'
-                  }`}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${isCurrentCat
+                    ? 'bg-indigo-100 text-indigo-700 border-2 border-indigo-300'
+                    : completedInCat === catQuestions.length && catQuestions.length > 0
+                      ? 'bg-green-100 text-green-700 border border-green-200'
+                      : 'bg-gray-100 text-gray-500 border border-gray-200'
+                    }`}
                 >
                   {cat.name}: {completedInCat}/{cat.count}
                   {isCurrentCat && <span className="ml-1 animate-pulse">←</span>}
@@ -526,13 +533,12 @@ const BulkQuestionCreator = ({
               return (
                 <div key={step.number} className="flex items-center gap-2">
                   <div
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-                      isActive
-                        ? "bg-gray-900 text-white"
-                        : isCompleted
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${isActive
+                      ? "bg-gray-900 text-white"
+                      : isCompleted
                         ? "bg-green-100 text-green-700"
                         : "bg-gray-100 text-gray-500"
-                    }`}
+                      }`}
                   >
                     {isCompleted ? <CheckCircle size={16} /> : <Icon size={16} />}
                     <span className="text-sm font-medium hidden sm:inline">{step.title}</span>
@@ -566,9 +572,8 @@ const BulkQuestionCreator = ({
                   value={formData.question}
                   onChange={handleChange}
                   placeholder="Enter your question..."
-                  className={`w-full px-4 py-3 border-2 rounded-xl text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-indigo-200 ${
-                    errors.question ? "border-red-300 bg-red-50" : "border-gray-200"
-                  }`}
+                  className={`w-full px-4 py-3 border-2 rounded-xl text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-indigo-200 ${errors.question ? "border-red-300 bg-red-50" : "border-gray-200"
+                    }`}
                   rows={4}
                 />
                 {errors.question && <p className="mt-1 text-xs text-red-500">{errors.question}</p>}
@@ -660,11 +665,10 @@ const BulkQuestionCreator = ({
                       key={opt}
                       type="button"
                       onClick={() => setFormData((prev) => ({ ...prev, correctOption: opt }))}
-                      className={`py-2 px-6 rounded-lg border text-sm font-medium transition-all ${
-                        formData.correctOption === opt
-                          ? "bg-green-600 text-white border-green-600"
-                          : "border-gray-300 text-gray-600 hover:border-gray-400"
-                      }`}
+                      className={`py-2 px-6 rounded-lg border text-sm font-medium transition-all ${formData.correctOption === opt
+                        ? "bg-green-600 text-white border-green-600"
+                        : "border-gray-300 text-gray-600 hover:border-gray-400"
+                        }`}
                     >
                       {opt}
                     </button>
@@ -723,7 +727,7 @@ const BulkQuestionCreator = ({
               <ChevronLeft size={16} className="inline mr-1" />
               Back
             </button>
-            
+
             {currentStep < 3 ? (
               <button
                 type="button"
@@ -760,6 +764,19 @@ const BulkQuestionCreator = ({
           </div>
         </div>
       </div>
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={cancelClose}
+        onConfirm={confirmClose}
+        title="Cancel Question Creation"
+        message={`You have created ${completedCount} of ${questionQueue.length} questions. Are you sure you want to cancel?`}
+        itemName="Question Creation"
+        confirmText="Cancel"
+        cancelText="Continue"
+        size="md"
+      />
     </div>
   );
 };

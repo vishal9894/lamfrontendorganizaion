@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 
 import { toast } from 'react-toastify';
+import DeleteModal from '../components/DeleteModal';
 
 
 
@@ -13,6 +14,7 @@ const UserManagement = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
@@ -127,18 +129,29 @@ const UserManagement = () => {
   };
 
   const handleDeactivateUser = async (userId) => {
-    if (!window.confirm('Are you sure you want to deactivate this user?')) {
-      return;
-    }
+    const user = users.find(u => u.id === userId);
+    setSelectedUser(user);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeactivateUser = async () => {
+    if (!selectedUser) return;
 
     try {
-      await userApiCalls.deactivateUser(userId);
+      await userApiCalls.deactivateUser(selectedUser.id);
       fetchUsers();
       toast.success('User deactivated successfully');
+      setShowDeleteModal(false);
+      setSelectedUser(null);
     } catch (error) {
       console.error('Failed to deactivate user:', error);
       toast.error(error.message || 'Failed to deactivate user');
     }
+  };
+
+  const cancelDeactivateUser = () => {
+    setShowDeleteModal(false);
+    setSelectedUser(null);
   };
 
   const resetForm = () => {
@@ -673,6 +686,19 @@ const UserManagement = () => {
           </div>
         )}
       </Modal>
+
+      {/* Delete Modal */}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={cancelDeactivateUser}
+        onConfirm={confirmDeactivateUser}
+        title="Deactivate User"
+        message={`Are you sure you want to deactivate "${selectedUser?.name}"? This action can be reversed later.`}
+        itemName={selectedUser?.name}
+        confirmText="Deactivate"
+        cancelText="Cancel"
+        size="md"
+      />
     </div>
   );
 };

@@ -24,7 +24,6 @@ const Signup = () => {
   };
 
   const handleSubmit = async (e) => {
-    // Added 'async' keyword
     e.preventDefault();
     setError("");
     setLoading(true);
