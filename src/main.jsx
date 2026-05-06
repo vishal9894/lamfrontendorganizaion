@@ -10,6 +10,7 @@ import { ToastContainer } from "react-toastify";
 import { UseApiProvider } from "./context/AppState.jsx";
 import { QueryDevTools } from "./utils/reactQueryDevtools";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 // Create a client with optimized caching
 const queryClient = new QueryClient({
@@ -72,6 +73,7 @@ createRoot(document.getElementById("root")).render(
           </UseApiProvider>
         </BrowserRouter>
         <QueryDevTools />
+        <SpeedInsights />
       </QueryClientProvider>
     </ErrorBoundary>
   </StrictMode>,
