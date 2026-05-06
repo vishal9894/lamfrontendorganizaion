@@ -132,8 +132,6 @@ export const protectedRoutes = [
     path: "/courses/categories",
     element: <CourseManagement />,
   },
-
-  // Instructor Routes
   {
     path: "/instructor/courses",
     element: <CourseManagement />,
@@ -142,6 +140,8 @@ export const protectedRoutes = [
     path: "/instructor/courses/create",
     element: <CourseManagement />,
   },
+
+  // Instructor Routes
   {
     path: "/instructor/students",
     element: <UserManagement />,
@@ -309,7 +309,7 @@ export const protectedRoutes = [
     element: <ViewStream />,
   },
 
-  // Course Actions
+  // Courses
   {
     path: "/courses/add",
     element: <AddCourse />,
@@ -416,7 +416,7 @@ export const protectedRoutes = [
   },
 ];
 
-// Default redirect for authenticated users
+// Default redirect
 export const defaultRoute = {
   path: "/",
   element: <Navigate to="/dashboard" replace />,

@@ -30,6 +30,8 @@ const Login = () => {
 
       toast.success(data.message);
 
+      navigate("/dashboard");
+
       if (data.token) {
         localStorage.setItem("authToken", data.token);
         navigate(from, { replace: true });
