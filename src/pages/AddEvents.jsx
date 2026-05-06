@@ -56,7 +56,6 @@ const AddEvents = () => {
       setFetchingCourses(true);
       const res = await handleGetShortCourseDetails();
 
-      console.log("Short course details response:", res);
 
       let allCourses = [];
       if (res?.data && Array.isArray(res.data)) {
@@ -65,10 +64,8 @@ const AddEvents = () => {
         allCourses = res;
       }
 
-      console.log("Parsed courses:", allCourses);
       setCourses(allCourses);
     } catch (error) {
-      console.error("Error fetching courses:", error);
       showNotification("error", "Failed to load courses");
     } finally {
       setFetchingCourses(false);
@@ -86,7 +83,6 @@ const AddEvents = () => {
       setLoading(true);
       const res = await handleGetFolders(courseId);
 
-      console.log("Folders API response:", res);
 
       // Handle different response structures
       let folderData = [];
@@ -102,11 +98,9 @@ const AddEvents = () => {
         folderData = [res.folder];
       }
 
-      console.log("Parsed folder data:", folderData);
 
       setFolders(folderData);
     } catch (error) {
-      console.error("Error fetching folders:", error);
       showNotification("error", "Failed to load folders");
       setFolders([]);
     } finally {
@@ -130,8 +124,6 @@ const AddEvents = () => {
       const courseName = selectedCourse ? (selectedCourse.courseName || selectedCourse.coursename || selectedCourse.title) : "";
       setSelectedCourseName(courseName);
 
-      console.log("Selected course:", selectedCourse);
-      console.log("Course ID being sent to fetchFolders:", value);
 
       setFormData((prev) => ({
         ...prev,
@@ -253,8 +245,6 @@ const AddEvents = () => {
       }
 
     } catch (error) {
-      console.error("Error creating event:", error);
-      const errorMessage = error?.response?.data?.message || error?.message || "Event creation failed";
       showNotification("error", errorMessage);
     } finally {
       setLoading(false);

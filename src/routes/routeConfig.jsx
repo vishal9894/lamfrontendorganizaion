@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 
 // Auth components
 import Login from "../auth/Login";
-import Signup from "../auth/Signup";
+
 
 // Layout components
 import Homelayout from "../layout/Homelayout";
@@ -75,10 +75,7 @@ import ViewTestQuestions from "../components/ViewTestQuestions";
 
 // Public routes (no authentication required)
 export const publicRoutes = [
-  {
-    path: "/signup",
-    element: <Signup />,
-  },
+  
   {
     path: "/login",
     element: <Login />,

@@ -5,11 +5,11 @@ import { ErrorOutline, Refresh } from '@mui/icons-material';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { 
-      hasError: false, 
-      error: null, 
+    this.state = {
+      hasError: false,
+      error: null,
       errorInfo: null,
-      errorId: null 
+      errorId: null
     };
   }
 
@@ -21,7 +21,7 @@ class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     // Generate unique error ID for tracking
     const errorId = `ERR_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     this.setState({
       error: error,
       errorInfo: errorInfo,
@@ -30,10 +30,10 @@ class ErrorBoundary extends React.Component {
 
     // Log error to monitoring service
     this.logErrorToService(error, errorInfo, errorId);
-    
+
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
-      console.error('Error caught by boundary:', error, errorInfo);
+      // Error caught by boundary: error, errorInfo
     }
   }
 
@@ -116,11 +116,11 @@ class ErrorBoundary extends React.Component {
                 mb: 2
               }}
             />
-            
+
             <Typography variant="h5" gutterBottom color="error.main">
               Oops! Something went wrong
             </Typography>
-            
+
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
               We're sorry, but something unexpected happened. Our team has been notified.
             </Typography>
@@ -155,7 +155,7 @@ class ErrorBoundary extends React.Component {
               >
                 Try Again
               </Button>
-              
+
               <Button
                 variant="outlined"
                 onClick={this.handleReload}

@@ -79,7 +79,6 @@ const ViewOmrSheet = () => {
       setFilteredSheets(validSheets);
       setError(null);
     } catch (err) {
-      console.error("Error fetching OMR sheets:", err);
       setError("Failed to load OMR sheets. Please try again.");
     } finally {
       setLoading(false);
@@ -99,7 +98,6 @@ const ViewOmrSheet = () => {
 
       showToast("OMR Sheet deleted successfully!");
     } catch (err) {
-      console.error("Error deleting OMR sheet:", err);
       showToast("Failed to delete OMR sheet. Please try again.", "error");
     }
   };

@@ -127,7 +127,6 @@ const AddCourse = () => {
         setStreams([]);
       }
     } catch (error) {
-      console.error("Failed to fetch streams:", error);
       setStreams([]);
     } finally {
       if (isMounted) setLoadingStreams(false);
@@ -151,11 +150,9 @@ const AddCourse = () => {
         // If response is directly an array
         setTeachers(response);
       } else {
-        console.warn("Unexpected teachers response format:", response);
         setTeachers([]);
       }
     } catch (error) {
-      console.error("Failed to fetch teachers:", error);
       setTeachers([]);
     } finally {
       if (isMounted) setLoadingTeachers(false);
@@ -550,7 +547,6 @@ const AddCourse = () => {
       }, 2000);
 
     } catch (error) {
-      console.error("Failed to create course:", error);
       setSubmitError(error.message || "Failed to create course. Please try again.");
     } finally {
       setSubmitting(false);

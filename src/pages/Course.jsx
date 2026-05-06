@@ -102,7 +102,6 @@ const Course = () => {
         totalPages: totalPages
       });
     } catch (error) {
-      console.error("Failed to load courses:", error);
       showToast("Failed to load courses", "error");
     } finally {
       setLoading(false);
@@ -190,7 +189,6 @@ const Course = () => {
 
       return foldersArray;
     } catch (err) {
-      console.error("Failed to fetch folders:", err);
       setFolders([]);
       setEvents([]);
       setFiles([]);
@@ -232,7 +230,6 @@ const Course = () => {
       setFolders((prev) => [...prev, newFolder]);
       showToast("Folder created successfully!", "success");
     } catch (error) {
-      console.error("Failed to create folder:", error);
       showToast("Failed to create folder", "error");
     }
   };
@@ -256,7 +253,6 @@ const Course = () => {
       );
       showToast("Folder updated successfully!", "success");
     } catch (error) {
-      console.error("Failed to update folder:", error);
       showToast("Failed to update folder", "error");
     }
   };
@@ -267,7 +263,6 @@ const Course = () => {
       setFolders((prev) => prev.filter((f) => f.id !== folder.id));
       showToast("Folder deleted successfully!", "success");
     } catch (error) {
-      console.error("Failed to delete folder:", error);
       showToast("Failed to delete folder", "error");
     }
   };
@@ -286,7 +281,6 @@ const Course = () => {
         showToast(response?.message || "Failed to add content", "error");
       }
     } catch (error) {
-      console.error("Failed to add content:", error);
       showToast("Failed to add content", "error");
     }
   };
@@ -299,7 +293,6 @@ const Course = () => {
       );
       showToast("Content deleted successfully!", "success");
     } catch (error) {
-      console.error("Failed to delete content:", error);
       showToast("Failed to delete content", "error");
     }
   };

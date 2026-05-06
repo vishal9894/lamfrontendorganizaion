@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  FiArrowLeft, FiPlus, FiUpload, FiCheckCircle, FiXCircle, 
-  FiFileText, FiBookOpen, FiHelpCircle, FiAward, FiSave,
-  FiTrash2, FiEye, FiDownload, FiFile, FiAlertCircle
+import {
+  FiArrowLeft, FiPlus, FiUpload, FiCheckCircle, FiXCircle,
+  FiFileText, FiBookOpen, FiSave, FiTrash2, FiFile, FiAlertCircle
 } from 'react-icons/fi';
 import { handleCreateTestQuestion, handleGetTests, handleGetTestQuestions, handleBulkUploadQuestions } from '../api/allApi';
 
@@ -41,7 +40,7 @@ function SimpleTextEditor({ value, onChange, placeholder }) {
       <textarea
         ref={textareaRef}
         value={value}
-        onChange={(e)=>onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={6}
         className='w-full p-4 outline-none resize-y focus:ring-2 focus:ring-blue-500 transition-all'
@@ -50,86 +49,86 @@ function SimpleTextEditor({ value, onChange, placeholder }) {
   );
 }
 
-export default function ManageQuestions(){
+export default function ManageQuestions() {
   const { testId } = useParams();
   const navigate = useNavigate();
-  const [categories,setCategories] = useState([]);
-  const [selectedCategory,setSelectedCategory] = useState('');
-  const [questionsCreated,setQuestionsCreated] = useState(0);
-  const [questionsLimit,setQuestionsLimit] = useState(0);
-  const [loading,setLoading] = useState(false);
-  const [error,setError] = useState('');
-  const [success,setSuccess] = useState('');
-  const [bulkFile,setBulkFile] = useState(null);
-  const [previewQuestions,setPreviewQuestions] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [questionsCreated, setQuestionsCreated] = useState(0);
+  const [questionsLimit, setQuestionsLimit] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [bulkFile, setBulkFile] = useState(null);
+  const [previewQuestions, setPreviewQuestions] = useState([]);
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [fileName, setFileName] = useState('');
 
   const emptyForm = {
-    question:'', option_a:'', option_b:'', option_c:'', option_d:'', correctOption:'', marks:'', solution:''
+    question: '', option_a: '', option_b: '', option_c: '', option_d: '', correctOption: '', marks: '', solution: ''
   };
-  const [formData,setFormData] = useState(emptyForm);
+  const [formData, setFormData] = useState(emptyForm);
 
-  useEffect(()=>{ loadTest(); },[testId]);
-  useEffect(()=>{ if(selectedCategory) loadQuestions(); },[selectedCategory]);
+  useEffect(() => { loadTest(); }, [testId]);
+  useEffect(() => { if (selectedCategory) loadQuestions(); }, [selectedCategory]);
 
-  async function loadTest(){
-    try{
+  async function loadTest() {
+    try {
       const res = await handleGetTests(testId);
       const data = res.content || res;
       let cats = [];
-      try { cats = typeof data.categories==='string' ? JSON.parse(data.categories) : (data.categories||[]); } catch {}
-      const mapped = cats.filter(x=>x.category).map(x=>({name:x.category,count:Number(x.questions||0)}));
+      try { cats = typeof data.categories === 'string' ? JSON.parse(data.categories) : (data.categories || []); } catch { }
+      const mapped = cats.filter(x => x.category).map(x => ({ name: x.category, count: Number(x.questions || 0) }));
       setCategories(mapped);
-      if(mapped[0]) setSelectedCategory(mapped[0].name);
-    }catch(e){ setError('Failed to load test'); }
+      if (mapped[0]) setSelectedCategory(mapped[0].name);
+    } catch (e) { setError('Failed to load test'); }
   }
 
-  async function loadQuestions(){
-    try{
+  async function loadQuestions() {
+    try {
       const res = await handleGetTestQuestions(testId);
       const list = res.data || res || [];
-      const count = list.filter(x=>x.category===selectedCategory).length;
+      const count = list.filter(x => x.category === selectedCategory).length;
       setQuestionsCreated(count);
-      const cat = categories.find(x=>x.name===selectedCategory);
+      const cat = categories.find(x => x.name === selectedCategory);
       setQuestionsLimit(cat?.count || 0);
-    }catch(e){}
+    } catch (e) { }
   }
 
-  function change(e){ setFormData(p=>({...p,[e.target.name]:e.target.value})); }
+  function change(e) { setFormData(p => ({ ...p, [e.target.name]: e.target.value })); }
 
-  async function submit(e){
+  async function submit(e) {
     e.preventDefault();
-    if(!formData.question.trim()){ setError('Question is required'); return; }
-    if(!formData.option_a.trim() || !formData.option_b.trim() || !formData.option_c.trim() || !formData.option_d.trim()){
+    if (!formData.question.trim()) { setError('Question is required'); return; }
+    if (!formData.option_a.trim() || !formData.option_b.trim() || !formData.option_c.trim() || !formData.option_d.trim()) {
       setError('All options are required'); return;
     }
-    if(!formData.correctOption){ setError('Please select correct answer'); return; }
-    if(!formData.marks){ setError('Marks are required'); return; }
+    if (!formData.correctOption) { setError('Please select correct answer'); return; }
+    if (!formData.marks) { setError('Marks are required'); return; }
 
     setLoading(true); setError(''); setSuccess('');
-    try{
+    try {
       const fd = new FormData();
-      Object.entries(formData).forEach(([k,v])=>fd.append(k,v));
-      fd.append('contentId',testId);
-      fd.append('category',selectedCategory);
-      fd.append('questionNumber', String(questionsCreated+1));
+      Object.entries(formData).forEach(([k, v]) => fd.append(k, v));
+      fd.append('contentId', testId);
+      fd.append('category', selectedCategory);
+      fd.append('questionNumber', String(questionsCreated + 1));
       await handleCreateTestQuestion(testId, fd);
       setSuccess('✓ Question created successfully!');
       setFormData(emptyForm);
       loadQuestions();
       setTimeout(() => setSuccess(''), 3000);
-    }catch(err){ setError('Failed to create question'); }
-    finally{ setLoading(false); }
+    } catch (err) { setError('Failed to create question'); }
+    finally { setLoading(false); }
   }
 
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
-    if(file){
+    if (file) {
       const validTypes = ['.doc', '.docx'];
       const fileExt = '.' + file.name.split('.').pop();
-      if(!validTypes.includes(fileExt.toLowerCase())){
+      if (!validTypes.includes(fileExt.toLowerCase())) {
         setError('Please select a .doc or .docx file');
         return;
       }
@@ -139,43 +138,43 @@ export default function ManageQuestions(){
     }
   };
 
-  async function handleBulkUpload(){
-    if(!bulkFile){ setError('Please select a .doc or .docx file first'); return; }
-    try{
+  async function handleBulkUpload() {
+    if (!bulkFile) { setError('Please select a .doc or .docx file first'); return; }
+    try {
       setLoading(true); setError(''); setSuccess('');
       setUploadProgress(0);
-      
+
       const fd = new FormData();
       fd.append('file', bulkFile);
       fd.append('contentId', testId);
       fd.append('category', selectedCategory);
-      
+
       // Simulate progress
       const interval = setInterval(() => {
         setUploadProgress(prev => prev < 90 ? prev + 10 : prev);
       }, 200);
-      
+
       const res = await handleBulkUploadQuestions(testId, fd);
       clearInterval(interval);
       setUploadProgress(100);
-      
+
       const questions = res?.data || res?.questions || [];
       setPreviewQuestions(Array.isArray(questions) ? questions : []);
       setSuccess(`✓ Successfully uploaded ${questions.length} questions!`);
       loadQuestions();
       setBulkFile(null);
       setFileName('');
-      
+
       setTimeout(() => {
         setSuccess('');
         setPreviewQuestions([]);
         setUploadProgress(0);
       }, 5000);
-      
-    }catch(e){
+
+    } catch (e) {
       setError('Bulk upload failed. Please check file format.');
       setUploadProgress(0);
-    }finally{
+    } finally {
       setLoading(false);
     }
   }
@@ -186,7 +185,7 @@ export default function ManageQuestions(){
     setError('');
   };
 
-  const progress = (questionsCreated/questionsLimit)*100;
+  const progress = (questionsCreated / questionsLimit) * 100;
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-blue-50/30'>
@@ -195,8 +194,8 @@ export default function ManageQuestions(){
         <div className='bg-white rounded-2xl shadow-sm border border-gray-200 p-6'>
           <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
             <div className='flex items-center gap-4'>
-              <button 
-                onClick={()=>navigate(-1)} 
+              <button
+                onClick={() => navigate(-1)}
                 className='p-2 hover:bg-gray-100 rounded-xl transition-colors'
               >
                 <FiArrowLeft className='w-6 h-6 text-gray-600' />
@@ -245,12 +244,12 @@ export default function ManageQuestions(){
           <div className='grid md:grid-cols-2 gap-4'>
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>Select Category</label>
-              <select 
-                value={selectedCategory} 
-                onChange={(e)=>setSelectedCategory(e.target.value)} 
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
                 className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full'
               >
-                {categories.map(c=>(
+                {categories.map(c => (
                   <option key={c.name} value={c.name}>{c.name}</option>
                 ))}
               </select>
@@ -261,7 +260,7 @@ export default function ManageQuestions(){
                 <span className='text-sm text-gray-600'>{questionsCreated}/{questionsLimit} questions</span>
               </div>
               <div className='w-full bg-gray-200 rounded-full h-3'>
-                <div 
+                <div
                   className='bg-gradient-to-r from-blue-600 to-indigo-600 h-3 rounded-full transition-all duration-500'
                   style={{ width: `${Math.min(progress, 100)}%` }}
                 ></div>
@@ -276,17 +275,17 @@ export default function ManageQuestions(){
             <FiPlus className='w-5 h-5 text-green-600' />
             <h2 className='text-lg font-semibold text-gray-900'>Create New Question</h2>
           </div>
-          
+
           <form onSubmit={submit} className='space-y-5'>
             {/* Question */}
             <div>
               <label className='block text-sm font-medium text-gray-700 mb-2'>
                 Question <span className='text-red-500'>*</span>
               </label>
-              <SimpleTextEditor 
-                value={formData.question} 
-                onChange={(v)=>setFormData(p=>({...p,question:v}))} 
-                placeholder='Write your question here...' 
+              <SimpleTextEditor
+                value={formData.question}
+                onChange={(v) => setFormData(p => ({ ...p, question: v }))}
+                placeholder='Write your question here...'
               />
             </div>
 
@@ -296,33 +295,33 @@ export default function ManageQuestions(){
                 Answer Options <span className='text-red-500'>*</span>
               </label>
               <div className='grid md:grid-cols-2 gap-4'>
-                <input 
-                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent' 
-                  name='option_a' 
-                  value={formData.option_a} 
-                  onChange={change} 
-                  placeholder='Option A' 
+                <input
+                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  name='option_a'
+                  value={formData.option_a}
+                  onChange={change}
+                  placeholder='Option A'
                 />
-                <input 
-                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent' 
-                  name='option_b' 
-                  value={formData.option_b} 
-                  onChange={change} 
-                  placeholder='Option B' 
+                <input
+                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  name='option_b'
+                  value={formData.option_b}
+                  onChange={change}
+                  placeholder='Option B'
                 />
-                <input 
-                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent' 
-                  name='option_c' 
-                  value={formData.option_c} 
-                  onChange={change} 
-                  placeholder='Option C' 
+                <input
+                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  name='option_c'
+                  value={formData.option_c}
+                  onChange={change}
+                  placeholder='Option C'
                 />
-                <input 
-                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent' 
-                  name='option_d' 
-                  value={formData.option_d} 
-                  onChange={change} 
-                  placeholder='Option D' 
+                <input
+                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                  name='option_d'
+                  value={formData.option_d}
+                  onChange={change}
+                  placeholder='Option D'
                 />
               </div>
             </div>
@@ -333,10 +332,10 @@ export default function ManageQuestions(){
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Correct Answer <span className='text-red-500'>*</span>
                 </label>
-                <select 
-                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full' 
-                  name='correctOption' 
-                  value={formData.correctOption} 
+                <select
+                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full'
+                  name='correctOption'
+                  value={formData.correctOption}
                   onChange={change}
                 >
                   <option value=''>Select Correct Answer</option>
@@ -350,13 +349,13 @@ export default function ManageQuestions(){
                 <label className='block text-sm font-medium text-gray-700 mb-2'>
                   Marks <span className='text-red-500'>*</span>
                 </label>
-                <input 
-                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full' 
-                  type='number' 
-                  name='marks' 
-                  value={formData.marks} 
-                  onChange={change} 
-                  placeholder='Enter marks' 
+                <input
+                  className='border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full'
+                  type='number'
+                  name='marks'
+                  value={formData.marks}
+                  onChange={change}
+                  placeholder='Enter marks'
                 />
               </div>
             </div>
@@ -366,17 +365,17 @@ export default function ManageQuestions(){
               <label className='block text-sm font-medium text-gray-700 mb-2'>
                 Solution (Optional)
               </label>
-              <SimpleTextEditor 
-                value={formData.solution} 
-                onChange={(v)=>setFormData(p=>({...p,solution:v}))} 
-                placeholder='Add solution explanation...' 
+              <SimpleTextEditor
+                value={formData.solution}
+                onChange={(v) => setFormData(p => ({ ...p, solution: v }))}
+                placeholder='Add solution explanation...'
               />
             </div>
 
             {/* Submit Button */}
-            <button 
-              type='submit' 
-              disabled={loading} 
+            <button
+              type='submit'
+              disabled={loading}
               className='w-full md:w-auto px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all font-medium flex items-center justify-center gap-2 disabled:opacity-50 shadow-md shadow-green-200'
             >
               {loading ? (
@@ -476,7 +475,7 @@ export default function ManageQuestions(){
                         <span className='text-sm text-gray-600'>{uploadProgress}%</span>
                       </div>
                       <div className='w-full bg-gray-200 rounded-full h-2'>
-                        <div 
+                        <div
                           className='bg-blue-600 h-2 rounded-full transition-all duration-300'
                           style={{ width: `${uploadProgress}%` }}
                         ></div>
@@ -492,7 +491,7 @@ export default function ManageQuestions(){
                         <span className='text-sm text-green-600'>{previewQuestions.length} questions</span>
                       </div>
                       <div className='max-h-96 overflow-y-auto space-y-3'>
-                        {previewQuestions.map((q,index)=>(
+                        {previewQuestions.map((q, index) => (
                           <div key={index} className='border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow'>
                             <div className='font-medium text-gray-900 mb-2'>
                               {index + 1}. {q.question}

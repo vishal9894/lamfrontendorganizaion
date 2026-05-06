@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { 
-  handleGetTestQuestions, 
-  handleDeleteQuestion, 
-  handleUpdateQuestion, 
-  handleDeleteTestQuestion 
+import {
+  handleGetTestQuestions,
+  handleDeleteQuestion,
+  handleUpdateQuestion,
+  handleDeleteTestQuestion
 } from "../api/allApi";
-import { 
-  FiTrash2, FiEdit2, FiCheckCircle, FiXCircle, FiAlertCircle, 
+import {
+  FiTrash2, FiEdit2, FiCheckCircle, FiXCircle, FiAlertCircle,
   FiChevronLeft, FiPlus, FiSave, FiX, FiCheck, FiChevronRight,
   FiDownload, FiUpload, FiShield, FiBookOpen, FiAward
 } from "react-icons/fi";
@@ -15,7 +15,7 @@ import {
 const ViewTestQuestions = () => {
   const { testId } = useParams();
   const navigate = useNavigate();
-  
+
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -45,13 +45,12 @@ const ViewTestQuestions = () => {
   const fetchQuestions = async () => {
     setLoading(true);
     setError("");
-    
+
     try {
       const response = await handleGetTestQuestions(testId);
       const questionsData = response.data || response;
       setQuestions(Array.isArray(questionsData) ? questionsData : []);
     } catch (err) {
-      console.error("Error fetching questions:", err);
       setError("Failed to load questions. Please try again.");
     } finally {
       setLoading(false);
@@ -115,7 +114,6 @@ const ViewTestQuestions = () => {
         });
       }
     } catch (err) {
-      console.error("Error updating question:", err);
       setError("Failed to update question. Please try again.");
       setTimeout(() => setError(""), 3000);
     } finally {
@@ -130,7 +128,7 @@ const ViewTestQuestions = () => {
 
   const confirmDelete = async () => {
     if (!questionToDelete) return;
-    
+
     setLoading(true);
     try {
       // Single delete - send specific ID
@@ -141,7 +139,6 @@ const ViewTestQuestions = () => {
       setSuccess("Question deleted successfully!");
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      console.error("Error deleting question:", err);
       setError("Failed to delete question. Please try again.");
       setTimeout(() => setError(""), 3000);
     } finally {
@@ -176,10 +173,10 @@ const ViewTestQuestions = () => {
 
   const handleBulkDelete = async () => {
     if (selectedQuestions.size === 0) return;
-    
+
     setLoading(true);
     setError("");
-    
+
     try {
       // Check if all questions are selected for bulk delete with 'all'
       if (selectedQuestions.size === questions.length) {
@@ -189,21 +186,21 @@ const ViewTestQuestions = () => {
       } else {
         // Delete selected questions individually
         const questionIds = Array.from(selectedQuestions);
-        const deletePromises = questionIds.map(questionId => 
+        const deletePromises = questionIds.map(questionId =>
           handleDeleteTestQuestion(questionId)
         );
         await Promise.all(deletePromises);
         setSuccess(`Successfully deleted ${questionIds.length} question(s)!`);
       }
-      
+
       // Refresh questions list
       await fetchQuestions();
-      
+
       // Clear selection and exit bulk mode
       setSelectedQuestions(new Set());
       setIsBulkDeleteMode(false);
       setShowBulkDeleteConfirm(false);
-      
+
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       console.error("Error deleting questions:", err);
@@ -267,11 +264,10 @@ const ViewTestQuestions = () => {
                   <button
                     onClick={() => setShowBulkDeleteConfirm(true)}
                     disabled={selectedQuestions.size === 0}
-                    className={`px-4 py-2 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-                      selectedQuestions.size === 0
-                        ? "bg-gray-300 cursor-not-allowed"
-                        : "bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-200"
-                    }`}
+                    className={`px-4 py-2 rounded-xl font-semibold transition-all flex items-center gap-2 ${selectedQuestions.size === 0
+                      ? "bg-gray-300 cursor-not-allowed"
+                      : "bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-200"
+                      }`}
                   >
                     <FiTrash2 className="w-4 h-4" />
                     Delete Selected ({selectedQuestions.size})
@@ -348,7 +344,7 @@ const ViewTestQuestions = () => {
                   <FiX className="w-5 h-5" />
                 </button>
               </div>
-              
+
               <form onSubmit={handleUpdateSubmit} className="p-6 space-y-5">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -662,7 +658,7 @@ const ViewTestQuestions = () => {
                       )}
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {index + 1}
-                       </td>
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-900 max-w-md">
                         <div className="line-clamp-2">{question.question}</div>
                       </td>
@@ -702,12 +698,12 @@ const ViewTestQuestions = () => {
                 </tbody>
               </table>
             </div>
-            
+
             {/* Footer with total count */}
             <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-t border-gray-200">
               <div className="flex justify-between items-center">
                 <p className="text-sm text-gray-600">
-                  Total Questions: <span className="font-semibold text-gray-900">{questions.length}</span> | 
+                  Total Questions: <span className="font-semibold text-gray-900">{questions.length}</span> |
                   Total Marks: <span className="font-semibold text-gray-900">
                     {questions.reduce((sum, q) => sum + (parseFloat(q.marks) || 0), 0)}
                   </span>

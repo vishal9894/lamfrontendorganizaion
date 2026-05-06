@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { handleCreateStream, handleGetSuperStream } from "../api/allApi";
-import { 
-  AlertCircle, 
-  CheckCircle, 
-  ChevronDown, 
-  FileText, 
-  FolderTree, 
-  Info, 
-  Layers, 
-  Save, 
-  Upload, 
-  X, 
+import {
+  AlertCircle,
+  CheckCircle,
+  ChevronDown,
+  FileText,
+  FolderTree,
+  Info,
+  Layers,
+  Save,
+  Upload,
+  X,
   Zap,
-  Image 
+  Image
 } from "lucide-react";
 
 const AddStream = () => {
@@ -41,7 +41,7 @@ const AddStream = () => {
       const data = await handleGetSuperStream();
       // Ensure data is an array and transform if needed
       let streamsArray = [];
-      
+
       if (Array.isArray(data)) {
         streamsArray = data;
       } else if (data?.data && Array.isArray(data.data)) {
@@ -49,19 +49,18 @@ const AddStream = () => {
       } else if (data?.superStreams && Array.isArray(data.superStreams)) {
         streamsArray = data.superStreams;
       }
-      
+
       // Transform each super stream to ensure name is a string
       const transformedStreams = streamsArray.map(stream => ({
         ...stream,
         id: stream.id || stream._id,
-        name: typeof stream.name === 'string' 
-          ? stream.name 
+        name: typeof stream.name === 'string'
+          ? stream.name
           : stream.name?.name || stream.name?.value || String(stream.name) || 'Unnamed'
       }));
-      
+
       setSuperStreams(transformedStreams);
     } catch (error) {
-      console.error("Error fetching super streams:", error);
       setError("Failed to load super streams");
     } finally {
       setLoadingSuperStreams(false);
@@ -184,9 +183,8 @@ const AddStream = () => {
         }
       }
     } catch (err) {
-      console.error("Failed to create stream:", err);
       const errorMessage = err?.response?.data?.message || err?.message || "Failed to create stream";
-      
+
       if (
         errorMessage?.includes("duplicate key") ||
         errorMessage?.includes("already exists")
@@ -206,7 +204,7 @@ const AddStream = () => {
   const selectedSuperStream = superStreams.find(
     (s) => s.id === formData.superstreamId
   );
-  
+
   // Safely get selected stream name as string
   const selectedStreamName = selectedSuperStream ? getStreamName(selectedSuperStream) : '';
 
@@ -333,11 +331,10 @@ const AddStream = () => {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="e.g., Web Development, Data Science, Digital Marketing"
-                  className={`w-full px-4 py-3 pl-11 rounded-xl border transition-all ${
-                    nameError
+                  className={`w-full px-4 py-3 pl-11 rounded-xl border transition-all ${nameError
                       ? "border-red-500 focus:border-red-500 focus:ring-red-200"
                       : "border-gray-200 focus:border-indigo-500 focus:ring-indigo-200"
-                  } focus:ring-2`}
+                    } focus:ring-2`}
                   required
                 />
                 <FolderTree className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -445,14 +442,13 @@ const AddStream = () => {
                   !formData.superstreamId ||
                   nameError
                 }
-                className={`flex-1 px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all ${
-                  isSubmitting ||
-                  !formData.name.trim() ||
-                  !formData.superstreamId ||
-                  nameError
+                className={`flex-1 px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all ${isSubmitting ||
+                    !formData.name.trim() ||
+                    !formData.superstreamId ||
+                    nameError
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
                     : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl"
-                }`}
+                  }`}
               >
                 {isSubmitting ? (
                   <>

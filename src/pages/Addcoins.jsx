@@ -13,9 +13,9 @@ const Addcoins = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-   
-    
+
+
+
     setIsSubmitting(true);
     setError("");
 
@@ -25,24 +25,23 @@ const Addcoins = () => {
         userId: user?.id,
         amount: parseFloat(balance)
       };
-      
+
       // Call the API
       const response = await handleAddBallance(data);
-      
-      
-      
+
+
+
       // Check if API call was successful
-      
-        setShowSuccess(true);
-        setBalance("");
-        
-        // Hide success message after 2 seconds
-        setTimeout(() => {
-          setShowSuccess(false);
-        }, 2000);
-      
+
+      setShowSuccess(true);
+      setBalance("");
+
+      // Hide success message after 2 seconds
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 2000);
+
     } catch (error) {
-      console.error("Error adding balance:", error);
       setError(error?.message || "An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -52,7 +51,7 @@ const Addcoins = () => {
   return (
     <div className=" bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
       <div className="max-w-md mx-auto">
-       
+
 
         {/* Header Section */}
         <div className="text-center mb-8">
@@ -79,7 +78,7 @@ const Addcoins = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
-           
+
 
             {/* Amount Field */}
             <div>
@@ -104,7 +103,7 @@ const Addcoins = () => {
                   className="w-full pl-10 pr-4 py-4 text-2xl font-semibold border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 text-gray-800 placeholder-gray-300"
                 />
               </div>
-              
+
               {/* Preset Amount Buttons */}
               <div className="grid grid-cols-4 gap-2 mt-3">
                 {[100, 500, 1000, 5000].map((preset) => (

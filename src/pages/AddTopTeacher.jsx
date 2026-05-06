@@ -46,7 +46,6 @@ const AddTopTeacher = () => {
       setStreams(formattedStreams);
 
     } catch (err) {
-      console.error('Failed to fetch streams:', err);
       setError('Failed to load streams');
     }
   };
@@ -151,7 +150,6 @@ const AddTopTeacher = () => {
         setError(response?.message || 'Failed to create top teacher');
       }
     } catch (err) {
-      console.error('Error creating top teacher:', err);
       const errorMessage = err?.response?.data?.message || err?.message || 'Failed to create top teacher';
       setError(errorMessage);
     } finally {

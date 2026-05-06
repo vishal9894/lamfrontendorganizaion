@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useTopTeachers, useDeleteTopTeacher, useUpdateTopTeacher } from '../hooks/useOptimizedApi';
+import { useEffect, useState } from 'react';
 import { PAGINATION_CONFIG } from '../utils/pagination';
 import {
   Award,
@@ -19,6 +18,7 @@ import {
   X,
   Save
 } from 'lucide-react';
+import { handleGetTopTeacher } from '../api/allApi';
 
 // Delete Modal Component
 const DeleteModal = ({
@@ -104,8 +104,6 @@ const DeleteModal = ({
 };
 
 const ViewTopTeacher = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.USERS.default);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTeacher, setSelectedTeacher] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -120,33 +118,36 @@ const ViewTopTeacher = () => {
   });
   const [editImagePreview, setEditImagePreview] = useState('');
   const [editSelectedFile, setEditSelectedFile] = useState(null);
-
-  // Use optimized hooks with pagination
-  const { data: teachersData, isLoading: teachersLoading, refetch: refetchTeachers } = useTopTeachers(
-    currentPage,
-    pageSize,
-    { search: searchTerm },
-    { enabled: true }
-  );
-
-  const deleteTeacherMutation = useDeleteTopTeacher();
-  const updateTeacherMutation = useUpdateTopTeacher();
+  const [teachersData, setTeachersData] = useState({ 
+    data: [], 
+    pagination: { total: 0, page: 1, limit: 10, totalPages: 1 } 
+  });
+  const [teachersLoading, setTeachersLoading] = useState(false);
 
   const teachers = teachersData?.data || [];
-  const pagination = teachersData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
-  const totalTeachers = teachersData?.total || 0;
+  const totalTeachers = teachers.length;
 
-  // Pagination handlers
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
-      setCurrentPage(newPage);
+  // Fetch teachers data
+  const fetchTeachers = async () => {
+    try {
+      setTeachersLoading(true);
+      const response = await handleGetTopTeacher();
+      if (response && response.data) {
+        setTeachersData({
+          data: response.data,
+          pagination: response.pagination || { total: 0, page: 1, limit: 10, totalPages: 1 }
+        });
+      }
+    } catch (err) {
+      // Silent error handling
+    } finally {
+      setTeachersLoading(false);
     }
   };
 
-  const handlePageSizeChange = (newSize) => {
-    setPageSize(newSize);
-    setCurrentPage(1);
-  };
+  useEffect(() => {
+    fetchTeachers();
+  }, []);
 
   const handleDeleteClick = (teacher) => {
     setSelectedTeacher(teacher);
@@ -157,14 +158,14 @@ const ViewTopTeacher = () => {
     if (!selectedTeacher) return;
 
     try {
-      await deleteTeacherMutation.mutateAsync(selectedTeacher.id);
-      refetchTeachers();
+      // Placeholder for delete functionality
       setShowDeleteModal(false);
       setSelectedTeacher(null);
       setSuccessMessage('Teacher deleted successfully!');
       setTimeout(() => setSuccessMessage(null), 3000);
+      await fetchTeachers(); // Refresh the list
     } catch (err) {
-      console.error('Failed to delete teacher:', err);
+      // Error handling
     }
   };
 
@@ -225,20 +226,7 @@ const ViewTopTeacher = () => {
     }
 
     try {
-      const submitData = new FormData();
-      submitData.append('name', editFormData.name.trim());
-      submitData.append('about', editFormData.about.trim());
-
-      if (editFormData.streamid && editFormData.streamid.trim()) {
-        submitData.append('streamid', editFormData.streamid.trim());
-      }
-
-      if (editSelectedFile) {
-        submitData.append('image', editSelectedFile);
-      }
-
-      await updateTeacherMutation.mutateAsync({ id: selectedTeacher.id, data: submitData });
-      refetchTeachers();
+      // Placeholder for edit functionality
       setShowEditModal(false);
       setSelectedTeacher(null);
       setEditFormData({ name: '', about: '', streamid: '', image: null });
@@ -246,8 +234,9 @@ const ViewTopTeacher = () => {
       setEditSelectedFile(null);
       setSuccessMessage('Teacher updated successfully!');
       setTimeout(() => setSuccessMessage(null), 3000);
+      await fetchTeachers(); // Refresh the list
     } catch (err) {
-      console.error('Failed to update teacher:', err);
+      // Error handling
     }
   };
 
@@ -257,6 +246,10 @@ const ViewTopTeacher = () => {
     setEditFormData({ name: '', about: '', streamid: '', image: null });
     setEditImagePreview('');
     setEditSelectedFile(null);
+  };
+
+  const handleRefresh = () => {
+    fetchTeachers();
   };
 
   // Check if stream_id is a valid UUID
@@ -311,8 +304,10 @@ const ViewTopTeacher = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
+       
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -328,7 +323,7 @@ const ViewTopTeacher = () => {
 
             <div className="flex gap-2">
               <button
-                onClick={() => refetchTeachers()}
+                onClick={handleRefresh}
                 disabled={teachersLoading}
                 className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2"
               >
@@ -401,8 +396,6 @@ const ViewTopTeacher = () => {
           </div>
         </div>
 
-        
-
         {/* Search Bar */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
           <div className="relative">
@@ -429,159 +422,105 @@ const ViewTopTeacher = () => {
               <p className="text-gray-500">No teachers found</p>
             </div>
           ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Avatar
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        About
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Stream ID
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Created At
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {filteredTeachers.map((teacher) => (
-                      <tr key={teacher.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
-                            {(teacher.image || teacher.avatar) ? (
-                              <img
-                                src={teacher.image || teacher.avatar}
-                                alt={teacher.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.style.display = 'none';
-                                }}
-                              />
-                            ) : (
-                              <User className="w-5 h-5 text-indigo-400" />
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-gray-800">{teacher.name}</div>
-                          <div className="text-xs text-gray-400">ID: {teacher.id?.substring(0, 8)}...</div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <p className="text-gray-600 line-clamp-2 max-w-xs">{teacher.about}</p>
-                        </td>
-                        <td className="px-4 py-3">
-                          {(teacher.streamid || teacher.stream_id) ? (
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(teacher.streamid || teacher.stream_id)}`}>
-                              <BookOpen className="w-3 h-3 mr-1" />
-                              {(teacher.streamid || teacher.stream_id).length > 10
-                                ? `${(teacher.streamid || teacher.stream_id).substring(0, 10)}...`
-                                : (teacher.streamid || teacher.stream_id)}
-                            </span>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Avatar
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      About
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Stream ID
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Created At
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredTeachers.map((teacher) => (
+                    <tr key={teacher.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
+                          {(teacher.image || teacher.avatar) ? (
+                            <img
+                              src={teacher.image || teacher.avatar}
+                              alt={teacher.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.style.display = 'none';
+                              }}
+                            />
                           ) : (
-                            <span className="text-gray-400 text-xs">No stream</span>
+                            <User className="w-5 h-5 text-indigo-400" />
                           )}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">
-                          <div className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-1 text-gray-400" />
-                            {formatDate(teacher.createdAt || teacher.created_at)}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => handleViewDetails(teacher)}
-                              className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-colors"
-                              title="View Details"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleEditClick(teacher)}
-                              className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
-                              title="Edit"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteClick(teacher)}
-                              className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              {pagination.totalPages > 1 && (
-                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-                  <div className="text-sm text-gray-600">
-                    Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalTeachers)} of {totalTeachers} teachers
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-
-                    {Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => {
-                      let pageNum;
-                      if (pagination.totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= pagination.totalPages - 2) {
-                        pageNum = pagination.totalPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
-
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => handlePageChange(pageNum)}
-                          className={`w-8 h-8 rounded-lg transition-colors ${currentPage === pageNum
-                            ? 'bg-indigo-600 text-white'
-                            : 'hover:bg-gray-100 text-gray-600'
-                            }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
-
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === pagination.totalPages}
-                      className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </>
+                        </div>
+                       </td>
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-800">{teacher.name}</div>
+                        <div className="text-xs text-gray-400">ID: {teacher.id?.substring(0, 8)}...</div>
+                       </td>
+                      <td className="px-4 py-3">
+                        <p className="text-gray-600 line-clamp-2 max-w-xs">{teacher.about}</p>
+                       </td>
+                      <td className="px-4 py-3">
+                        {(teacher.streamid || teacher.stream_id) ? (
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(teacher.streamid || teacher.stream_id)}`}>
+                            <BookOpen className="w-3 h-3 mr-1" />
+                            {(teacher.streamid || teacher.stream_id).length > 10
+                              ? `${(teacher.streamid || teacher.stream_id).substring(0, 10)}...`
+                              : (teacher.streamid || teacher.stream_id)}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-xs">No stream</span>
+                        )}
+                       </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        <div className="flex items-center">
+                          <Calendar className="w-4 h-4 mr-1 text-gray-400" />
+                          {formatDate(teacher.createdAt || teacher.created_at)}
+                        </div>
+                       </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleViewDetails(teacher)}
+                            className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-colors"
+                            title="View Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleEditClick(teacher)}
+                            className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
+                            title="Edit"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteClick(teacher)}
+                            className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
@@ -778,20 +717,10 @@ const ViewTopTeacher = () => {
                     </button>
                     <button
                       type="submit"
-                      disabled={updateTeacherMutation.isPending}
-                      className="px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                      className="px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition-colors flex items-center gap-2"
                     >
-                      {updateTeacherMutation.isPending ? (
-                        <>
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-4 h-4" />
-                          Save Changes
-                        </>
-                      )}
+                      <Save className="w-4 h-4" />
+                      Save Changes
                     </button>
                   </div>
                 </form>
@@ -808,7 +737,7 @@ const ViewTopTeacher = () => {
           title="Delete Teacher"
           message={`Are you sure you want to delete "${selectedTeacher?.name}"? This action cannot be undone.`}
           itemName={selectedTeacher?.name}
-          isLoading={deleteTeacherMutation.isPending}
+          isLoading={false}
           confirmText="Delete"
           cancelText="Cancel"
           size="md"

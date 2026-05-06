@@ -79,7 +79,7 @@ const AdminUserPage = () => {
 
       setAdmins(formattedAdmins);
     } catch (err) {
-      console.error('Error fetching admins:', err);
+      // Silent error handling
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,6 @@ const AdminUserPage = () => {
       const rolesData = res?.data || res || [];
       setRoles(rolesData);
     } catch (err) {
-      console.error('Error fetching roles:', err);
       setRoles([]);
     }
   };
@@ -243,7 +242,6 @@ const AdminUserPage = () => {
         showToast('Admin updated successfully!');
       }
     } catch (error) {
-      console.error('Error:', error.response?.data || error.message);
       showToast(error.response?.data?.message || 'An error occurred. Please try again.', 'error');
     } finally {
       setSubmitting(false);
@@ -259,7 +257,6 @@ const AdminUserPage = () => {
       await fetchAllAdmins();
       showToast('Admin deleted successfully!');
     } catch (error) {
-      console.error('Delete failed:', error);
       showToast('Failed to delete admin. Please try again.', 'error');
     }
 

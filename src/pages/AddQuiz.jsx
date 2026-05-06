@@ -169,7 +169,6 @@ const AddQuiz = () => {
         throw new Error(quizResponse?.message || "Failed to create quiz");
       }
     } catch (error) {
-      console.error("Error creating quiz:", error);
       setErrors({ general: error.message || "An unexpected error occurred" });
     } finally {
       setLoading(false);

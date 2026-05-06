@@ -61,7 +61,6 @@ const UserManagement = () => {
         total: response.total || 0
       }));
     } catch (error) {
-      console.error('Failed to fetch users:', error);
       toast.error('Failed to load users');
     } finally {
       setLoading(false);
@@ -87,7 +86,6 @@ const UserManagement = () => {
       fetchUsers();
       toast.success('User created successfully');
     } catch (error) {
-      console.error('Failed to create user:', error);
       toast.error(error.message || 'Failed to create user');
     }
   };
@@ -107,7 +105,6 @@ const UserManagement = () => {
       fetchUsers();
       toast.success('User updated successfully');
     } catch (error) {
-      console.error('Failed to update user:', error);
       toast.error(error.message || 'Failed to update user');
     }
   };
@@ -123,7 +120,6 @@ const UserManagement = () => {
       fetchUsers();
       toast.success('User role updated successfully');
     } catch (error) {
-      console.error('Failed to change role:', error);
       toast.error(error.message || 'Failed to change role');
     }
   };
@@ -144,7 +140,6 @@ const UserManagement = () => {
       setShowDeleteModal(false);
       setSelectedUser(null);
     } catch (error) {
-      console.error('Failed to deactivate user:', error);
       toast.error(error.message || 'Failed to deactivate user');
     }
   };

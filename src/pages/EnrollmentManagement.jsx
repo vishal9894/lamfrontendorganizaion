@@ -44,7 +44,7 @@ const EnrollmentManagement = () => {
     total: 0
   });
 
-  
+
 
   const fetchEnrollments = async () => {
     try {
@@ -55,14 +55,13 @@ const EnrollmentManagement = () => {
         limit: pagination.limit
       };
 
-   
+
       setEnrollments(response.enrollments || []);
       setPagination(prev => ({
         ...prev,
         total: response.total || 0
       }));
     } catch (error) {
-      console.error('Failed to fetch enrollments:', error);
       toast.error('Failed to load enrollments');
     } finally {
       setLoading(false);
@@ -74,7 +73,7 @@ const EnrollmentManagement = () => {
       const response = await organizationApiCalls.getOrganizationCourses({ status: 'published' });
       setCourses(response.courses || []);
     } catch (error) {
-      console.error('Failed to fetch courses:', error);
+      // Silent error handling
     }
   };
 
@@ -83,7 +82,7 @@ const EnrollmentManagement = () => {
       const response = await organizationApiCalls.getOrganizationUsers({ status: 'active' });
       setUsers(response.users || []);
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      // Silent error handling
     }
   };
 
@@ -95,7 +94,6 @@ const EnrollmentManagement = () => {
       fetchEnrollments();
       toast.success('Enrollment created successfully');
     } catch (error) {
-      console.error('Failed to create enrollment:', error);
       toast.error(error.message || 'Failed to create enrollment');
     }
   };
@@ -121,7 +119,6 @@ const EnrollmentManagement = () => {
       fetchEnrollments();
       toast.success(`Successfully enrolled ${userIds.length} users`);
     } catch (error) {
-      console.error('Failed to create bulk enrollment:', error);
       toast.error(error.message || 'Failed to create bulk enrollment');
     }
   };
@@ -132,7 +129,6 @@ const EnrollmentManagement = () => {
       setSelectedEnrollment({ ...enrollment, progress });
       setShowProgressModal(true);
     } catch (error) {
-      console.error('Failed to fetch progress:', error);
       toast.error('Failed to load progress data');
     }
   };

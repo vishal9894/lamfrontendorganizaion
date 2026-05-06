@@ -37,7 +37,7 @@ const Header = () => {
         setLocalUser(userData);
         dispatch(setUser(userData));
       } catch (err) {
-        console.error("Failed to fetch profile:", err);
+        // Error handling without console.error
       } finally {
         setLoading(false);
       }
@@ -69,7 +69,7 @@ const Header = () => {
 
   return (
     <header className="w-full h-16 bg-gray-200 shadow-md flex items-center justify-end px-6 relative border-b border-gray-300">
-     
+
 
       {/* User Menu */}
       <div className="relative">

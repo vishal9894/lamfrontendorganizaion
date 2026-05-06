@@ -39,7 +39,6 @@ const AddTopStudent = () => {
 
       setStreams(streamsData);
     } catch (err) {
-      console.error('Failed to fetch streams:', err);
       setError('Failed to load streams. Please refresh the page.');
     }
   };
@@ -149,8 +148,7 @@ const AddTopStudent = () => {
       setSelectedFile(null);
 
     } catch (err) {
-      console.error('Error creating top student:', err);
-
+      // Silent error handling
     }
   };
 

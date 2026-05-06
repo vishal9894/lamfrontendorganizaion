@@ -186,7 +186,7 @@ const AddContentCourse = ({
         await onSubmit(formData);
       }
     } catch (error) {
-      console.error("Submit Error:", error);
+      // Error handling without console.error
     } finally {
       setLoading(false);
     }
@@ -255,10 +255,10 @@ const AddContentCourse = ({
                 onClick={() => !isDisabled && setActiveTab(tab.id)}
                 disabled={isDisabled}
                 className={`flex items-center gap-2 px-6 py-3 font-medium transition-all relative ${isDisabled
-                    ? disabledTabClasses
-                    : isActive
-                      ? "text-blue-600 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-blue-600"
-                      : "text-gray-500 hover:text-gray-700"
+                  ? disabledTabClasses
+                  : isActive
+                    ? "text-blue-600 after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
                   }`}
               >
                 <Icon size={18} />
@@ -315,8 +315,8 @@ const AddContentCourse = ({
                       type="button"
                       onClick={() => setVideoSource(s)}
                       className={`px-4 py-2 rounded-lg font-medium transition-all ${videoSource === s
-                          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
                     >
                       {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -508,8 +508,8 @@ const AddContentCourse = ({
                       type="button"
                       onClick={() => setPdfAccess(a)}
                       className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${pdfAccess === a
-                          ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
                     >
                       {a === "free" ? <Globe size={16} /> : <Lock size={16} />}
@@ -528,8 +528,8 @@ const AddContentCourse = ({
                       type="button"
                       onClick={() => setDownloadType(d)}
                       className={`px-4 py-2 rounded-lg font-medium transition-all ${downloadType === d
-                          ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        ? "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
                     >
                       {d.toUpperCase()}
@@ -721,8 +721,8 @@ const AddContentCourse = ({
                       type="button"
                       onClick={() => setTestType(type)}
                       className={`px-4 py-2 rounded-lg font-medium transition-all ${testType === type
-                          ? "bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        ? "bg-gradient-to-r from-indigo-500 to-indigo-600 text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                         }`}
                     >
                       {type}

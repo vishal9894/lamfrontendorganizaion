@@ -189,7 +189,6 @@ const FolderManagement = ({
       setShowDeleteModal(false);
       setDeleteItem(null);
     } catch (error) {
-      console.error('Delete error:', error);
       showToast('Failed to delete item', 'error');
     }
   };

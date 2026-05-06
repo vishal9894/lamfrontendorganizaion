@@ -28,7 +28,6 @@ const EditEventModal = ({
 
   useEffect(() => {
     if (event) {
-
       setFormData({
         name: event.name || '',
         description: event.description || '',
@@ -172,7 +171,7 @@ const EditEventModal = ({
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-xl shadow-2xl w-full scrollbar-thin max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="sticky top-0 bg-white z-10 flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center gap-3">

@@ -11,7 +11,6 @@ import {
   Eye,
   Plus
 } from 'lucide-react';
-import { useApiError } from '../hooks/useApiError';
 import DeleteModal from './DeleteModal';
 
 const OptimizedDataTable = ({

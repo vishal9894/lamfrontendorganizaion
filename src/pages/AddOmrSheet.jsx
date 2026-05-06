@@ -64,7 +64,7 @@ const InputField = ({
         />
       </div>
 
-      
+
     </div>
   );
 };
@@ -99,7 +99,7 @@ const TextAreaField = memo(
           />
         </div>
 
-        
+
       </div>
     );
   },
@@ -309,7 +309,7 @@ const AddOmrSheet = () => {
           setExistingExamKeys(response.data);
         }
       } catch (error) {
-        console.error("Error fetching exam keys:", error);
+        // Silent error handling
       }
     };
     fetchExamKeys();
@@ -769,8 +769,8 @@ const AddOmrSheet = () => {
                 showTimeSelect
                 dateFormat="MMMM d, yyyy h:mm aa"
                 className={`w-full border px-4 py-3 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 ${errors.examDateTime
-                    ? "border-red-500"
-                    : "border-gray-200 focus:border-blue-500"
+                  ? "border-red-500"
+                  : "border-gray-200 focus:border-blue-500"
                   }`}
                 placeholderText="Select date and time"
               />

@@ -70,7 +70,6 @@ const SocialMedia = () => {
       }
       setSocialMedia(socialData);
     } catch (err) {
-      console.error("Failed to fetch social media:", err);
       setError(err.message || "Failed to fetch social media");
     } finally {
       setLoading(false);
@@ -164,7 +163,6 @@ const SocialMedia = () => {
       resetForm();
 
     } catch (err) {
-      console.error(`Failed to ${editingId ? "update" : "create"} social media:`, err);
       setError(
         err.message ||
         `Failed to ${editingId ? "update" : "create"} social media`,
@@ -191,7 +189,6 @@ const SocialMedia = () => {
       await fetchSocialMedia();
       setDeleteModal({ show: false, id: null, name: "" });
     } catch (err) {
-      console.error("Failed to delete social media:", err);
       setDeleteModal({ show: false, id: null, name: "" });
     } finally {
       setDeleteLoading(false);

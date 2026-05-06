@@ -8,21 +8,20 @@ const SuperStream = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!name.trim()) {
       toast.error('Please enter a super stream name');
       return;
     }
 
     setIsLoading(true);
-    
+
     try {
       const response = await handlecreateSuperStream({ name });
       setName('');
-      
-       return response.data
+
+      return response.data
     } catch (error) {
-      console.error('Error creating super stream:', error);
       toast.error(error?.response?.data?.message || error?.message || 'Failed to create super stream');
     } finally {
       setIsLoading(false);

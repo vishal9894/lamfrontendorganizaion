@@ -1,7 +1,6 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import { buildPaginationParams, parsePaginatedResponse, PAGINATION_CONFIG } from "../utils/pagination";
-import { handleAuthError } from "../utils/authUtils";
 
 const BaseUrl = import.meta.env.VITE_BACKEND_API;
 
@@ -25,8 +24,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle authentication errors using the utility function
-    const isAuthError = handleAuthError(error);
+    // Handle authentication errors directly
+    const status = error.response?.status;
+    const isAuthError = status === 401 || status === 403;
 
     // If it's not an auth error, continue with normal error handling
     if (!isAuthError) {
@@ -67,7 +67,6 @@ export const handleUpdateUser = async (id, data) => {
     toast.success("User updated successfully");
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Update user error:", error);
     const message = error.response?.data?.message || "Failed to update user";
     toast.error(message);
     return { success: false, message, data: null };
@@ -126,7 +125,6 @@ export const handleCreateMcq = async (data) => {
     toast.success("Quiz created successfully");
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Create quiz error:", error);
     const message = error.response?.data?.message || "Failed to create quiz";
     toast.error(message);
     return { success: false, message, data: null };
@@ -164,7 +162,6 @@ export const handleCreateQuestions = async (data) => {
       return { success: true, data: response.data };
     }
   } catch (error) {
-    console.error("Create questions error:", error);
     const message = error.response?.data?.message || "Failed to create questions";
     toast.error(message);
     return { success: false, message, data: null };
@@ -198,7 +195,6 @@ export const handleDeleteQuiz = async (id) => {
     toast.success("Quiz deleted successfully");
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Delete quiz error:", error);
     const message = error.response?.data?.message || "Failed to delete quiz";
     toast.error(message);
     return { success: false, message, data: null };
@@ -211,7 +207,6 @@ export const handleGetQuizQuestions = async (quizId) => {
     const res = await api.get(`/quizs/${quizId}/questions`);
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Get quiz questions error:", error);
     const message = error.response?.data?.message || "Failed to fetch quiz questions";
     toast.error(message);
     return { success: false, message, data: { questions: [], total: 0 } };
@@ -240,7 +235,6 @@ export const handleCreateCourse = async (data) => {
     toast.success("Course created successfully");
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Create course error:", error);
     const message = error.response?.data?.message || "Failed to create course";
     toast.error(message);
     return { success: false, message, data: null };
@@ -253,7 +247,6 @@ export const handleUpdateCourse = async (data) => {
     toast.success("Course updated successfully");
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Update course error:", error);
     const message = error.response?.data?.message || "Failed to update course";
     toast.error(message);
     return { success: false, message, data: null };
@@ -266,7 +259,6 @@ export const handleDeleteCourse = async (courseId) => {
     toast.success("Course deleted successfully");
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Delete course error:", error);
     const message = error.response?.data?.message || "Failed to delete course";
     toast.error(message);
     return { success: false, message, data: null };
@@ -316,8 +308,6 @@ export const handlePublishCourse = async (id, publish) => {
     };
 
   } catch (error) {
-    console.error("Publish course error:", error);
-
     return {
       success: false,
       message: error?.response?.data?.message || "Failed to update publish status",
@@ -341,7 +331,6 @@ export const handleAssignMultipleCourses = async (assignData) => {
     return { success: false, message: "Failed to assign courses" };
 
   } catch (error) {
-    console.error("Assign multiple courses error:", error);
     const message = error.response?.data?.message || "Failed to assign courses";
     return { success: false, message };
   }
@@ -372,7 +361,6 @@ export const handleDeleteAssignCourse = async (courseId, userId) => {
     const res = await api.delete(`/api/course/delete-assign-course?userId=${userId}&courseId=${courseId}`);
     return res.data;
   } catch (error) {
-    console.error("Delete assign course error:", error);
     return {
       success: false,
       message: error.response?.data?.message || "Failed to delete assignment"
@@ -387,7 +375,6 @@ export const handleGetDashboardData = async () => {
     const res = await api.get(`/dashboard/stats`);
     return res.data;
   } catch (error) {
-    console.error("Get dashboard data error:", error);
     const message = error.response?.data?.message || "Failed to fetch dashboard data";
     toast.error(message);
     return { success: false, message, data: {} };

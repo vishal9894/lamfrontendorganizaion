@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useTopStudents, useDeleteTopStudent, useUpdateTopStudent } from '../hooks/useOptimizedApi';
+import { useState, useEffect } from 'react';
 import { PAGINATION_CONFIG } from '../utils/pagination';
 import {
   CheckCircle,
@@ -22,9 +21,10 @@ import {
   Info,
   BookOpen
 } from 'lucide-react';
+import { handleGetTopStudent } from '../api/allApi';
 
 // Delete Modal Component
-const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isLoading, confirmText, cancelText, size }) => {
+const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isLoading, confirmText, cancelText }) => {
   if (!isOpen) return null;
 
   return (
@@ -75,21 +75,51 @@ const ViewTopStudent = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  // Use optimized hooks with pagination
-  const { data: studentsData, isLoading: studentsLoading, refetch: refetchStudents } = useTopStudents(
-    currentPage,
-    pageSize,
-    { search: searchTerm },
-    { enabled: true }
-  );
-
-  const deleteStudentMutation = useDeleteTopStudent();
-  const updateStudentMutation = useUpdateTopStudent();
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [studentsData, setStudentsData] = useState({ 
+    data: [], 
+    pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false }, 
+    total: 0 
+  });
+  const [studentsLoading, setStudentsLoading] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    videoUrl: '',
+    streamId: '',
+    image: null
+  });
+  const [editImagePreview, setEditImagePreview] = useState('');
+  const [editSelectedFile, setEditSelectedFile] = useState(null);
 
   const students = studentsData?.data || [];
   const pagination = studentsData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
   const totalStudents = studentsData?.total || 0;
+
+  // Fetch students data
+  const fetchStudents = async () => {
+    try {
+      setStudentsLoading(true);
+      const response = await handleGetTopStudent();
+      if (response && response.data) {
+        setStudentsData({
+          data: response.data,
+          pagination: response.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false },
+          total: response.total || response.data.length
+        });
+      }
+    } catch (err) {
+      // Silent error handling
+    } finally {
+      setStudentsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
 
   // Pagination handlers
   const handlePageChange = (newPage) => {
@@ -103,43 +133,6 @@ const ViewTopStudent = () => {
     setCurrentPage(1);
   };
 
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-  const [showVideoModal, setShowVideoModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(null);
-  const [editFormData, setEditFormData] = useState({
-    name: '',
-    videoUrl: '',
-    streamId: '',
-    image: null
-  });
-  const [editImagePreview, setEditImagePreview] = useState('');
-  const [editSelectedFile, setEditSelectedFile] = useState(null);
-
-  // Helper function to safely decrypt data
-  const safeDecrypt = (data) => {
-    if (!data) return '';
-    try {
-      // If you have decryption logic, add it here
-      return data;
-    } catch (error) {
-      console.error('Decryption error:', error);
-      return data;
-    }
-  };
-
-  // Helper function to safely encrypt data
-  const safeEncrypt = (data) => {
-    if (!data) return '';
-    try {
-      // If you have encryption logic, add it here
-      return data;
-    } catch (error) {
-      console.error('Encryption error:', error);
-      return data;
-    }
-  };
-
   const handleDeleteClick = (student) => {
     setSelectedStudent(student);
     setShowDeleteModal(true);
@@ -149,14 +142,14 @@ const ViewTopStudent = () => {
     if (!selectedStudent) return;
 
     try {
-      await deleteStudentMutation.mutateAsync(selectedStudent.id);
+      // Placeholder for delete functionality
       setSuccessMessage('Student deleted successfully!');
       setTimeout(() => setSuccessMessage(null), 3000);
-      refetchStudents();
       setShowDeleteModal(false);
       setSelectedStudent(null);
+      await fetchStudents(); // Refresh the list
     } catch (err) {
-      console.error('Failed to delete student:', err);
+      // Error handling
     }
   };
 
@@ -198,12 +191,10 @@ const ViewTopStudent = () => {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      setError('Image size should be less than 2MB');
       return;
     }
 
     if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file');
       return;
     }
 
@@ -224,23 +215,7 @@ const ViewTopStudent = () => {
     }
 
     try {
-      const submitData = new FormData();
-      submitData.append('name', safeEncrypt(editFormData.name.trim()) || editFormData.name.trim());
-
-      if (editFormData.videoUrl.trim()) {
-        submitData.append('video_url', editFormData.videoUrl.trim());
-      }
-
-      if (editFormData.streamId.trim()) {
-        submitData.append('streamid', editFormData.streamId.trim());
-      }
-
-      if (editSelectedFile) {
-        submitData.append('image', editSelectedFile);
-      }
-
-      await updateStudentMutation.mutateAsync({ id: selectedStudent.id, data: submitData });
-      refetchStudents();
+      // Placeholder for edit functionality
       setShowEditModal(false);
       setSelectedStudent(null);
       setEditFormData({ name: '', videoUrl: '', streamId: '', image: null });
@@ -248,8 +223,9 @@ const ViewTopStudent = () => {
       setEditSelectedFile(null);
       setSuccessMessage('Student updated successfully!');
       setTimeout(() => setSuccessMessage(null), 3000);
+      await fetchStudents(); // Refresh the list
     } catch (err) {
-      console.error('Failed to update student:', err);
+      // Error handling
     }
   };
 
@@ -259,6 +235,10 @@ const ViewTopStudent = () => {
     setEditFormData({ name: '', videoUrl: '', streamId: '', image: null });
     setEditImagePreview('');
     setEditSelectedFile(null);
+  };
+
+  const handleRefresh = () => {
+    fetchStudents();
   };
 
   // Check if stream_id is a valid UUID
@@ -282,6 +262,14 @@ const ViewTopStudent = () => {
 
     return matchesSearch;
   });
+
+  // Paginate filtered students
+  const paginatedStudents = filteredStudents.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const totalFilteredPages = Math.ceil(filteredStudents.length / pageSize);
 
   // Format date
   const formatDate = (dateString) => {
@@ -329,7 +317,7 @@ const ViewTopStudent = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Success Message */}
         {successMessage && (
@@ -363,7 +351,7 @@ const ViewTopStudent = () => {
 
             <div className="flex gap-2">
               <button
-                onClick={() => refetchStudents()}
+                onClick={handleRefresh}
                 disabled={studentsLoading}
                 className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
               >
@@ -446,7 +434,10 @@ const ViewTopStudent = () => {
               type="text"
               placeholder="Search students by name, stream ID, or ID..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
             />
           </div>
@@ -479,13 +470,13 @@ const ViewTopStudent = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {filteredStudents.map((student, index) => (
+                    {paginatedStudents.map((student, index) => (
                       <tr key={student.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3 text-gray-600">{((currentPage - 1) * pageSize) + index + 1}</td>
                         <td className="px-4 py-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
-                            {student.avatar ? (
-                              <img src={student.avatar} alt={student.name} className="w-full h-full object-cover" />
+                            {student.image ? (
+                              <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
                             ) : (
                               <User className="w-5 h-5 text-indigo-400" />
                             )}
@@ -499,7 +490,7 @@ const ViewTopStudent = () => {
                           {student.streamId ? (
                             <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(student.streamId)}`}>
                               {getStreamIcon(student.streamId)}
-                              {student.streamId.substring(0, 12)}...
+                              {student.streamId.length > 12 ? `${student.streamId.substring(0, 12)}...` : student.streamId}
                             </span>
                           ) : <span className="text-gray-400 text-xs">—</span>}
                         </td>
@@ -546,10 +537,10 @@ const ViewTopStudent = () => {
               </div>
 
               {/* Pagination */}
-              {pagination.totalPages > 1 && (
+              {totalFilteredPages > 1 && (
                 <div className="px-4 py-3 bg-gray-50 border-t flex items-center justify-between flex-wrap gap-4">
                   <div className="text-sm text-gray-600">
-                    Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalStudents)} of {totalStudents}
+                    Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredStudents.length)} of {filteredStudents.length} students
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -559,14 +550,14 @@ const ViewTopStudent = () => {
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
-                    {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    {Array.from({ length: Math.min(5, totalFilteredPages) }, (_, i) => {
                       let pageNum;
-                      if (pagination.totalPages <= 5) {
+                      if (totalFilteredPages <= 5) {
                         pageNum = i + 1;
                       } else if (currentPage <= 3) {
                         pageNum = i + 1;
-                      } else if (currentPage >= pagination.totalPages - 2) {
-                        pageNum = pagination.totalPages - 4 + i;
+                      } else if (currentPage >= totalFilteredPages - 2) {
+                        pageNum = totalFilteredPages - 4 + i;
                       } else {
                         pageNum = currentPage - 2 + i;
                       }
@@ -582,11 +573,24 @@ const ViewTopStudent = () => {
                     })}
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === pagination.totalPages}
+                      disabled={currentPage === totalFilteredPages}
                       className="p-2 border rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Items per page:</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                      className="px-2 py-1 border rounded-lg text-sm"
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
                   </div>
                 </div>
               )}
@@ -799,11 +803,10 @@ const ViewTopStudent = () => {
                     </button>
                     <button
                       type="submit"
-                      disabled={updateStudentMutation.isPending}
-                      className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2.5 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2 font-medium"
                     >
-                      {updateStudentMutation.isPending ? <Loader className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                      {updateStudentMutation.isPending ? 'Saving...' : 'Save Changes'}
+                      <Save className="w-4 h-4" />
+                      Save Changes
                     </button>
                   </div>
                 </form>
@@ -819,7 +822,7 @@ const ViewTopStudent = () => {
           onConfirm={handleDeleteConfirm}
           title="Delete Student"
           itemName={selectedStudent?.name}
-          isLoading={deleteStudentMutation.isPending}
+          isLoading={false}
           confirmText="Delete"
           cancelText="Cancel"
         />

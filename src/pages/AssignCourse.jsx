@@ -150,7 +150,6 @@ const AssignMultipleCourses = () => {
         setUsers([]);
       }
     } catch (error) {
-      console.error("Fetch users error:", error);
       setError((prev) => ({ ...prev, users: "Failed to fetch users" }));
     } finally {
       setLoading((prev) => ({ ...prev, users: false }));
@@ -183,7 +182,6 @@ const AssignMultipleCourses = () => {
         setShowCourseResults(true);
       }
     } catch (error) {
-      console.error("Fetch courses error:", error);
       setError((prev) => ({ ...prev, courses: "Failed to fetch courses" }));
     } finally {
       setLoading((prev) => ({ ...prev, courses: false }));
@@ -233,7 +231,6 @@ const AssignMultipleCourses = () => {
         }));
       }
     } catch (error) {
-      console.error("Assign courses error:", error);
       setError((prev) => ({ ...prev, assign: "Failed to assign courses" }));
     } finally {
       setLoading((prev) => ({ ...prev, assign: false }));

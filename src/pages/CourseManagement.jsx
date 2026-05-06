@@ -63,7 +63,6 @@ const CourseManagement = () => {
         total: response.total || 0
       }));
     } catch (error) {
-      console.error('Failed to fetch courses:', error);
       toast.error('Failed to load courses');
     } finally {
       setLoading(false);
@@ -85,7 +84,6 @@ const CourseManagement = () => {
       fetchCourses();
       toast.success('Course created successfully');
     } catch (error) {
-      console.error('Failed to create course:', error);
       toast.error(error.message || 'Failed to create course');
     }
   };
@@ -105,7 +103,6 @@ const CourseManagement = () => {
       fetchCourses();
       toast.success('Course updated successfully');
     } catch (error) {
-      console.error('Failed to update course:', error);
       toast.error(error.message || 'Failed to update course');
     }
   };
@@ -126,7 +123,6 @@ const CourseManagement = () => {
       setShowDeleteModal(false);
       setSelectedCourse(null);
     } catch (error) {
-      console.error('Failed to delete course:', error);
       toast.error(error.message || 'Failed to delete course');
     }
   };
@@ -149,7 +145,6 @@ const CourseManagement = () => {
       fetchCourses();
       toast.success('Course duplicated successfully');
     } catch (error) {
-      console.error('Failed to duplicate course:', error);
       toast.error(error.message || 'Failed to duplicate course');
     }
   };

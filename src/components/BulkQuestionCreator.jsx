@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  HelpCircle,
-  Layers,
   BookOpen,
-  Sparkles,
   X,
   ChevronLeft,
   ChevronRight,
@@ -11,8 +8,7 @@ import {
   Trash2,
   Upload,
   AlertCircle,
-  CheckCircle,
-  FileQuestion
+  CheckCircle
 } from "lucide-react";
 import { handleCreateQuestions } from "../api/allApi";
 import DeleteModal from "./DeleteModal";
@@ -290,7 +286,6 @@ const BulkQuestionCreator = ({
         return false;
       }
     } catch (err) {
-      console.error("Error creating question:", err);
       setErrors({
         general: err.response?.data?.message || err.message || "An unexpected error occurred."
       });

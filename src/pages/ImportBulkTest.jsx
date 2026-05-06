@@ -58,7 +58,6 @@ const ImportBulkTest = () => {
         showMessage(response?.message || "Upload failed", "error");
       }
     } catch (error) {
-      console.error("Upload error:", error);
       showMessage(
         "Upload failed: " + (error.message || "Unknown error"),
         "error",
@@ -106,7 +105,6 @@ const ImportBulkTest = () => {
       if (questionsData.length === 0) {
       }
     } catch (error) {
-      console.error("Fetch error:", error);
       showMessage("Failed to fetch questions.", "error");
     } finally {
       setLoadingQuestions(false);
@@ -153,7 +151,6 @@ const ImportBulkTest = () => {
       setSelectedQuestion(null);
       setDeleteMode("single");
     } catch (error) {
-      console.error("Delete error:", error);
       showMessage(`Failed to delete ${deleteMode === "all" ? "all questions" : "question"}.`, "error");
     }
   };

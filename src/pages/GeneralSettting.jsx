@@ -193,7 +193,6 @@ const GeneralSetting = () => {
         }));
       }
     } catch (err) {
-      console.error('Failed to fetch settings:', err);
       setError('Failed to load settings');
     } finally {
       setLoading(false);
@@ -208,7 +207,7 @@ const GeneralSetting = () => {
         setRoutingAccounts(response.data);
       }
     } catch (err) {
-      console.error('Failed to fetch routing accounts:', err);
+      // Silent error handling
     }
   };
 
@@ -275,7 +274,6 @@ const GeneralSetting = () => {
         setError(response?.message || 'Failed to add routing account');
       }
     } catch (err) {
-      console.error('Error adding routing account:', err);
       setError(err.message || 'Failed to add routing account');
     } finally {
       setSaving(false);
@@ -302,7 +300,6 @@ const GeneralSetting = () => {
         setError(response?.message || 'Failed to delete routing account');
       }
     } catch (err) {
-      console.error('Failed to delete routing account:', err);
       setError(err.message || 'Failed to delete routing account');
     } finally {
       setDeleteLoading(false);
@@ -375,7 +372,6 @@ const GeneralSetting = () => {
         setError(response?.message || 'Failed to save settings');
       }
     } catch (err) {
-      console.error('Error saving settings:', err);
       setError(err.message || 'Failed to save settings');
     } finally {
       setSaving(false);
@@ -427,8 +423,8 @@ const GeneralSetting = () => {
             <button
               onClick={() => setActiveTab('general')}
               className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'general'
-                  ? 'text-indigo-600 border-b-2 border-indigo-600'
-                  : 'text-gray-500 hover:text-gray-700'
+                ? 'text-indigo-600 border-b-2 border-indigo-600'
+                : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               General Settings
@@ -436,8 +432,8 @@ const GeneralSetting = () => {
             <button
               onClick={() => setActiveTab('routing')}
               className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'routing'
-                  ? 'text-indigo-600 border-b-2 border-indigo-600'
-                  : 'text-gray-500 hover:text-gray-700'
+                ? 'text-indigo-600 border-b-2 border-indigo-600'
+                : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
               Routing Accounts
@@ -879,8 +875,8 @@ const GeneralSetting = () => {
                         </td>
                         <td className="px-4 py-3">
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${account.status
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-gray-100 text-gray-700'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-gray-100 text-gray-700'
                             }`}>
                             {account.status ? 'Active' : 'Inactive'}
                           </span>

@@ -57,7 +57,6 @@ const AssignmentManagement = () => {
       const response = await organizationApiCalls.getOrganizationAssignments(filters);
       setAssignments(response.assignments || []);
     } catch (error) {
-      console.error('Failed to fetch assignments:', error);
       toast.error('Failed to load assignments');
     } finally {
       setLoading(false);
@@ -69,7 +68,7 @@ const AssignmentManagement = () => {
       const response = await organizationApiCalls.getOrganizationCourses({ status: 'published' });
       setCourses(response.courses || []);
     } catch (error) {
-      console.error('Failed to fetch courses:', error);
+      // Silent error handling
     }
   };
 
@@ -78,7 +77,6 @@ const AssignmentManagement = () => {
       const response = await organizationApiCalls.getAssignmentSubmissions(assignmentId);
       setSubmissions(response.submissions || []);
     } catch (error) {
-      console.error('Failed to fetch submissions:', error);
       toast.error('Failed to load submissions');
     }
   };
@@ -91,7 +89,6 @@ const AssignmentManagement = () => {
       fetchAssignments();
       toast.success('Assignment created successfully');
     } catch (error) {
-      console.error('Failed to create assignment:', error);
       toast.error(error.message || 'Failed to create assignment');
     }
   };
@@ -104,7 +101,6 @@ const AssignmentManagement = () => {
       fetchAssignments();
       toast.success('Assignment updated successfully');
     } catch (error) {
-      console.error('Failed to update assignment:', error);
       toast.error(error.message || 'Failed to update assignment');
     }
   };
@@ -125,7 +121,6 @@ const AssignmentManagement = () => {
       setShowDeleteModal(false);
       setSelectedAssignment(null);
     } catch (error) {
-      console.error('Failed to delete assignment:', error);
       toast.error(error.message || 'Failed to delete assignment');
     }
   };
@@ -143,7 +138,6 @@ const AssignmentManagement = () => {
       fetchSubmissions(selectedAssignment.id);
       toast.success('Submission graded successfully');
     } catch (error) {
-      console.error('Failed to grade submission:', error);
       toast.error(error.message || 'Failed to grade submission');
     }
   };

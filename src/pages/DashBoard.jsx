@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { useWallet, useDashboardStats } from "../hooks/useApiQueries";
-import { useApiError } from "../hooks/useApiError";
+import { toast } from "react-toastify";
+import { handleGetWallet, handleGetDashboardData } from "../api/allApi.js";
+
 import {
   FaWallet,
   FaBookOpen,
@@ -71,15 +72,46 @@ const SkeletonActivity = () => (
 
 const DashBoard = () => {
   const { user } = useSelector((state) => state.user);
-  const { handleError } = useApiError();
+  const [walletData, setWalletData] = useState({ balance: 0 });
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Use optimized React Query hooks
-  const walletRes = useWallet(user?.id);
-  const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useDashboardStats();
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  // Calculate derived data from React Query results
-  const wallet = walletRes.data?.balance || 0;
-  const loading = walletRes.isLoading || dashboardLoading;
+        // Fetch dashboard data
+        const dashboard = await handleGetDashboardData();
+
+        console.log(dashboard);
+        
+        
+        setDashboardData(dashboard);
+       
+
+        // Fetch wallet data if user exists
+        if (user?.id) {
+          const wallet = await handleGetWallet(user.id);
+          setWalletData(wallet);
+        }
+      } catch (err) {
+        setError(err);
+        toast.error('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user?.id]);
+
+  // Calculate derived data from API results
+  const wallet = walletData?.balance || 0;
+
 
   // Default dashboard data
   const dashboard = dashboardData || {
@@ -90,7 +122,7 @@ const DashBoard = () => {
     totalCourses: 0,
     activeCourses: 0,
     totalTeachers: 0,
-    status: "active",
+    status: "inactive",
     enrollmentTrends: []
   };
 
@@ -146,12 +178,6 @@ const DashBoard = () => {
     }
   ], []);
 
-  // Handle errors
-  useEffect(() => {
-    if (dashboardError) {
-      handleError(dashboardError, "Failed to load dashboard data");
-    }
-  }, [dashboardError, handleError]);
 
   // Calculate statistics with useMemo
   const activeCourses = dashboard.activeCourses;

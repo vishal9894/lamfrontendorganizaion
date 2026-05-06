@@ -142,7 +142,6 @@ const ViewQuizQuestion = () => {
         setError(res?.message || "Failed to update question");
       }
     } catch (err) {
-      console.error("Error updating question:", err);
       setError(err.message || "Failed to update question");
     } finally {
       setEditLoading(false);
@@ -169,7 +168,6 @@ const ViewQuizQuestion = () => {
         setError(res?.message || "Failed to delete question");
       }
     } catch (err) {
-      console.error("Error deleting question:", err);
       setError(err.message || "Failed to delete question");
     } finally {
       setDeleteLoading(false);
