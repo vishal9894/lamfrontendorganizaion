@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
 const BaseUrl = import.meta.env.VITE_BACKEND_API;
 
 const Login = () => {
@@ -27,6 +28,8 @@ const Login = () => {
 
       const data = response.data;
 
+      toast.success(data.message);
+
       if (data.token) {
         localStorage.setItem("authToken", data.token);
         navigate(from, { replace: true });
@@ -36,6 +39,7 @@ const Login = () => {
 
     } catch (err) {
       console.error("Login error:", err);
+      toast.error(err.response?.data?.message || "Login failed");
     }
   };
 

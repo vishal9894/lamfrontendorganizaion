@@ -253,16 +253,16 @@ const AdminUserPage = () => {
   /* ================= DELETE ================= */
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this admin?')) {
-      try {
-        await handleDeleteAdminAccount(id);
-        await fetchAllAdmins();
-        showToast('Admin deleted successfully!');
-      } catch (error) {
-        console.error('Delete failed:', error);
-        showToast('Failed to delete admin. Please try again.', 'error');
-      }
+
+    try {
+      await handleDeleteAdminAccount(id);
+      await fetchAllAdmins();
+      showToast('Admin deleted successfully!');
+    } catch (error) {
+      console.error('Delete failed:', error);
+      showToast('Failed to delete admin. Please try again.', 'error');
     }
+
   };
 
   return (

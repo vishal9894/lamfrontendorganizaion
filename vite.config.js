@@ -4,7 +4,9 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173,
-    host: true
+    port: 5174, // Preferred port
+    host: true,
+    strictPort: false, // Allow Vite to use next available port if 5174 is occupied
+    open: true // Auto-open browser
   }
 })

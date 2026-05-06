@@ -293,13 +293,13 @@ export const handleGetCourse = async (courseType, page = 1, limit = PAGINATION_C
   }
 };
 
-export const handleGetShortCourseDetails = async ()=>{
+export const handleGetShortCourseDetails = async () => {
   try {
     const res = await api.get("/courses/short-details");
     return res.data
-    
+
   } catch (error) {
-    
+
   }
 }
 
