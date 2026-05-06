@@ -30,17 +30,20 @@ const Login = () => {
 
       toast.success(data.message);
 
-      navigate("/dashboard");
-
       if (data.token) {
         localStorage.setItem("authToken", data.token);
-        navigate(from, { replace: true });
+
+        // Navigate to the intended destination or dashboard
+        const destination = from === "/" ? "/dashboard" : from;
+        navigate(destination, { replace: true });
       } else {
         throw new Error("No token received from login");
       }
 
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
