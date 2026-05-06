@@ -86,21 +86,17 @@ const DashBoard = () => {
 
         // Fetch dashboard data
         const dashboard = await handleGetDashboardData();
-
-        console.log(dashboard);
-        
-        
         setDashboardData(dashboard);
-       
 
         // Fetch wallet data if user exists
         if (user?.id) {
           const wallet = await handleGetWallet(user.id);
-          setWalletData(wallet);
+          setWalletData(wallet || { balance: 0 });
         }
       } catch (err) {
-        setError(err);
-        toast.error('Failed to load dashboard data');
+        console.error("Error fetching data:", err);
+        setError(err.message || "Failed to load dashboard data");
+        toast.error(err.message || 'Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
@@ -109,11 +105,9 @@ const DashBoard = () => {
     fetchData();
   }, [user?.id]);
 
-  // Calculate derived data from API results
+  // Safe data extraction with fallbacks
   const wallet = walletData?.balance || 0;
 
-
-  // Default dashboard data
   const dashboard = dashboardData || {
     organizationId: "",
     organizationName: "",
@@ -136,23 +130,23 @@ const DashBoard = () => {
     { month: "Jun", earnings: 67000, expenses: 20000 },
   ], []);
 
-  const enrollmentData = useMemo(() =>
-    dashboard.enrollmentTrends && dashboard.enrollmentTrends.length > 0
-      ? dashboard.enrollmentTrends.map(trend => ({
+  const enrollmentData = useMemo(() => {
+    if (dashboard.enrollmentTrends && dashboard.enrollmentTrends.length > 0) {
+      return dashboard.enrollmentTrends.map(trend => ({
         name: new Date(trend.month).toLocaleString('default', { month: 'short' }),
-        students: trend.count,
+        students: trend.count || 0,
         fullMonth: trend.month
-      }))
-      : [
-        { name: "Jan", students: 120 },
-        { name: "Feb", students: 150 },
-        { name: "Mar", students: 180 },
-        { name: "Apr", students: 220 },
-        { name: "May", students: 195 },
-        { name: "Jun", students: 240 },
-      ],
-    [dashboard.enrollmentTrends]
-  );
+      }));
+    }
+    return [
+      { name: "Jan", students: 120 },
+      { name: "Feb", students: 150 },
+      { name: "Mar", students: 180 },
+      { name: "Apr", students: 220 },
+      { name: "May", students: 195 },
+      { name: "Jun", students: 240 },
+    ];
+  }, [dashboard.enrollmentTrends]);
 
   const recentActivities = useMemo(() => [
     {
@@ -178,10 +172,9 @@ const DashBoard = () => {
     }
   ], []);
 
-
   // Calculate statistics with useMemo
-  const activeCourses = dashboard.activeCourses;
-  const totalCourses = dashboard.totalCourses;
+  const activeCourses = dashboard.activeCourses || 0;
+  const totalCourses = dashboard.totalCourses || 0;
   const inactiveCourses = totalCourses - activeCourses;
   const completionRate = totalCourses > 0 ? Math.round((activeCourses / totalCourses) * 100) : 0;
 
@@ -229,28 +222,62 @@ const DashBoard = () => {
   ], [wallet, activeCourses, dashboard.totalUsers, completionRate]);
 
   const performanceMetrics = useMemo(() => [
-    { label: "Course Completion Rate", value: completionRate, icon: <FaCheckCircle />, color: "text-green-600" },
-    { label: "Total Teachers", value: dashboard.totalTeachers || 0, icon: <FaChalkboardTeacher />, color: "text-blue-600" },
-    { label: "Active Status", value: dashboard.status === "active" ? 100 : 0, icon: <FaTrophy />, color: "text-yellow-600" },
+    {
+      label: "Course Completion Rate",
+      value: completionRate,
+      icon: <FaCheckCircle />,
+      color: "text-green-600",
+      bgColor: "bg-green-500"
+    },
+    {
+      label: "Total Teachers",
+      value: dashboard.totalTeachers || 0,
+      icon: <FaChalkboardTeacher />,
+      color: "text-blue-600",
+      bgColor: "bg-blue-500"
+    },
+    {
+      label: "Active Status",
+      value: dashboard.status === "active" ? 100 : 0,
+      icon: <FaTrophy />,
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-500"
+    },
   ], [completionRate, dashboard.totalTeachers, dashboard.status]);
 
   // Add smooth scroll behavior
   useEffect(() => {
-    // Add smooth scrolling to the document
     document.documentElement.style.scrollBehavior = 'smooth';
-
-    // Cleanup function to restore default behavior when component unmounts
     return () => {
       document.documentElement.style.scrollBehavior = '';
     };
   }, []);
 
+  // Show error state if needed
+  if (error && !loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-md">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Dashboard</h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className=" bg-gradient-to-br from-gray-50 to-gray-100 p-6 overflow-y-auto">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 overflow-y-auto min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Organization Header Card */}
         {!loading && dashboard.organizationName && (
-          <div className="mb-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl overflow-hidden">
+          <div className="mb-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl overflow-hidden relative">
             <div className="absolute inset-0 bg-black opacity-10"></div>
             <div className="relative p-6 md:p-8">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -259,11 +286,12 @@ const DashBoard = () => {
                     <FaBuilding className="text-3xl text-white" />
                   </div>
                   <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-white">{dashboard.organizationName || 'Organization'}</h1>
-                    <div className="flex items-center gap-2 mt-1">
+                    <h1 className="text-2xl md:text-3xl font-bold text-white">{dashboard.organizationName}</h1>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <FaGlobe className="text-white/70 text-sm" />
                       <span className="text-white/80 text-sm">{dashboard.subdomain || 'N/A'}</span>
-                      <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${dashboard.status === 'active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                      <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${dashboard.status === 'active' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                        }`}>
                         {dashboard.status === 'active' ? 'Active' : 'Inactive'}
                       </span>
                     </div>
@@ -391,16 +419,18 @@ const DashBoard = () => {
               <div className="flex items-center justify-between mb-3">
                 <div className={`text-3xl ${metric.color}`}>{metric.icon}</div>
                 <div className="text-3xl font-bold text-gray-800">
-                  {typeof metric.value === 'number' && metric.label !== "Active Status" ? metric.value :
-                    metric.label === "Active Status" ? (metric.value === 100 ? "Active" : "Inactive") :
-                      `${metric.value}%`}
+                  {metric.label === "Active Status"
+                    ? (metric.value === 100 ? "Active" : "Inactive")
+                    : metric.label === "Total Teachers"
+                      ? metric.value
+                      : `${metric.value}%`}
                 </div>
               </div>
               <h4 className="text-gray-600 font-medium">{metric.label}</h4>
-              {typeof metric.value === 'number' && metric.label !== "Total Teachers" && metric.label !== "Active Status" && (
+              {metric.label === "Course Completion Rate" && (
                 <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-1000 ${metric.color.replace('text', 'bg')}`}
+                    className={`h-full rounded-full transition-all duration-1000 ${metric.bgColor}`}
                     style={{ width: `${metric.value}%` }}
                   ></div>
                 </div>
@@ -464,8 +494,7 @@ const DashBoard = () => {
                   recentActivities.map((activity) => (
                     <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                       <div className={`w-2 h-2 mt-2 rounded-full ${activity.status === "completed" ? "bg-green-500" :
-                        activity.status === "success" ? "bg-blue-500" :
-                          "bg-yellow-500"
+                          activity.status === "success" ? "bg-blue-500" : "bg-yellow-500"
                         }`}></div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-800">{activity.action}</p>
