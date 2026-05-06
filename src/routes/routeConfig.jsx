@@ -63,7 +63,7 @@ import AddOmrSheet from "../pages/AddOmrSheet";
 import ViewOmrSheet from "../pages/ViewOmrSheet";
 
 // Settings
-import GeneralSettting from "../pages/GeneralSettting";
+import GeneralSetting from "../pages/GeneralSettting";
 import Addcoins from "../pages/Addcoins";
 import SocialMedia from "../pages/SocialMedia";
 
@@ -75,7 +75,10 @@ import ViewTestQuestions from "../components/ViewTestQuestions";
 
 // Public routes (no authentication required)
 export const publicRoutes = [
-  
+  {
+    path: "/",
+    element: <Navigate to="/login" replace />,
+  },
   {
     path: "/login",
     element: <Login />,
@@ -129,6 +132,8 @@ export const protectedRoutes = [
     path: "/courses/categories",
     element: <CourseManagement />,
   },
+
+  // Instructor Routes
   {
     path: "/instructor/courses",
     element: <CourseManagement />,
@@ -137,8 +142,6 @@ export const protectedRoutes = [
     path: "/instructor/courses/create",
     element: <CourseManagement />,
   },
-
-  // Instructor Routes
   {
     path: "/instructor/students",
     element: <UserManagement />,
@@ -288,25 +291,25 @@ export const protectedRoutes = [
 
   // Super Stream
   {
-    path: "/super-steam/add",
+    path: "/super-stream/add",
     element: <SuperStream />,
   },
   {
-    path: "/super-steam/view",
+    path: "/super-stream/view",
     element: <ViewSuperStream />,
   },
 
   // Stream
   {
-    path: "/steam/add",
+    path: "/stream/add",
     element: <AddStream />,
   },
   {
-    path: "/steam/view",
+    path: "/stream/view",
     element: <ViewStream />,
   },
 
-  // Courses
+  // Course Actions
   {
     path: "/courses/add",
     element: <AddCourse />,
@@ -395,7 +398,7 @@ export const protectedRoutes = [
   // Settings
   {
     path: "/settings/general",
-    element: <GeneralSettting />,
+    element: <GeneralSetting />,
   },
   {
     path: "/settings/coin",
@@ -413,7 +416,7 @@ export const protectedRoutes = [
   },
 ];
 
-// Default redirect
+// Default redirect for authenticated users
 export const defaultRoute = {
   path: "/",
   element: <Navigate to="/dashboard" replace />,

@@ -1,12 +1,20 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import { buildPaginationParams, parsePaginatedResponse, PAGINATION_CONFIG } from "../utils/pagination";
+import { getApiUrl } from "../../config/environments";
 
-const BaseUrl = import.meta.env.VITE_BACKEND_API;
+// Dynamic API URL based on environment
+const BaseUrl = getApiUrl();
 
 const api = axios.create({
   baseURL: BaseUrl,
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, PUT, POST, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  },
+  withCredentials: true,
 });
 
 api.interceptors.request.use(
