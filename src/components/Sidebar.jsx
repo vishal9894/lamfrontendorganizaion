@@ -387,7 +387,7 @@ const Sidebar = () => {
               <span className="text-white font-bold text-lg">A</span>
             </div>
             <span className="text-xl font-semibold text-gray-800">
-              {user?.role || "Admin"}
+              {user?.roleName || "Admin"}
             </span>
           </div>
         </div>

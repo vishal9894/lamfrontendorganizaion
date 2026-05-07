@@ -6,6 +6,8 @@ const PermissionsUI = ({ user, role, onClose, onSave, isModal = true, selectedPe
   const [permissions, setPermissions] = useState({});
   const [loading, setLoading] = useState(false);
 
+  
+
   // Permission groups data with correct IDs matching your database
   const permissionGroups = [
     {

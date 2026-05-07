@@ -4,7 +4,7 @@ import { buildPaginationParams, parsePaginatedResponse, PAGINATION_CONFIG } from
 
 
 // Use proxy in development, direct URL in production
-const BaseUrl = import.meta.env.DEV ? '/api' : import.meta.env.VITE_BACKEND_API;
+const BaseUrl =  import.meta.env.VITE_BACKEND_API;
 
 const api = axios.create({
   baseURL: BaseUrl,
