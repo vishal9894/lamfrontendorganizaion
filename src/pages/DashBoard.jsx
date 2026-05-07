@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { handleGetWallet, handleGetDashboardData } from "../api/allApi.js";
+import { useDashboardStats, useUserWallet } from "../hooks/index.js";
 
 import {
   FaWallet,
@@ -72,38 +72,25 @@ const SkeletonActivity = () => (
 
 const DashBoard = () => {
   const { user } = useSelector((state) => state.user);
-  const [walletData, setWalletData] = useState({ balance: 0 });
-  const [dashboardData, setDashboardData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
-  // Fetch data on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  // Use React Query hooks with caching and real-time updates
+  const {
+    data: dashboardData,
+    isLoading: dashboardLoading,
+    error: dashboardError,
+    refetch: refetchDashboard
+  } = useDashboardStats({ refetchInterval: 30 * 1000 }); // Refresh every 30 seconds
 
-        // Fetch dashboard data
-        const dashboard = await handleGetDashboardData();
-        setDashboardData(dashboard);
+  const {
+    data: walletData,
+    isLoading: walletLoading,
+    error: walletError
+  } = useUserWallet(user?.id);
 
-        // Fetch wallet data if user exists
-        if (user?.id) {
-          const wallet = await handleGetWallet(user.id);
-          setWalletData(wallet || { balance: 0 });
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setError(err.message || "Failed to load dashboard data");
-        toast.error(err.message || 'Failed to load dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Combined loading state
+  const loading = dashboardLoading || walletLoading;
+  const error = dashboardError || walletError;
 
-    fetchData();
-  }, [user?.id]);
 
   // Safe data extraction with fallbacks
   const wallet = walletData?.balance || 0;
@@ -494,7 +481,7 @@ const DashBoard = () => {
                   recentActivities.map((activity) => (
                     <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
                       <div className={`w-2 h-2 mt-2 rounded-full ${activity.status === "completed" ? "bg-green-500" :
-                          activity.status === "success" ? "bg-blue-500" : "bg-yellow-500"
+                        activity.status === "success" ? "bg-blue-500" : "bg-yellow-500"
                         }`}></div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-800">{activity.action}</p>

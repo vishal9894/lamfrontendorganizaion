@@ -2,13 +2,17 @@ import { useState, useEffect } from 'react';
 
 import { toast } from 'react-toastify';
 import DeleteModal from '../components/DeleteModal';
+import {
+  useCourses,
+  useCreateCourse,
+  useUpdateCourse,
+  useDeleteCourse,
+  usePublishCourse
+} from '../hooks/index.js';
 
 
 
 const CourseManagement = () => {
-
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -42,46 +46,47 @@ const CourseManagement = () => {
     total: 0
   });
 
+  // React Query hooks for data management with caching
+  const {
+    data: coursesData,
+    isLoading: loading,
+    error: coursesError,
+    refetch: refetchCourses
+  } = useCourses('all', pagination.page, pagination.limit, filters);
+
+  const createCourseMutation = useCreateCourse();
+  const updateCourseMutation = useUpdateCourse();
+  const deleteCourseMutation = useDeleteCourse();
+  const publishCourseMutation = usePublishCourse();
+
+  // Extract data from React Query response
+  const courses = coursesData?.data || [];
+  const total = coursesData?.total || 0;
 
 
-  const fetchCourses = async () => {
-    try {
-      setLoading(true);
-      const params = {
-        ...filters,
-        page: pagination.page,
-        limit: pagination.limit
-      };
-
-      let response;
-
-
-
-      setCourses(response.courses || []);
-      setPagination(prev => ({
-        ...prev,
-        total: response.total || 0
-      }));
-    } catch (error) {
-      toast.error('Failed to load courses');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCreateCourse = async () => {
     try {
-      const courseData = {
-        ...formData,
-        tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-        objectives: formData.objectives.split('\n').filter(Boolean),
-        requirements: formData.requirements.split('\n').filter(Boolean)
-      };
+      const courseData = new FormData();
+      courseData.append('title', formData.title);
+      courseData.append('description', formData.description);
+      courseData.append('category', formData.category);
+      courseData.append('level', formData.level);
+      courseData.append('duration', formData.duration);
+      courseData.append('price', formData.price);
+      courseData.append('status', formData.status);
+      courseData.append('instructorId', formData.instructorId);
+      courseData.append('tags', JSON.stringify(formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)));
+      courseData.append('objectives', JSON.stringify(formData.objectives.split('\n').filter(Boolean)));
+      courseData.append('requirements', JSON.stringify(formData.requirements.split('\n').filter(Boolean)));
 
-      await organizationApiCalls.createOrganizationCourse(courseData);
+      if (formData.thumbnail) {
+        courseData.append('thumbnail', formData.thumbnail);
+      }
+
+      await createCourseMutation.mutateAsync(courseData);
       setShowCreateModal(false);
       resetForm();
-      fetchCourses();
       toast.success('Course created successfully');
     } catch (error) {
       toast.error(error.message || 'Failed to create course');
@@ -90,25 +95,34 @@ const CourseManagement = () => {
 
   const handleUpdateCourse = async () => {
     try {
-      const courseData = {
-        ...formData,
-        tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-        objectives: formData.objectives.split('\n').filter(Boolean),
-        requirements: formData.requirements.split('\n').filter(Boolean)
-      };
+      const courseData = new FormData();
+      courseData.append('title', formData.title);
+      courseData.append('description', formData.description);
+      courseData.append('category', formData.category);
+      courseData.append('level', formData.level);
+      courseData.append('duration', formData.duration);
+      courseData.append('price', formData.price);
+      courseData.append('status', formData.status);
+      courseData.append('instructorId', formData.instructorId);
+      courseData.append('tags', JSON.stringify(formData.tags.split(',').map(tag => tag.trim()).filter(Boolean)));
+      courseData.append('objectives', JSON.stringify(formData.objectives.split('\n').filter(Boolean)));
+      courseData.append('requirements', JSON.stringify(formData.requirements.split('\n').filter(Boolean)));
 
-      await courseApiCalls.updateCourse(selectedCourse.id, courseData);
+      if (formData.thumbnail) {
+        courseData.append('thumbnail', formData.thumbnail);
+      }
+
+      await updateCourseMutation.mutateAsync({ id: selectedCourse._id, data: courseData });
       setShowEditModal(false);
       resetForm();
-      fetchCourses();
       toast.success('Course updated successfully');
     } catch (error) {
       toast.error(error.message || 'Failed to update course');
     }
   };
 
-  const handleDeleteCourse = async (courseId) => {
-    const course = courses.find(c => c.id === courseId);
+  const handleDeleteCourse = (courseId) => {
+    const course = courses.find(c => c._id === courseId);
     setSelectedCourse(course);
     setShowDeleteModal(true);
   };
@@ -117,13 +131,21 @@ const CourseManagement = () => {
     if (!selectedCourse) return;
 
     try {
-      await courseApiCalls.deleteCourse(selectedCourse.id);
-      fetchCourses();
+      await deleteCourseMutation.mutateAsync(selectedCourse._id);
       toast.success('Course deleted successfully');
       setShowDeleteModal(false);
       setSelectedCourse(null);
     } catch (error) {
       toast.error(error.message || 'Failed to delete course');
+    }
+  };
+
+  const handlePublishCourse = async (courseId, publish) => {
+    try {
+      await publishCourseMutation.mutateAsync({ id: courseId, publish });
+      toast.success(`Course ${publish ? 'published' : 'unpublished'} successfully`);
+    } catch (error) {
+      toast.error(error.message || 'Failed to update course status');
     }
   };
 

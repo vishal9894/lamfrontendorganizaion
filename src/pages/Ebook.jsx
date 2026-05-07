@@ -14,8 +14,7 @@ import {
   ChevronRight,
   Image as ImageIcon
 } from 'lucide-react';
-import { handlePublishCourse } from '../api/allApi';
-import Toast from '../components/ui/Toast';
+import { useCourses, usePublishCourse } from '../hooks/index.js';
 
 const Ebook = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -25,28 +24,26 @@ const Ebook = () => {
   const [publishingId, setPublishingId] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
-  // Toast state
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
-
-  const showToast = (message, type = "success") => {
-    setToast({ show: true, message, type });
-  };
-
-  const hideToast = () => {
-    setToast({ show: false, message: "", type: "" });
-  };
-
   const courseType = "ebook";
 
-  // Placeholder data since hooks don't exist
-  const coursesData = { data: [], pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false }, total: 0 };
-  const coursesLoading = false;
+  const {
+    data: coursesData,
+    isLoading: coursesLoading,
+    error: coursesError,
+    refetch: refetchCourses
+  } = useCourses(courseType, currentPage, pageSize, {
+    search: searchTerm,
+    status: filterStatus !== 'all' ? filterStatus : undefined
+  });
+
+  const publishCourseMutation = usePublishCourse();
 
   const ebooks = coursesData?.data || [];
   const pagination = coursesData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
   const totalEbooks = coursesData?.total || 0;
 
-  // Pagination handlers
+
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
       setCurrentPage(newPage);
@@ -63,27 +60,24 @@ const Ebook = () => {
       setPublishingId(ebook.id);
 
       const newPublishStatus = !ebook.status;
-      const statusToSend = newPublishStatus ? "published" : "draft";
 
-      const response = await handlePublishCourse(ebook.id, statusToSend);
+      await publishCourseMutation.mutateAsync({
+        id: ebook.id,
+        publish: newPublishStatus
+      });
 
-      if (response && (response.success === true || response.status === 200)) {
-        setSuccessMessage(`E-book ${newPublishStatus ? 'published' : 'unpublished'} successfully!`);
-        setTimeout(() => setSuccessMessage(null), 3000);
-      }
+     
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      // Silent error handling
     } finally {
       setPublishingId(null);
     }
   };
 
-  // Filter ebooks based on search and status
   const filteredEbooks = ebooks.filter((ebook) => {
     const matchesSearch =
       (ebook.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (ebook.description?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (ebook.streamId?.toString().toLowerCase() || "").includes(searchTerm.toLowerCase());
+      (ebook.description?.toLowerCase() || "").includes(searchTerm.toLowerCase());
 
     const matchesFilter = filterStatus === 'all' ||
       (filterStatus === 'published' && ebook.status === true) ||
@@ -92,31 +86,23 @@ const Ebook = () => {
     return matchesSearch && matchesFilter;
   });
 
-  // Stats
   const totalEbooksCount = ebooks.length;
   const publishedEbooks = ebooks.filter(e => e.status === true).length;
   const draftEbooks = ebooks.filter(e => e.status === false).length;
 
   const handleView = (ebook) => {
-    // Add your view logic here
-    showToast(`Viewing: ${ebook.title}`);
   }
 
   const handleEdit = (ebook) => {
-    // Add your edit logic here
-    showToast(`Edit: ${ebook.title}`);
   }
 
   const handleDelete = (ebook) => {
-    // Add your delete logic here
-    showToast(`Delete: ${ebook.title}`);
   }
 
   return (
     <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
 
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
@@ -129,26 +115,8 @@ const Ebook = () => {
           </div>
         </div>
 
-        {/* Success Message */}
-        {successMessage && (
-          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 animate-slideDown">
-            <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <CheckCircle className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-emerald-800">Success!</h3>
-              <p className="text-sm text-emerald-600">{successMessage}</p>
-            </div>
-            <button
-              onClick={() => setSuccessMessage(null)}
-              className="p-1 hover:bg-emerald-200 rounded-lg transition-colors"
-            >
-              <XCircle className="w-4 h-4 text-emerald-600" />
-            </button>
-          </div>
-        )}
+       
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-center gap-3">
@@ -187,10 +155,8 @@ const Ebook = () => {
           </div>
         </div>
 
-        {/* Filters and Search */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
@@ -205,7 +171,6 @@ const Ebook = () => {
               />
             </div>
 
-            {/* Filter */}
             <div className="flex gap-2">
               <select
                 value={filterStatus}
@@ -232,7 +197,6 @@ const Ebook = () => {
           </div>
         </div>
 
-        {/* E-books Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {coursesLoading ? (
             <div className="flex justify-center items-center h-64">
@@ -260,9 +224,6 @@ const Ebook = () => {
                         E-Book Name
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Stream
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Price
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -281,7 +242,7 @@ const Ebook = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {filteredEbooks.map((ebook, index) => (
-                      <tr key={ebook.id || index} className="hover:bg-gray-50 transition-colors">
+                      <tr key={ebook._id || index} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3">
                           <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
                             {ebook.courseImage ? (
@@ -312,11 +273,6 @@ const Ebook = () => {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-gray-600">
-                            {ebook.streamId || "N/A"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
                           <div className="flex flex-col">
                             {ebook.currentPrice ? (
                               <>
@@ -340,7 +296,7 @@ const Ebook = () => {
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          {publishingId === ebook.id ? (
+                          {publishingId === ebook._id ? (
                             <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">
                               <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
                               Updating...
@@ -473,13 +429,6 @@ const Ebook = () => {
           }
         `}</style>
 
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={hideToast}
-        />
-      )}
     </div>
 
   );

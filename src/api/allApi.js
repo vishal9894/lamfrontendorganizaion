@@ -1417,7 +1417,7 @@ export const handleCreateRole = async (roleData) => {
 
 export const handleUpdateRole = async (id, roleData) => {
   try {
-    const res = await api.put(`/api/permission/roles/${id}`, roleData);
+    const res = await api.put(`/roles/${id}`, roleData);
     toast.success(res.data?.message || "Role updated successfully");
     return res.data;
   } catch (error) {
