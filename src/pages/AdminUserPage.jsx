@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import {
   handleCreateAdmin,
   handleDeleteAdminAccount,
@@ -7,9 +8,12 @@ import {
   handleUpdateAdmin,
 } from '../api/allApi';
 import { FiCheckCircle, FiEdit2, FiMail, FiPhone, FiPlus, FiSave, FiShield, FiTrash2, FiUpload, FiUser, FiUsers, FiX, FiXCircle } from 'react-icons/fi';
-import Toast from '../components/ui/Toast';
+import DeleteModal from '../components/DeleteModal';
 
 const AdminUserPage = () => {
+  const { user: reduxUser } = useSelector((state) => state.user);
+  const user = reduxUser || (typeof window !== 'undefined' && JSON.parse(localStorage.getItem('user') || 'null'));
+
   const [admins, setAdmins] = useState([]);
   const [roles, setRoles] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,6 +26,7 @@ const AdminUserPage = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [roleId, setRoleId] = useState('');
   const [roleName, setRoleName] = useState('');
@@ -30,17 +35,10 @@ const AdminUserPage = () => {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
   const [existingImage, setExistingImage] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, admin: null });
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Toast state
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
-
-  const showToast = (message, type = "success") => {
-    setToast({ show: true, message, type });
-  };
-
-  const hideToast = () => {
-    setToast({ show: false, message: "", type: "" });
-  };
+  // Toast state removed
 
   /* ================= FETCH ================= */
 
@@ -88,7 +86,7 @@ const AdminUserPage = () => {
   const fetchAllRoles = async () => {
     try {
       const res = await handleGetAllRoles();
-      const rolesData = res?.data || res || [];
+      const rolesData = res?.data || res?.roles || [];
       setRoles(rolesData);
     } catch (err) {
       setRoles([]);
@@ -101,16 +99,24 @@ const AdminUserPage = () => {
     setName('');
     setEmail('');
     setPassword('');
+    setConfirmPassword('');
     setPhone('');
     setRoleId('');
     setRoleName('');
-    setOrganizationId('');
+    setOrganizationId(user?.organizationId || user?.organization?.id || user?.orgId || 'default-org-id');
     setStatus(true);
     setCurrentAdmin(null);
     setImage(null);
     setImagePreview('');
     setExistingImage('');
   };
+
+  // Initialize organization ID when user data is available
+  useEffect(() => {
+    if (user && !organizationId) {
+      setOrganizationId(user.organizationId || user.organization?.id || user?.orgId || 'default-org-id');
+    }
+  }, [user]);
 
   const openModal = (type, admin = null) => {
     setModalType(type);
@@ -186,43 +192,48 @@ const AdminUserPage = () => {
 
     // Validation
     if (!name.trim()) {
-      showToast('Name is required', 'error');
+      showToast('Name is required', 'error');;
       return;
     }
     if (!email.trim()) {
-      showToast('Email is required', 'error');
+      showToast('Email is required', 'error');;
       return;
     }
     if (modalType === 'create' && !password.trim()) {
-      showToast('Password is required', 'error');
+      showToast('Password is required', 'error');;
+      return;
+    }
+    if (modalType === 'create' && password !== confirmPassword) {
+      showToast('Passwords do not match', 'error');;
       return;
     }
     if (!roleId) {
-      showToast('Please select a role', 'error');
+      showToast('Please select a role', 'error');;
       return;
     }
     if (!organizationId) {
-      showToast('Organization ID is required', 'error');
+      showToast('Organization ID is required. Please ensure you are assigned to an organization.', 'error');;
       return;
     }
 
-    const formData = new FormData();
-    formData.append('name', name.trim());
-    formData.append('email', email.trim());
-    formData.append('phone', phone.trim() || '');
-    formData.append('roleId', roleId);
-    formData.append('roleName', roleName);
-    formData.append('organizationId', organizationId);
-    formData.append('status', status ? 'active' : 'inactive');
+    const payload = {
+      name: name.trim(),
+      email: email.trim(),
+      roleName: roleName,
+      roleId: roleId,
+      status: status ? 'active' : 'inactive',
+      phone_number: phone.trim() || '',
+    };
 
-    if (modalType === 'create') {
-      formData.append('password', password.trim());
+    // Only include password if it's provided (for updates)
+    if (password.trim()) {
+      payload.password = password.trim();
     }
 
     if (image) {
-      formData.append('image', image);
+      payload.image = image;
     } else if (modalType === 'update' && existingImage === '' && imagePreview === '') {
-      formData.append('remove_image', 'true');
+      payload.remove_image = 'true';
     }
 
     // Log the payload
@@ -231,18 +242,16 @@ const AdminUserPage = () => {
 
     try {
       if (modalType === 'create') {
-        await handleCreateAdmin(formData);
+        await handleCreateAdmin(payload);
         await fetchAllAdmins();
         closeModal();
-        showToast('Admin created successfully!');
-      } else {
-        await handleUpdateAdmin(currentAdmin.id, formData);
+      } else if (modalType === 'update') {
+        await handleUpdateAdmin(currentAdmin.id, payload);
         await fetchAllAdmins();
         closeModal();
-        showToast('Admin updated successfully!');
       }
     } catch (error) {
-      showToast(error.response?.data?.message || 'An error occurred. Please try again.', 'error');
+      showToast('An error occurred while saving admin', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -251,15 +260,31 @@ const AdminUserPage = () => {
   /* ================= DELETE ================= */
 
   const handleDelete = async (id) => {
+    const admin = admins.find(a => a.id === id);
+    setDeleteModal({
+      isOpen: true,
+      admin
+    });
+  };
 
+  const confirmDeleteAdmin = async () => {
+    if (!deleteModal.admin?.id) return;
+
+    setDeleteLoading(true);
     try {
-      await handleDeleteAdminAccount(id);
+      await handleDeleteAdminAccount(deleteModal.admin.id);
       await fetchAllAdmins();
-      showToast('Admin deleted successfully!');
+      closeModal();
+      setDeleteModal({ isOpen: false, admin: null });
     } catch (error) {
-      showToast('Failed to delete admin. Please try again.', 'error');
+      showToast('An error occurred while deleting admin', 'error');
+    } finally {
+      setDeleteLoading(false);
     }
+  };
 
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, admin: null });
   };
 
   return (
@@ -557,22 +582,41 @@ const AdminUserPage = () => {
 
                   {/* Password (only for create) */}
                   {modalType === 'create' && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Password <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <FiShield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                        <input
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                          placeholder="Minimum 6 characters"
-                          required
-                        />
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Password <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <FiShield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                          <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            placeholder="Minimum 6 characters"
+                            required
+                          />
+                        </div>
                       </div>
-                    </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Confirm Password <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <FiShield className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                          <input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            placeholder="Re-enter password"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </>
                   )}
 
                   {/* Phone */}
@@ -592,20 +636,8 @@ const AdminUserPage = () => {
                     </div>
                   </div>
 
-                  {/* Organization ID */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Organization ID <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={organizationId}
-                      onChange={(e) => setOrganizationId(e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      placeholder="Enter Organization ID"
-                      required
-                    />
-                  </div>
+
+
 
                   {/* Role Dropdown - Simple Select */}
                   <div>
@@ -681,15 +713,19 @@ const AdminUserPage = () => {
         </div>
       )}
 
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={hideToast}
-        />
-      )}
+      <DeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDeleteAdmin}
+        title="Delete Admin"
+        message="Are you sure you want to delete this admin? This action cannot be undone."
+        itemName={deleteModal.admin?.name || "Admin"}
+        isLoading={deleteLoading}
+        confirmText="Delete Admin"
+      />
+
     </div>
   );
-};
+}
 
 export default AdminUserPage;

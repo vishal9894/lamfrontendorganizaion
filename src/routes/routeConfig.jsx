@@ -394,6 +394,10 @@ export const protectedRoutes = [
     path: "/quiz/view",
     element: <ViewQuiz />,
   },
+  {
+    path: "/edit-quiz/:id",
+    element: <AddQuiz />,
+  },
 
   // Settings
   {

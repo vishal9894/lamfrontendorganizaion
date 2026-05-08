@@ -21,59 +21,9 @@ import {
   ChevronRight,
   Search
 } from "lucide-react";
-import { handlePublishBanner, handleGetBanner, handleGetShortCourseDetails } from "../api/allApi";
+import { handlePublishBanner, handleGetBanner, handleGetShortCourseDetails, handleCreateBanner, handleDeleteBanner } from "../api/allApi";
+import DeleteModal from "../components/DeleteModal";
 
-// Delete Modal Component
-const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isLoading, confirmText, cancelText, size }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity" onClick={onClose} />
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
-          <div className="bg-gradient-to-r from-red-600 to-red-500 px-6 py-5 rounded-t-2xl">
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-xl">
-                <Trash2 className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-white">{title || "Delete Item"}</h3>
-            </div>
-          </div>
-
-          <div className="p-6">
-            <p className="text-gray-600 mb-6">
-              {message || `Are you sure you want to delete "${itemName}"? This action cannot be undone.`}
-            </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              >
-                {cancelText || 'Cancel'}
-              </button>
-              <button
-                onClick={onConfirm}
-                disabled={isLoading}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all flex items-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Deleting...
-                  </>
-                ) : (
-                  confirmText || 'Delete'
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const Banner = () => {
   const [activeTab, setActiveTab] = useState("create");
@@ -107,31 +57,61 @@ const Banner = () => {
 
   const [publishingId, setPublishingId] = useState(null);
   const [submitLoading, setSubmitLoading] = useState(false);
+
+  // State for banners
+  const [banners, setBanners] = useState([]);
+  const [bannersLoading, setBannersLoading] = useState(false);
+  const [bannersPagination, setBannersPagination] = useState({ totalPages: 1, hasNextPage: false, hasPrevPage: false });
+  const [totalBanners, setTotalBanners] = useState(0);
+
   // Fetch banners function
-  const fetchBanners = () => {
-    // Removed usage of non-existent hook
+  const fetchBanners = async (page = 1, limit = pageSize) => {
+    setBannersLoading(true);
+    try {
+      const response = await handleGetBanner(page, limit, { type: "banner" });
+      let bannersData = [];
+      let paginationData = { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+      let total = 0;
+
+      if (response && Array.isArray(response)) {
+        bannersData = response.filter((item) => item.type === "banner");
+        total = bannersData.length;
+      } else if (response && response.data && Array.isArray(response.data)) {
+        bannersData = response.data.filter((item) => item.type === "banner");
+        paginationData = response.pagination || paginationData;
+        total = response.total || bannersData.length;
+      } else if (response && response.success && response.data && Array.isArray(response.data)) {
+        bannersData = response.data.filter((item) => item.type === "banner");
+        paginationData = response.pagination || paginationData;
+        total = response.total || bannersData.length;
+      }
+
+      setBanners(bannersData);
+      setBannersPagination(paginationData);
+      setTotalBanners(total);
+    } catch (err) {
+      console.error('Error fetching banners:', err);
+      setError(`Failed to fetch banners: ${err.response?.data?.message || err.message || 'Unknown error'}`);
+      setBanners([]);
+      setBannersPagination({ totalPages: 1, hasNextPage: false, hasPrevPage: false });
+      setTotalBanners(0);
+    } finally {
+      setBannersLoading(false);
+    }
   };
 
-  // Placeholder data since hooks don't exist
-  const bannersData = { data: [], pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false }, total: 0 };
-  const bannersLoading = false;
-  const createBannerMutation = null;
-  const updateBannerMutation = null;
-  const deleteBannerMutation = null;
-
-  const banners = bannersData?.data || [];
-  const pagination = bannersData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
-  const totalBanners = bannersData?.total || 0;
-
   // Pagination variables for banners
-  const bannerTotalPages = pagination.totalPages;
+  const bannerTotalPages = bannersPagination.totalPages;
   const bannerIndexFirst = (currentPage - 1) * pageSize;
   const bannerIndexLast = bannerIndexFirst + banners.length;
 
   // Pagination handlers
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
+    if (newPage >= 1 && newPage <= bannersPagination.totalPages) {
       setCurrentPage(newPage);
+      if (activeTab === "banners") {
+        fetchBanners(newPage, pageSize);
+      }
     }
   };
 
@@ -198,8 +178,15 @@ const Banner = () => {
   };
 
   useEffect(() => {
+    // Initial fetch on component mount
+    fetchBanners();
+  }, []);
+
+  useEffect(() => {
     if (activeTab === "news") {
       fetchNews();
+    } else if (activeTab === "banners") {
+      fetchBanners();
     }
   }, [activeTab]);
 
@@ -285,7 +272,7 @@ const Banner = () => {
     }
 
     setError(null);
-    setSuccess(null);
+    setSubmitLoading(true);
 
     try {
       const formDataToSend = new FormData();
@@ -313,11 +300,15 @@ const Banner = () => {
         formDataToSend.append("image", imageFile);
       }
 
-      // Placeholder for create functionality
+      // Call the actual API
+      await handleCreateBanner(formDataToSend);
+
       setSuccess(`${formData.type === "banner" ? "Banner" : "News"} created successfully!`);
       resetForm();
       if (formData.type === "news") {
         fetchNews();
+      } else if (formData.type === "banner") {
+        fetchBanners();
       }
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
@@ -326,6 +317,8 @@ const Banner = () => {
         err.message ||
         "Failed to create item. Please check console for details.",
       );
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
@@ -363,12 +356,19 @@ const Banner = () => {
     if (!selectedItem) return;
 
     try {
-      // Placeholder for delete functionality
-      fetchNews();
-      setSuccess("Item deleted successfully!");
+      await handleDeleteBanner(selectedItem.id);
+
+      setSuccess(`${selectedItem.type === "banner" ? "Banner" : "News"} deleted successfully!`);
       setTimeout(() => setSuccess(null), 3000);
       setShowDeleteModal(false);
       setSelectedItem(null);
+
+      // Refresh the appropriate list
+      if (selectedItem.type === "news") {
+        fetchNews();
+      } else if (selectedItem.type === "banner") {
+        fetchBanners();
+      }
     } catch (err) {
       setError(err.message || "Failed to delete");
     }
@@ -378,17 +378,18 @@ const Banner = () => {
     try {
       setPublishingId(item.id);
       const newStatus = !item.status;
-      const statusToSend = newStatus ? "published" : "draft";
 
-      const response = await handlePublishBanner(item.id, statusToSend);
+      const response = await handlePublishBanner(item.id, newStatus);
 
-      if (response && (response.success === true || response.status === 200)) {
-        if (item.type === "news") {
-          fetchNews();
-        }
-        setSuccess(`${item.type === "banner" ? "Banner" : "News"} ${newStatus ? 'published' : 'unpublished'} successfully!`);
-        setTimeout(() => setSuccess(null), 3000);
+
+      if (item.type === "news") {
+        fetchNews();
+      } else if (item.type === "banner") {
+        fetchBanners();
       }
+
+      setTimeout(() => setSuccess(null), 3000);
+
     } catch (error) {
       setError(error.message || "Failed to update status");
     } finally {
@@ -443,39 +444,6 @@ const Banner = () => {
             Create and manage banners and news items
           </p>
         </div>
-
-        {/* Success Message */}
-        {success && (
-          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 animate-slideDown">
-            <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <CheckCircle className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-emerald-800">Success!</h3>
-              <p className="text-sm text-emerald-600">{success}</p>
-            </div>
-            <button
-              onClick={() => setSuccess(null)}
-              className="p-1 hover:bg-emerald-200 rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4 text-emerald-600" />
-            </button>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 animate-slideDown">
-            <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <p className="text-red-700 flex-1">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="p-1 hover:bg-red-200 rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4 text-red-600" />
-            </button>
-          </div>
-        )}
 
         {/* Tabs */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">

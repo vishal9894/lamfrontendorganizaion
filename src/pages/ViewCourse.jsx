@@ -17,7 +17,7 @@ import {
   ChevronRight,
   Image as ImageIcon
 } from "lucide-react";
-import { handleGetCourse } from "../api/allApi";
+import { handleGetCourse, handlePublishCourse } from "../api/allApi";
 
 // Delete Modal Component
 const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isLoading }) => {
@@ -80,10 +80,10 @@ const ViewCourse = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [publishingId, setPublishingId] = useState(null);
-  const [coursesData, setCoursesData] = useState({ 
-    data: [], 
-    pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false }, 
-    total: 0 
+  const [coursesData, setCoursesData] = useState({
+    data: [],
+    pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false },
+    total: 0
   });
   const [coursesLoading, setCoursesLoading] = useState(false);
 
@@ -137,8 +137,9 @@ const ViewCourse = () => {
   };
 
   const handlePublishToggle = async (course) => {
-    // Implement publish toggle functionality
-    console.log("Toggle publish for:", course);
+    const newPublishStatus = !course.status;
+    await handlePublishCourse(course.id, newPublishStatus);
+    fetchCourses()
   };
 
   const handleEdit = (course) => {
@@ -253,11 +254,10 @@ const ViewCourse = () => {
                   setCurrentPage(1);
                   setSearchTerm("");
                 }}
-                className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all mx-1 ${
-                  activeTab === tab.id
+                className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all mx-1 ${activeTab === tab.id
                     ? "bg-indigo-600 text-white shadow-md"
                     : "text-gray-600 hover:bg-gray-100"
-                }`}
+                  }`}
               >
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
@@ -490,11 +490,10 @@ const ViewCourse = () => {
                         <button
                           key={pageNum}
                           onClick={() => handlePageChange(pageNum)}
-                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                            pageNum === currentPage
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${pageNum === currentPage
                               ? "bg-blue-600 text-white border-blue-600"
                               : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
-                          }`}
+                            }`}
                         >
                           {pageNum}
                         </button>
@@ -535,22 +534,8 @@ const ViewCourse = () => {
         />
       </div>
 
-      {/* Animation styles */}
-      <style>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
+
+
     </div>
   );
 };

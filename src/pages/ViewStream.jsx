@@ -15,13 +15,14 @@ import {
   Search,
   Trash2,
   Users,
+  X,
 } from "lucide-react";
 
 import { useDispatch } from "react-redux";
 import { setStream } from "../redux/features/courseSlice";
 import DeleteModal from "../components/DeleteModal";
 import Toast from "../components/ui/Toast";
-import { handleGetStream } from "../api/allApi";
+import { handleDeleteStream, handleGetStream, handleUpdateStream } from "../api/allApi";
 
 
 const ViewStream = () => {
@@ -29,18 +30,38 @@ const ViewStream = () => {
   const [selectedStream, setSelectedStream] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.STREAMS.default);
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [error, setError] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    description: "",
+    status: "active",
+    superstreamId: "",
+    image: null,
+    imagePreview: null,
+  });
 
   // Toast state
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
 
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: "", type: "" });
+    }, 3000);
+  };
+
+  const hideToast = () => {
+    setToast({ show: false, message: "", type: "" });
+  };
 
   const [streamsData, setStreamsData] = useState({ data: [], pagination: { total: 0, page: 1, limit: 10, totalPages: 1 } });
   const [streamsLoading, setStreamsLoading] = useState(false);
@@ -48,24 +69,25 @@ const ViewStream = () => {
   const deleteStreamMutation = null;
 
   // Fetch streams data
-  useEffect(() => {
-    const fetchStreams = async () => {
-      try {
-        setStreamsLoading(true);
-        const response = await handleGetStream();
-        if (response && response.data) {
-          setStreamsData({
-            data: response.data,
-            pagination: response.pagination || { total: 0, page: 1, limit: 10, totalPages: 1 }
-          });
-        }
-      } catch (err) {
-        setStreamsError("Failed to load streams");
-      } finally {
-        setStreamsLoading(false);
+  const fetchStreams = async () => {
+    try {
+      setStreamsLoading(true);
+      const response = await handleGetStream();
+      if (response && response.data) {
+        setStreamsData({
+          data: response.data,
+          pagination: response.pagination || { total: 0, page: 1, limit: 10, totalPages: 1 }
+        });
       }
-    };
+    } catch (err) {
+      setStreamsError("Failed to load streams");
+      showToast("Failed to load streams", "error");
+    } finally {
+      setStreamsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchStreams();
   }, []);
 
@@ -92,7 +114,7 @@ const ViewStream = () => {
 
   // Refresh data after mutations
   const refreshData = () => {
-    // Placeholder for data refresh
+    fetchStreams();
   };
 
   useEffect(() => {
@@ -102,40 +124,80 @@ const ViewStream = () => {
   const handleDelete = async (id) => {
     setDeleteLoading(true);
     try {
-      // Placeholder for delete functionality
+      handleDeleteStream(id)
       setShowDeleteModal(false);
       setSelectedStream(null);
+      refreshData();
     } catch (err) {
-      // Silent error handling
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
-
-  const handleBulkDelete = async () => {
-    if (selectedRows.length === 0) return;
-
-    if (
-      !window.confirm(
-        `Are you sure you want to delete ${selectedRows.length} selected streams?`,
-      )
-    )
-      return;
-
-    setDeleteLoading(true);
-    try {
-      // Placeholder for bulk delete functionality
-      handleSuccess(`${selectedRows.length} streams deleted successfully`);
-      setSelectedRows([]);
-      setSelectAll(false);
-    } catch (err) {
-      handleError(err, "Failed to delete streams");
+      showToast("Failed to delete stream", "error");
     } finally {
       setDeleteLoading(false);
     }
   };
 
   const handleEdit = (stream) => {
+    setSelectedStream(stream);
+    setEditFormData({
+      name: stream.name || "",
+      description: stream.description || "",
+      status: stream.status || "active",
+      superstreamId: stream.superstream?.id || "",
+      image: null,
+      imagePreview: stream.image || null,
+    });
+    setShowEditModal(true);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append("name", editFormData.name);
+      formData.append("description", editFormData.description);
+      formData.append("status", editFormData.status);
+      if (editFormData.superstreamId) {
+        formData.append("superstreamId", editFormData.superstreamId);
+      }
+      if (editFormData.image) {
+        formData.append("image", editFormData.image);
+      }
+
+     
+       const response = await handleUpdateStream(selectedStream.id, formData);
+      
+      
+      setShowEditModal(false);
+      setSelectedStream(null);
+      refreshData();
+    } catch (err) {
+      showToast(err.message || "Failed to update stream", "error");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+
+
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditFormData(prev => ({
+        ...prev,
+        image: file,
+        imagePreview: URL.createObjectURL(file)
+      }));
+    }
   };
 
   const handleView = (stream) => {
@@ -251,6 +313,30 @@ const ViewStream = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedRows.length === 0) return;
+
+    if (
+      !window.confirm(
+        `Are you sure you want to delete ${selectedRows.length} selected streams?`,
+      )
+    )
+      return;
+
+    setDeleteLoading(true);
+    try {
+      // Placeholder for bulk delete functionality
+      showToast(`${selectedRows.length} streams deleted successfully`, "success");
+      setSelectedRows([]);
+      setSelectAll(false);
+      refreshData();
+    } catch (err) {
+      showToast("Failed to delete streams", "error");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -356,9 +442,6 @@ const ViewStream = () => {
           </div>
         </div>
 
-        {/* Error Message */}
-       
-
         {/* Filters and Search */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
           <div className="flex flex-col md:flex-row gap-4">
@@ -447,7 +530,6 @@ const ViewStream = () => {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
                       </th>
-
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Created
                       </th>
@@ -479,53 +561,57 @@ const ViewStream = () => {
                                     src={stream.image}
                                     alt={stream.name}
                                     className="w-full h-full object-cover"
-
                                   />
                                 ) : (
-                                  <ImageIcon className="w-5 h-5 text-indigo-400" />
+                                  <div className="w-full h-full bg-gradient-to-br from-indigo-200 to-purple-200 flex items-center justify-center">
+                                    <span className="text-xs font-semibold text-indigo-600">
+                                      {stream.name.charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
                                 )}
                               </div>
-                              <span className="font-medium text-gray-800">
-                                {stream.name || "Unnamed Stream"}
-                              </span>
+                              <div>
+                                <div className="font-medium text-gray-900">{stream.name}</div>
+                                
+                              </div>
                             </div>
                           </td>
                           <td className="px-4 py-3">
-                            <span className="text-xs font-mono text-gray-500">
-                              {stream.superstream?.name || "N/A"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 max-w-xs">
-                            <p className="text-gray-600 truncate">
-                              {stream.description || "No description"}
-                            </p>
+                            <div className="text-sm text-gray-900">
+                              {stream.superstream?.name || 'N/A'}
+                            </div>
                           </td>
                           <td className="px-4 py-3">
-                            <span
-                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${stream.status === "active"
-                                ? "bg-green-100 text-green-700"
-                                : stream.status === "inactive"
-                                  ? "bg-gray-100 text-gray-700"
-                                  : "bg-blue-100 text-blue-700"
-                                }`}
-                            >
-                              {stream.status || "Unknown"}
-                            </span>
-                          </td>
-
-
-                          <td className="px-4 py-3 text-gray-600">
-                            {stream.createdAt
-                              ? new Date(stream.createdAt).toLocaleDateString()
-                              : "N/A"}
+                            <div className="text-sm text-gray-900 max-w-xs truncate">
+                              {stream.description || 'No description'}
+                            </div>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex items-center gap-1">
-
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${stream.status === 'active'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                              }`}>
+                              {stream.status || 'inactive'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-sm text-gray-900">
+                              {new Date(stream.createdAt).toLocaleDateString()}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleView(stream)}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                title="View"
+                              >
+                                <BookOpen className="w-4 h-4" />
+                              </button>
                               <button
                                 onClick={() => handleEdit(stream)}
-                                className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
-                                title="Edit Stream"
+                                className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                title="Edit"
                               >
                                 <Edit className="w-4 h-4" />
                               </button>
@@ -534,12 +620,11 @@ const ViewStream = () => {
                                   setSelectedStream(stream);
                                   setShowDeleteModal(true);
                                 }}
-                                className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
-                                title="Delete Stream"
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                title="Delete"
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
-
                             </div>
                           </td>
                         </tr>
@@ -547,7 +632,7 @@ const ViewStream = () => {
                     ) : (
                       <tr>
                         <td
-                          colSpan="9"
+                          colSpan="7"
                           className="px-4 py-8 text-center text-gray-500"
                         >
                           {searchTerm
@@ -606,7 +691,233 @@ const ViewStream = () => {
           )}
         </div>
 
+        {/* Edit Modal */}
+        {showEditModal && selectedStream && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-gray-800">Edit Stream</h2>
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
 
+              <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+                {/* Stream Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Stream Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={editFormData.name}
+                    onChange={handleEditInputChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                    placeholder="Enter stream name"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={editFormData.description}
+                    onChange={handleEditInputChange}
+                    rows="3"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                    placeholder="Enter stream description"
+                  />
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status *
+                  </label>
+                  <select
+                    name="status"
+                    value={editFormData.status}
+                    onChange={handleEditInputChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+
+
+                {/* Image Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Stream Image
+                  </label>
+                  <div className="mt-1 flex items-center gap-4">
+                    {editFormData.imagePreview && (
+                      <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                        <img
+                          src={editFormData.imagePreview}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <label className="cursor-pointer bg-white px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                      <span className="text-sm text-gray-600">Choose Image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Recommended size: 200x200px. Max size: 2MB
+                  </p>
+                </div>
+
+                {/* Form Actions */}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={editLoading}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {editLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Saving...</span>
+                      </div>
+                    ) : (
+                      "Save Changes"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* View Modal */}
+        {showViewModal && selectedStream && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 className="text-xl font-bold text-gray-800">Stream Details</h2>
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-24 h-24 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100">
+                    {selectedStream.image ? (
+                      <img
+                        src={selectedStream.image}
+                        alt={selectedStream.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <FolderTree className="w-10 h-10 text-indigo-400" />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-800">
+                      {selectedStream.name}
+                    </h3>
+                    <p className="text-sm text-gray-500">ID: {selectedStream.id}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase">
+                      Status
+                    </label>
+                    <p className="mt-1">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${selectedStream.status === 'active'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                        }`}>
+                        {selectedStream.status || 'inactive'}
+                      </span>
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase">
+                      Created At
+                    </label>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {new Date(selectedStream.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-500 uppercase">
+                      Description
+                    </label>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {selectedStream.description || 'No description provided'}
+                    </p>
+                  </div>
+
+                  {selectedStream.superstream && (
+                    <div className="col-span-2">
+                      <label className="text-xs font-medium text-gray-500 uppercase">
+                        SuperStream
+                      </label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {selectedStream.superstream.name}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowViewModal(false);
+                    handleEdit(selectedStream);
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                >
+                  <Edit className="w-4 h-4" />
+                  Edit Stream
+                </button>
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Delete Modal */}
         {showDeleteModal && selectedStream && (

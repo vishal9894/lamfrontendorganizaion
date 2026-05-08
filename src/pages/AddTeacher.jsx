@@ -21,7 +21,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
-import { handleGetShortCourseDetails } from '../api/allApi';
+import { handleCreateTeacher, handleGetShortCourseDetails, handleGetTeacher } from '../api/allApi';
 
 // Delete Modal Component
 const DeleteModal = ({ isOpen, onClose, onConfirm, title, itemName, isLoading, confirmText, cancelText, size }) => {
@@ -81,12 +81,13 @@ const AddTeacher = () => {
   const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.TEACHERS.default);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Placeholder data since hooks don't exist
-  const teachersData = { data: [], pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false }, total: 0 };
-  const teachersLoading = false;
-  const createTeacherMutation = null;
-  const updateTeacherMutation = null;
-  const deleteTeacherMutation = null;
+  // Teachers state
+  const [teachersData, setTeachersData] = useState({
+    data: [],
+    pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false },
+    total: 0
+  });
+  const [teachersLoading, setTeachersLoading] = useState(false);
 
   const teachers = teachersData?.data || [];
   const pagination = teachersData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
@@ -114,6 +115,27 @@ const AddTeacher = () => {
   // Courses state - will hold ALL courses from all types
   const [courses, setCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
+
+  // Fetch teachers and courses on component mount
+  useEffect(() => {
+    const fetchTeachers = async () => {
+      try {
+        const response = await handleGetTeacher();
+        if (response && response.data) {
+          setTeachersData({
+            data: Array.isArray(response.data) ? response.data : [],
+            pagination: response.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false },
+            total: response.total || response.data.length
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching teachers:', err);
+      }
+    };
+
+    fetchTeachers();
+    handleGetShortCourseDetails();
+  }, []);
 
   // Handle page change
   const handlePageChange = (newPage) => {
@@ -214,16 +236,20 @@ const AddTeacher = () => {
         formDataToSend.append('image', imageFile);
       }
 
-      // Placeholder for save functionality
-      setSuccess(editMode ? 'Teacher updated successfully!' : 'Teacher created successfully!');
-      resetForm();
+      // Call API to create/update teacher
+      const result = await handleCreateTeacher(formDataToSend);
 
-      // Switch to view tab after successful creation/update
-      setTimeout(() => {
-        setActiveTab('view');
-        setTimeout(() => setSuccess(null), 3000);
-      }, 1500);
+      if (result.success !== false) {
+        setSuccess(editMode ? 'Teacher updated successfully!' : 'Teacher created successfully!');
+        resetForm();
 
+        // Switch to view tab after successful creation/update
+        setTimeout(() => {
+          setActiveTab('view');
+          setTimeout(() => setSuccess(null), 3000);
+        }, 1500);
+
+      }
     } catch (err) {
       const errorMessage = err?.response?.data?.message || err?.message || (editMode ? 'Failed to update teacher' : 'Failed to create teacher');
       setError(errorMessage);
@@ -315,26 +341,6 @@ const AddTeacher = () => {
     return course ? (course.courseName || course.name || course.coursename) : 'Unknown Course';
   };
 
-  // Get course type badge
-  const getCourseTypeBadge = (course) => {
-    if (!course) return null;
-
-    const type = course.coursetype || course.type;
-    switch (type) {
-      case 'regular_course':
-        return <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">Regular</span>;
-      case 'ebook':
-        return <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs">E-Book</span>;
-      case 'free_video_course':
-        return <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs">Video</span>;
-      case 'free_pdf_course':
-        return <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs">PDF</span>;
-      case 'free_test_series':
-        return <span className="ml-2 px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full text-xs">Test</span>;
-      default:
-        return null;
-    }
-  };
 
   // Success Message Component
   if (success) {
@@ -355,41 +361,7 @@ const AddTeacher = () => {
           </p>
         </div>
 
-        {/* Success Message */}
-        {success && (
-          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-emerald-800">Success!</h3>
-              <p className="text-sm text-emerald-600">{success}</p>
-            </div>
-            <button onClick={() => setSuccess(null)} className="p-1 hover:bg-emerald-200 rounded-lg">
-              <X className="w-4 h-4 text-emerald-600" />
-            </button>
-          </div>
-        )}
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
-            <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-red-800">Error!</h3>
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-            <button onClick={() => setError(null)} className="p-1 hover:bg-red-200 rounded-lg">
-              <X className="w-4 h-4 text-red-600" />
-            </button>
-          </div>
-        )}
 
         {/* Tabs */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">

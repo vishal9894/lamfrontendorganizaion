@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PAGINATION_CONFIG } from '../utils/pagination';
 import {
+  AlertCircle,
   CheckCircle,
   ChevronLeft,
   ChevronRight,
@@ -21,53 +22,8 @@ import {
   Info,
   BookOpen
 } from 'lucide-react';
-import { handleGetTopStudent } from '../api/allApi';
-
-// Delete Modal Component
-const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isLoading, confirmText, cancelText }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity" onClick={onClose} />
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all">
-          <div className="bg-gradient-to-r from-red-600 to-red-500 px-6 py-5 rounded-t-2xl">
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-xl">
-                <Trash2 className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-white">{title}</h3>
-            </div>
-          </div>
-
-          <div className="p-6">
-            <p className="text-gray-600 mb-6">
-              {message || `Are you sure you want to delete "${itemName}"? This action cannot be undone.`}
-            </p>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              >
-                {cancelText || 'Cancel'}
-              </button>
-              <button
-                onClick={onConfirm}
-                disabled={isLoading}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all flex items-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? <Loader className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                {isLoading ? 'Deleting...' : (confirmText || 'Delete')}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { handleGetTopStudent, handleUpdateTopStudent, handleDeleteTopStudent } from '../api/allApi';
+import DeleteModal from '../components/DeleteModal';
 
 const ViewTopStudent = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -79,10 +35,11 @@ const ViewTopStudent = () => {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
-  const [studentsData, setStudentsData] = useState({ 
-    data: [], 
-    pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false }, 
-    total: 0 
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [studentsData, setStudentsData] = useState({
+    data: [],
+    pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false },
+    total: 0
   });
   const [studentsLoading, setStudentsLoading] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -142,14 +99,20 @@ const ViewTopStudent = () => {
     if (!selectedStudent) return;
 
     try {
-      // Placeholder for delete functionality
-      setSuccessMessage('Student deleted successfully!');
-      setTimeout(() => setSuccessMessage(null), 3000);
-      setShowDeleteModal(false);
-      setSelectedStudent(null);
-      await fetchStudents(); // Refresh the list
+      const result = await handleDeleteTopStudent(selectedStudent.id);
+
+      if (result.success !== false) {
+        setSuccessMessage('Student deleted successfully!');
+        setTimeout(() => setSuccessMessage(null), 3000);
+        setShowDeleteModal(false);
+        setSelectedStudent(null);
+        await fetchStudents(); // Refresh the list
+      } else {
+        throw new Error(result.message || 'Failed to delete student');
+      }
     } catch (err) {
-      // Error handling
+      setErrorMessage(err.message || 'Failed to delete student');
+      setTimeout(() => setErrorMessage(null), 5000);
     }
   };
 
@@ -172,11 +135,11 @@ const ViewTopStudent = () => {
     setSelectedStudent(student);
     setEditFormData({
       name: student.name || '',
-      videoUrl: student.videoUrl || '',
-      streamId: student.streamId || '',
+      videoUrl: student.video_url || '',
+      streamId: student.streamid || '',
       image: null
     });
-    setEditImagePreview(student.avatar || '');
+    setEditImagePreview(student.image || '');
     setEditSelectedFile(null);
     setShowEditModal(true);
   };
@@ -215,17 +178,23 @@ const ViewTopStudent = () => {
     }
 
     try {
-      // Placeholder for edit functionality
-      setShowEditModal(false);
-      setSelectedStudent(null);
-      setEditFormData({ name: '', videoUrl: '', streamId: '', image: null });
-      setEditImagePreview('');
-      setEditSelectedFile(null);
-      setSuccessMessage('Student updated successfully!');
-      setTimeout(() => setSuccessMessage(null), 3000);
-      await fetchStudents(); // Refresh the list
+      const result = await handleUpdateTopStudent(selectedStudent.id, editFormData);
+
+      if (result.success) {
+        setShowEditModal(false);
+        setSelectedStudent(null);
+        setEditFormData({ name: '', videoUrl: '', streamId: '', image: null });
+        setEditImagePreview('');
+        setEditSelectedFile(null);
+        setSuccessMessage('Student updated successfully!');
+        setTimeout(() => setSuccessMessage(null), 3000);
+        await fetchStudents(); // Refresh the list
+      } else {
+        throw new Error(result.error || 'Failed to update student');
+      }
     } catch (err) {
-      // Error handling
+      setErrorMessage(err.message || 'Failed to update student');
+      setTimeout(() => setErrorMessage(null), 5000);
     }
   };
 
@@ -319,25 +288,7 @@ const ViewTopStudent = () => {
   return (
     <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Success Message */}
-        {successMessage && (
-          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 animate-slideDown">
-            <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
-              <CheckCircle className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-emerald-800">Success!</h3>
-              <p className="text-sm text-emerald-600">{successMessage}</p>
-            </div>
-            <button
-              onClick={() => setSuccessMessage(null)}
-              className="p-1 hover:bg-emerald-200 rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4 text-emerald-600" />
-            </button>
-          </div>
-        )}
-
+        
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -390,7 +341,7 @@ const ViewTopStudent = () => {
                 <div>
                   <p className="text-sm text-gray-500">With Avatar</p>
                   <p className="text-2xl font-bold text-gray-800">
-                    {students.filter(s => s.avatar).length}
+                    {students.filter(s => s.image).length}
                   </p>
                 </div>
               </div>
@@ -404,7 +355,7 @@ const ViewTopStudent = () => {
                 <div>
                   <p className="text-sm text-gray-500">With Video</p>
                   <p className="text-2xl font-bold text-gray-800">
-                    {students.filter(s => s.videoUrl).length}
+                    {students.filter(s => s.video_url).length}
                   </p>
                 </div>
               </div>
@@ -487,15 +438,15 @@ const ViewTopStudent = () => {
                           <div className="text-xs text-gray-400">{student.id?.substring(0, 8)}...</div>
                         </td>
                         <td className="px-4 py-3">
-                          {student.streamId ? (
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(student.streamId)}`}>
-                              {getStreamIcon(student.streamId)}
-                              {student.streamId.length > 12 ? `${student.streamId.substring(0, 12)}...` : student.streamId}
+                          {student.streamid ? (
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(student.streamid)}`}>
+                              {getStreamIcon(student.streamid)}
+                              {student.streamid.length > 12 ? `${student.streamid.substring(0, 12)}...` : student.streamid}
                             </span>
                           ) : <span className="text-gray-400 text-xs">—</span>}
                         </td>
                         <td className="px-4 py-3">
-                          {student.videoUrl ? (
+                          {student.video_url ? (
                             <button
                               onClick={() => handleViewVideo(student)}
                               className="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-xs font-medium transition-colors"
@@ -598,107 +549,8 @@ const ViewTopStudent = () => {
           )}
         </div>
 
-        {/* Details Modal */}
-        {showDetailsModal && selectedStudent && (
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={() => setShowDetailsModal(false)} />
-            <div className="flex min-h-full items-center justify-center p-4">
-              <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all">
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-5 rounded-t-2xl">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-white/20 p-2 rounded-xl">
-                        <Eye className="w-6 h-6 text-white" />
-                      </div>
-                      <h3 className="text-xl font-bold text-white">Student Details</h3>
-                    </div>
-                    <button onClick={() => setShowDetailsModal(false)} className="p-2 hover:bg-white/20 rounded-xl transition-colors">
-                      <X className="w-5 h-5 text-white" />
-                    </button>
-                  </div>
-                </div>
 
-                <div className="p-6 space-y-4">
-                  <div className="flex justify-center">
-                    <div className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden ring-4 ring-white shadow">
-                      {selectedStudent.avatar ? (
-                        <img src={selectedStudent.avatar} alt={selectedStudent.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <User className="w-16 h-16 text-indigo-400" />
-                      )}
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-indigo-50 p-4 rounded-xl">
-                      <p className="text-xs text-indigo-600 mb-1">Name</p>
-                      <p className="font-semibold text-gray-800">{selectedStudent.name}</p>
-                    </div>
-                    <div className="bg-purple-50 p-4 rounded-xl">
-                      <p className="text-xs text-purple-600 mb-1">ID</p>
-                      <p className="font-semibold text-gray-800 text-sm">{selectedStudent.id}</p>
-                    </div>
-                    <div className="bg-blue-50 p-4 rounded-xl">
-                      <p className="text-xs text-blue-600 mb-1">Stream ID</p>
-                      <p className="font-semibold text-gray-800">{selectedStudent.streamId || 'Not assigned'}</p>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-xl">
-                      <p className="text-xs text-green-600 mb-1">Created At</p>
-                      <p className="font-semibold text-gray-800">{formatDate(selectedStudent.createdAt)}</p>
-                    </div>
-                  </div>
-
-                  {selectedStudent.videoUrl && (
-                    <div className="bg-red-50 p-4 rounded-xl">
-                      <p className="text-xs text-red-600 mb-1">Video URL</p>
-                      <a href={selectedStudent.videoUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-red-600 hover:underline break-all">
-                        {selectedStudent.videoUrl}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Video Modal */}
-        {showVideoModal && selectedStudent?.videoUrl && (
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="fixed inset-0 bg-black bg-opacity-75 backdrop-blur-sm" onClick={() => setShowVideoModal(false)} />
-            <div className="flex min-h-full items-center justify-center p-4">
-              <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl transform transition-all">
-                <div className="bg-gradient-to-r from-red-600 to-red-500 px-6 py-4 rounded-t-2xl">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-white/20 p-2 rounded-xl">
-                        <Play className="w-5 h-5 text-white" />
-                      </div>
-                      <h3 className="text-lg font-bold text-white">Student Video</h3>
-                    </div>
-                    <button onClick={() => setShowVideoModal(false)} className="p-2 hover:bg-white/20 rounded-xl transition-colors">
-                      <X className="w-5 h-5 text-white" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-4">
-                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                    <iframe
-                      src={getYouTubeEmbedUrl(selectedStudent.videoUrl)}
-                      title="Student Video"
-                      className="w-full h-full"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                  <p className="text-sm text-gray-600 mt-3 text-center">{selectedStudent.name}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Edit Modal */}
         {showEditModal && selectedStudent && (

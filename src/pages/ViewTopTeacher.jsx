@@ -18,90 +18,8 @@ import {
   X,
   Save
 } from 'lucide-react';
-import { handleGetTopTeacher } from '../api/allApi';
-
-// Delete Modal Component
-const DeleteModal = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  title,
-  message,
-  itemName,
-  isLoading,
-  confirmText,
-  cancelText,
-  size = 'md'
-}) => {
-  if (!isOpen) return null;
-
-  const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-xl'
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose} />
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className={`relative bg-white rounded-xl shadow-2xl w-full ${sizeClasses[size]}`}>
-          <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 rounded-t-xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                <Trash2 className="w-5 h-5" />
-                {title}
-              </h3>
-              <button
-                onClick={onClose}
-                className="p-1 hover:bg-white/20 rounded text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          <div className="p-6">
-            <p className="text-gray-700 mb-2">{message}</p>
-            {itemName && (
-              <p className="text-sm text-gray-500 mt-2">
-                Item: <span className="font-medium text-gray-700">{itemName}</span>
-              </p>
-            )}
-
-            <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                {cancelText}
-              </button>
-              <button
-                type="button"
-                onClick={onConfirm}
-                disabled={isLoading}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <>
-                    <RefreshCw className="w-4 h-4 animate-spin" />
-                    Deleting...
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="w-4 h-4" />
-                    {confirmText}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import { handleDeleteTopTeacher, handleGetTopTeacher, handleUpdateTopTeacher } from '../api/allApi';
+import DeleteModal from '../components/DeleteModal';
 
 const ViewTopTeacher = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -112,17 +30,20 @@ const ViewTopTeacher = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   const [editFormData, setEditFormData] = useState({
     name: '',
-    about: '',
+    bio: '',
     streamid: '',
     image: null
   });
   const [editImagePreview, setEditImagePreview] = useState('');
   const [editSelectedFile, setEditSelectedFile] = useState(null);
-  const [teachersData, setTeachersData] = useState({ 
-    data: [], 
-    pagination: { total: 0, page: 1, limit: 10, totalPages: 1 } 
+  const [teachersData, setTeachersData] = useState({
+    data: [],
+    pagination: { total: 0, page: 1, limit: 10, totalPages: 1 }
   });
   const [teachersLoading, setTeachersLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const teachers = teachersData?.data || [];
   const totalTeachers = teachers.length;
@@ -157,15 +78,19 @@ const ViewTopTeacher = () => {
   const handleDeleteConfirm = async () => {
     if (!selectedTeacher) return;
 
+    setDeleteLoading(true);
     try {
-      // Placeholder for delete functionality
+      await handleDeleteTopTeacher(selectedTeacher.id);
       setShowDeleteModal(false);
       setSelectedTeacher(null);
       setSuccessMessage('Teacher deleted successfully!');
       setTimeout(() => setSuccessMessage(null), 3000);
       await fetchTeachers(); // Refresh the list
     } catch (err) {
-      // Error handling
+      setErrorMessage('Failed to delete teacher');
+      setTimeout(() => setErrorMessage(null), 3000);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -183,7 +108,7 @@ const ViewTopTeacher = () => {
     setSelectedTeacher(teacher);
     setEditFormData({
       name: teacher.name || '',
-      about: teacher.about || '',
+      bio: teacher.bio || '',
       streamid: teacher.streamid || teacher.stream_id || '',
       image: null
     });
@@ -221,22 +146,57 @@ const ViewTopTeacher = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
 
-    if (!editFormData.name.trim()) {
+    // Ensure name is a string and not empty
+    const name = String(editFormData.name || '').trim();
+
+    if (!name) {
+      setErrorMessage('Name is required');
+      setTimeout(() => setErrorMessage(null), 3000);
       return;
     }
 
+    setEditLoading(true);
     try {
-      // Placeholder for edit functionality
-      setShowEditModal(false);
-      setSelectedTeacher(null);
-      setEditFormData({ name: '', about: '', streamid: '', image: null });
-      setEditImagePreview('');
-      setEditSelectedFile(null);
-      setSuccessMessage('Teacher updated successfully!');
-      setTimeout(() => setSuccessMessage(null), 3000);
-      await fetchTeachers(); // Refresh the list
+      // Convert to FormData for multipart/form-data
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('bio', String(editFormData.bio || ''));
+      formData.append('streamid', String(editFormData.streamid || ''));
+
+      if (editFormData.image) {
+        formData.append('image', editFormData.image);
+      }
+
+      // Debug: Log FormData contents
+      console.log('Form Data being sent:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value, typeof value);
+      }
+
+      const result = await handleUpdateTopTeacher(selectedTeacher.id, formData);
+
+      if (result.success) {
+        setShowEditModal(false);
+        setSelectedTeacher(null);
+        setEditFormData({ name: '', bio: '', streamid: '', image: null });
+        setEditImagePreview('');
+        setEditSelectedFile(null);
+        setSuccessMessage('Teacher updated successfully!');
+        setTimeout(() => setSuccessMessage(null), 3000);
+        await fetchTeachers(); // Refresh the list
+      } else {
+        throw new Error(result.error || 'Failed to update teacher');
+      }
     } catch (err) {
-      // Error handling
+      const errorMsg = err.response?.data?.message ||
+        err.response?.data?.error ||
+        (err.response?.data?.message && Array.isArray(err.response.data.message)
+          ? err.response.data.message.join(', ')
+          : 'Failed to update teacher');
+      setErrorMessage(errorMsg);
+      setTimeout(() => setErrorMessage(null), 5000);
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -267,7 +227,7 @@ const ViewTopTeacher = () => {
   const filteredTeachers = teachers.filter(teacher => {
     const matchesSearch = searchTerm === '' ||
       (teacher.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (teacher.about?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (teacher.bio?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (teacher.streamid?.toString() || teacher.stream_id?.toString() || '').includes(searchTerm) ||
       (teacher.id?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
@@ -306,7 +266,7 @@ const ViewTopTeacher = () => {
   return (
     <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
-       
+
 
         {/* Header */}
         <div className="mb-8">
@@ -402,7 +362,7 @@ const ViewTopTeacher = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search teachers by name, about, stream ID, or ID..."
+              placeholder="Search teachers by name, bio, stream ID, or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
@@ -433,7 +393,7 @@ const ViewTopTeacher = () => {
                       Name
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      About
+                      Bio
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Stream ID
@@ -465,14 +425,14 @@ const ViewTopTeacher = () => {
                             <User className="w-5 h-5 text-indigo-400" />
                           )}
                         </div>
-                       </td>
+                      </td>
                       <td className="px-4 py-3">
                         <div className="font-medium text-gray-800">{teacher.name}</div>
                         <div className="text-xs text-gray-400">ID: {teacher.id?.substring(0, 8)}...</div>
-                       </td>
+                      </td>
                       <td className="px-4 py-3">
-                        <p className="text-gray-600 line-clamp-2 max-w-xs">{teacher.about}</p>
-                       </td>
+                        <p className="text-gray-600 line-clamp-2 max-w-xs">{teacher.bio}</p>
+                      </td>
                       <td className="px-4 py-3">
                         {(teacher.streamid || teacher.stream_id) ? (
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(teacher.streamid || teacher.stream_id)}`}>
@@ -484,13 +444,13 @@ const ViewTopTeacher = () => {
                         ) : (
                           <span className="text-gray-400 text-xs">No stream</span>
                         )}
-                       </td>
+                      </td>
                       <td className="px-4 py-3 text-gray-600">
                         <div className="flex items-center">
                           <Calendar className="w-4 h-4 mr-1 text-gray-400" />
                           {formatDate(teacher.createdAt || teacher.created_at)}
                         </div>
-                       </td>
+                      </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <button
@@ -515,7 +475,7 @@ const ViewTopTeacher = () => {
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                       </td>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -524,92 +484,8 @@ const ViewTopTeacher = () => {
           )}
         </div>
 
-        {/* Details Modal */}
-        {showDetailsModal && selectedTeacher && (
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={() => setShowDetailsModal(false)} />
-            <div className="flex min-h-full items-center justify-center p-4">
-              <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl">
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 rounded-t-xl">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <Award className="w-5 h-5" />
-                      Teacher Details
-                    </h3>
-                    <button
-                      onClick={() => setShowDetailsModal(false)}
-                      className="p-1 hover:bg-white/20 rounded text-white transition-colors"
-                    >
-                      <XCircle className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
-                      {(selectedTeacher.image || selectedTeacher.avatar) ? (
-                        <img
-                          src={selectedTeacher.image || selectedTeacher.avatar}
-                          alt={selectedTeacher.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-10 h-10 text-indigo-400" />
-                      )}
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-800">{selectedTeacher.name}</h2>
-                      <p className="text-sm text-gray-500">ID: {selectedTeacher.id}</p>
-                    </div>
-                  </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-xs font-medium text-gray-500">About</label>
-                      <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">{selectedTeacher.about}</p>
-                    </div>
 
-                    {(selectedTeacher.streamid || selectedTeacher.stream_id) && (
-                      <div>
-                        <label className="text-xs font-medium text-gray-500">Stream ID</label>
-                        <div className="flex items-center gap-2">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(selectedTeacher.streamid || selectedTeacher.stream_id)}`}>
-                            <BookOpen className="w-3 h-3 mr-1" />
-                            {selectedTeacher.streamid || selectedTeacher.stream_id}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="text-xs font-medium text-gray-500">Created At</label>
-                      <p className="text-sm text-gray-700">{formatDate(selectedTeacher.createdAt || selectedTeacher.created_at)}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 flex justify-end gap-2">
-                    <button
-                      onClick={() => setShowDetailsModal(false)}
-                      className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Close
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowDetailsModal(false);
-                        handleEditClick(selectedTeacher);
-                      }}
-                      className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
-                    >
-                      <Edit className="w-4 h-4" />
-                      Edit
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Edit Modal */}
         {showEditModal && selectedTeacher && (
@@ -677,34 +553,21 @@ const ViewTopTeacher = () => {
                     />
                   </div>
 
-                  {/* About */}
+                  {/* Bio */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      About
+                      Bio
                     </label>
                     <textarea
-                      name="about"
-                      value={editFormData.about}
+                      name="bio"
+                      value={editFormData.bio}
                       onChange={handleEditInputChange}
                       rows="3"
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 resize-none"
                     />
                   </div>
 
-                  {/* Stream ID */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Stream ID <span className="text-gray-400 text-xs">(Optional)</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="streamid"
-                      value={editFormData.streamid}
-                      onChange={handleEditInputChange}
-                      placeholder="Enter stream ID"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
-                    />
-                  </div>
+
 
                   {/* Actions */}
                   <div className="flex justify-end gap-2 pt-4 border-t">
@@ -737,7 +600,7 @@ const ViewTopTeacher = () => {
           title="Delete Teacher"
           message={`Are you sure you want to delete "${selectedTeacher?.name}"? This action cannot be undone.`}
           itemName={selectedTeacher?.name}
-          isLoading={false}
+          isLoading={deleteLoading}
           confirmText="Delete"
           cancelText="Cancel"
           size="md"

@@ -353,13 +353,7 @@ const Course = () => {
 
   return (
     <div className="bg-gradient-to-br from-gray-50 to-gray-100  p-8">
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={hideToast}
-        />
-      )}
+     
 
       {!selectedCourse && (
         <div>

@@ -4,7 +4,7 @@ import { buildPaginationParams, parsePaginatedResponse, PAGINATION_CONFIG } from
 
 
 // Use proxy in development, direct URL in production
-const BaseUrl =  import.meta.env.VITE_BACKEND_API;
+const BaseUrl = import.meta.env.VITE_BACKEND_API;
 
 const api = axios.create({
   baseURL: BaseUrl,
@@ -132,6 +132,29 @@ export const handleCreateMcq = async (data) => {
     return { success: true, data: res.data };
   } catch (error) {
     const message = error.response?.data?.message || "Failed to create quiz";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleUpdateMcq = async (id, data) => {
+  try {
+    const res = await api.put(`/quizs/${id}`, data);
+    toast.success("Quiz updated successfully");
+    return { success: true, data: res.data };
+  } catch (error) {
+    const message = error.response?.data?.message || "Failed to update quiz";
+    toast.error(message);
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleGetMcqById = async (id) => {
+  try {
+    const res = await api.get(`/quizs/${id}`);
+    return { success: true, data: res.data };
+  } catch (error) {
+    const message = error.response?.data?.message || "Failed to fetch quiz";
     toast.error(message);
     return { success: false, message, data: null };
   }
@@ -491,6 +514,8 @@ export const handleDeleteFilecontents = async (id) => {
   }
 };
 
+// superstream
+
 export const handlecreateSuperStream = async (formData) => {
   try {
     const res = await api.post("/superstream", formData);
@@ -814,14 +839,15 @@ export const handleGetBanner = async (page = 1, limit = 10, additionalParams = {
   }
 }
 
-export const handlePublishBanner = async (id, publish) => {
+export const handlePublishBanner = async (id, status) => {
   try {
-    const res = await api.put(`/api/banner/publish-banner/${id}`,
-      { publish }
+    const res = await api.put(`/banners/${id}/status`,
+      { status }
     )
     return res.data;
 
   } catch (error) {
+    throw error;
   }
 }
 
@@ -891,7 +917,7 @@ export const handleDeleteEvent = async (id) => {
 
 export const handleUpdateEvent = async (id, formData) => {
   try {
-    const res = await api.put(`/api/event/update-event/${id}`, formData);
+    const res = await api.put(`/events/${id}`, formData);
     return res.data;
   } catch (error) {
   }
@@ -985,11 +1011,7 @@ export const handleDeleteSocialMedia = async (id) => {
 
 export const handleCreateTopTeacher = async (formData) => {
   try {
-    const res = await api.post(`/topteacher`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const res = await api.post(`/topteacher`, formData);
     return res.data;
   } catch (error) {
   }
@@ -1007,14 +1029,8 @@ export const handleGetTopTeacher = async () => {
 
 export const handleUpdateTopTeacher = async (id, formData) => {
   try {
-    const res = await api.patch(`/top-teacher/${id}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-
+    const res = await api.put(`/topteacher/${id}`, formData);
     return { success: true, data: res.data };
-
   } catch (error) {
     console.error('Error updating teacher:', error.response?.data || error.message);
     return { success: false, error: error.response?.data || error.message };
@@ -1022,7 +1038,7 @@ export const handleUpdateTopTeacher = async (id, formData) => {
 };
 export const handleDeleteTopTeacher = async (id) => {
   try {
-    const res = await api.delete(`top-teacher/${id}`);
+    const res = await api.delete(`/topteacher/${id}`);
     return res.data;
 
   } catch (error) {
@@ -1052,7 +1068,7 @@ export const handleGetTopStudent = async () => {
 
 export const handleDeleteTopStudent = async (id) => {
   try {
-    const res = await api.delete(`/top-student/${id}`);
+    const res = await api.delete(`/topstudents/${id}`);
     return res.data;
   } catch (error) {
     console.error('Delete top student error:', error);
@@ -1065,9 +1081,15 @@ export const handleDeleteTopStudent = async (id) => {
 
 export const handleUpdateTopStudent = async (id, formData) => {
   try {
-    const res = await api.put(`/top-student/${id}`, formData);
-    return res.data;
+    const res = await api.put(`/topstudents/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return { success: true, data: res.data };
   } catch (error) {
+    console.error('Error updating student:', error.response?.data || error.message);
+    return { success: false, error: error.response?.data || error.message };
   }
 }
 
@@ -1240,7 +1262,7 @@ export const handleUpdateAdmin = async (id, data) => {
 export const handleCreateAdmin = async (data) => {
   const res = await axios.post(`${BaseUrl}/admin/org-signup`, data, {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      'Content-Type': 'application/json',
     },
   });
 

@@ -116,42 +116,42 @@ const Sidebar = () => {
       path: "/banners",
     },
     {
-      id: "supersteam",
-      label: "Super Steam",
+      id: "superstream",
+      label: "Super Stream",
       icon: FiZap,
       hasDropdown: true,
       dropdownItems: [
         {
-          id: "add-super-steam",
-          label: "Add Super Steam",
+          id: "add-super-stream",
+          label: "Add Super Stream",
           icon: FiPlus,
-          path: "/super-steam/add",
+          path: "/super-stream/add",
         },
         {
-          id: "view-super-steam",
-          label: "View Super Steam",
+          id: "view-super-stream",
+          label: "View Super Stream",
           icon: FiEye,
-          path: "/super-steam/view",
+          path: "/super-stream/view",
         },
       ],
     },
     {
-      id: "steam",
-      label: "Steam",
+      id: "stream",
+      label: "Stream",
       icon: FiCloud,
       hasDropdown: true,
       dropdownItems: [
         {
-          id: "add-steam",
-          label: "Add Steam",
+          id: "add-stream",
+          label: "Add Stream",
           icon: FiPlus,
-          path: "/steam/add",
+          path: "/stream/add",
         },
         {
-          id: "view-steam",
-          label: "View Steam",
+          id: "view-stream",
+          label: "View Stream",
           icon: FiEye,
-          path: "/steam/view",
+          path: "/stream/view",
         },
       ],
     },
@@ -323,7 +323,7 @@ const Sidebar = () => {
           icon: FiSettings,
           path: "/settings/general",
         },
-       
+
         {
           id: "add-coin",
           label: "Coin Settings",

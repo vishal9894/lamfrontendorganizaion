@@ -32,7 +32,7 @@ import {
 import { handleGetOmrSheet, handleDeleteOmrSheet } from "../api/allApi";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import Toast from "../components/ui/Toast";
+import DeleteModal from "../components/DeleteModal";
 
 const ViewOmrSheet = () => {
   const [omrSheets, setOmrSheets] = useState([]);
@@ -505,7 +505,7 @@ const ViewOmrSheet = () => {
       {/* Details Modal */}
       {showModal && selectedSheet && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full scrollbar-thin max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 p-6 rounded-t-2xl">
               <div className="flex justify-between items-start">
                 <div>
@@ -615,48 +615,19 @@ const ViewOmrSheet = () => {
       )}
 
       {/* Delete Confirmation Modal */}
-      {showDeleteModal && sheetToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-            <div className="p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="bg-red-100 p-2 rounded-full">
-                  <Trash2 className="h-6 w-6 text-red-600" />
-                </div>
-                <h3 className="text-xl font-bold text-gray-800">Delete OMR Sheet</h3>
-              </div>
+      <DeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={() => handleDelete(sheetToDelete?.id)}
+        title="Delete OMR Sheet"
+        message="Are you sure you want to delete this OMR Sheet? This action cannot be undone."
+        itemName={sheetToDelete?.title}
+        confirmText="Delete"
+        cancelText="Cancel"
+        size="md"
+      />
 
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete "<span className="font-semibold">{sheetToDelete.title}</span>"?
-                This action cannot be undone.
-              </p>
 
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setShowDeleteModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => handleDelete(sheetToDelete.id)}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-semibold"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={hideToast}
-        />
-      )}
     </div>
   );
 };

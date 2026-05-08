@@ -115,8 +115,8 @@ const AddTopTeacher = () => {
     try {
       const submitData = new FormData();
 
-      submitData.append('name', formData.name.trim());
-      submitData.append('about', formData.about.trim());
+      submitData.append('name', String(formData.name || '').trim());
+      submitData.append('about', String(formData.about || '').trim());
 
       // Handle streamid - only send if selected and valid
       if (formData.streamid && formData.streamid !== '') {
@@ -358,22 +358,7 @@ const AddTopTeacher = () => {
         </div>
       </div>
 
-      {/* Animation styles */}
-      <style>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
+
     </div>
   );
 };

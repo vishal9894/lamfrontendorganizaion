@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import PermissionsUI from "../components/PermissionsUI";
 import Toast from "../components/ui/Toast";
+import DeleteModal from "../components/DeleteModal";
 
 const Role = () => {
   // Pagination state
@@ -42,6 +43,10 @@ const Role = () => {
 
   // Toast state
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
+
+  // Delete modal state
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, roleId: null, roleName: "" });
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const showToast = (message, type = "success") => {
     setToast({ show: true, message, type });
@@ -110,7 +115,7 @@ const Role = () => {
 
       let permissionIds = response.data;
 
-      
+
 
       setRolePermissions(permissionIds);
       setSelectedPermissions(permissionIds.permissions); // This will be passed to PermissionsUI
@@ -182,9 +187,13 @@ const Role = () => {
         showToast("Role updated successfully");
       } else {
         // Create new role
+        const integerPermissions = selectedPermissions.filter(id => id !== null && id !== undefined)
+          .map(id => parseInt(id));
+
         const roleData = {
           name: newRoleName,
-          description: newRoleDescription
+          description: newRoleDescription,
+          permissionIds: integerPermissions
         };
         await handleCreateRole(roleData);
         showToast("Role created successfully");
@@ -204,15 +213,32 @@ const Role = () => {
   };
 
   const handleDeleteRole = async (roleId) => {
-    if (window.confirm("Are you sure you want to delete this role?")) {
-      try {
-        await handleDeleteRoleById(roleId);
-        showToast("Role deleted successfully");
-        refreshData();
-      } catch (error) {
-        showToast("Failed to delete role", "error");
-      }
+    const role = roles.find(r => r._id === roleId);
+    setDeleteModal({
+      isOpen: true,
+      roleId,
+      roleName: role?.name || "Unknown Role"
+    });
+  };
+
+  const confirmDeleteRole = async () => {
+    if (!deleteModal.roleId) return;
+
+    setDeleteLoading(true);
+    try {
+      await handleDeleteRoleById(deleteModal.roleId);
+      showToast("Role deleted successfully");
+      refreshData();
+      setDeleteModal({ isOpen: false, roleId: null, roleName: "" });
+    } catch (error) {
+      showToast("Failed to delete role", "error");
+    } finally {
+      setDeleteLoading(false);
     }
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, roleId: null, roleName: "" });
   };
 
   const getRoleColor = (roleName) => {
@@ -362,14 +388,7 @@ const Role = () => {
           )}
         </div>
 
-        {/* Footer Info */}
-        <div className="flex items-center justify-between mt-4 text-sm text-gray-500">
-          <div>Total Roles: {roles.length}</div>
-          <div className="flex items-center gap-2">
-            <FiShield className="w-4 h-4" />
-            <span>Last updated: {new Date().toLocaleTimeString()}</span>
-          </div>
-        </div>
+
       </div>
 
       {/* Create/Edit Role Modal */}
@@ -487,13 +506,16 @@ const Role = () => {
         </div>
       )}
 
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={hideToast}
-        />
-      )}
+      <DeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDeleteRole}
+        title="Delete Role"
+        message="Are you sure you want to delete this role? This action cannot be undone and may affect users assigned to this role."
+        itemName={deleteModal.name || "Unknown Role"}
+        isLoading={deleteLoading}
+        confirmText="Delete Role"
+      />
     </div>
   );
 };

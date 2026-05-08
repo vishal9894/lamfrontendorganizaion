@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import DeleteModal from '../components/DeleteModal';
 import EditEventModal from '../components/EditEventModal';
-import { handleGetAllEvent } from '../api/allApi';
+import { handleDeleteEvent, handleGetAllEvent, handleUpdateEvent } from '../api/allApi';
 
 
 
@@ -40,24 +40,24 @@ const ViewEvents = () => {
   const [createEventMutation, setCreateEventMutation] = useState(null);
 
   // Fetch events data
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setEventsLoading(true);
-        const response = await handleGetAllEvent();
-        if (response && response.data) {
-          setEventsData({
-            data: response.data,
-            pagination: response.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false }
-          });
-        }
-      } catch (err) {
-        // Silent error handling
-      } finally {
-        setEventsLoading(false);
+  const fetchEvents = async () => {
+    try {
+      setEventsLoading(true);
+      const response = await handleGetAllEvent();
+      if (response && response.data) {
+        setEventsData({
+          data: response.data,
+          pagination: response.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false }
+        });
       }
-    };
+    } catch (err) {
+      // Silent error handling
+    } finally {
+      setEventsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchEvents();
   }, []);
 
@@ -114,7 +114,8 @@ const ViewEvents = () => {
   const handleEditSubmit = async (updatedData) => {
     try {
       setActionLoading(true);
-      // Placeholder for edit functionality
+      await handleUpdateEvent(selectedEvent.id, updatedData)
+      fetchEvents()
       setShowEditModal(false);
       setSelectedEvent(null);
     } catch (err) {
@@ -123,8 +124,6 @@ const ViewEvents = () => {
       setActionLoading(false);
     }
   };
-
-  handleGetAllEvent();
 
   // Handle Delete
   const handleDeleteClick = (event) => {
@@ -137,7 +136,8 @@ const ViewEvents = () => {
 
     setDeleteLoading(true);
     try {
-      // Placeholder for delete functionality
+      await handleDeleteEvent(selectedEvent.id);
+      fetchEvents()
       setShowDeleteModal(false);
       setSelectedEvent(null);
     } catch (err) {

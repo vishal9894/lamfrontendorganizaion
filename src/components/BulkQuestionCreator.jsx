@@ -8,7 +8,10 @@ import {
   Trash2,
   Upload,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  HelpCircle,
+  Layers,
+  FileQuestion
 } from "lucide-react";
 import { handleCreateQuestions } from "../api/allApi";
 import DeleteModal from "./DeleteModal";

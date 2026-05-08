@@ -21,32 +21,9 @@ import {
 import BulkQuestionCreator from "../components/BulkQuestionCreator";
 import { useNavigate } from "react-router-dom";
 import DeleteModal from "../components/DeleteModal";
+import { handleDeleteQuiz, handleGetMcq } from "../api/allApi";
 
-// Toast notification component
-const Toast = ({ message, type, onClose }) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose();
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [onClose]);
 
-  return (
-    <div className={`fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] animate-slideDown
-      ${type === 'success' ? 'bg-green-50 text-green-800 border-l-4 border-green-500' :
-        type === 'error' ? 'bg-red-50 text-red-800 border-l-4 border-red-500' :
-          'bg-blue-50 text-blue-800 border-l-4 border-blue-500'}`}
-    >
-      <span className="text-xl">
-        {type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
-      </span>
-      <span className="flex-1">{message}</span>
-      <button onClick={onClose} className="hover:opacity-70 transition-opacity">
-        ✕
-      </button>
-    </div>
-  );
-};
 
 const ViewQuiz = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,10 +39,9 @@ const ViewQuiz = () => {
 
   const navigate = useNavigate();
 
-  // Placeholder data since hooks don't exist
-  const quizzesData = { data: [], pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false }, total: 0 };
-  const quizzesLoading = false;
-  const deleteQuizMutation = null;
+  // Quiz data state
+  const [quizzesData, setQuizzesData] = useState({ data: [], pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false }, total: 0 });
+  const [quizzesLoading, setQuizzesLoading] = useState(false);
 
   const quizzes = quizzesData?.data || [];
   const pagination = quizzesData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
@@ -78,6 +54,29 @@ const ViewQuiz = () => {
   const hideToast = () => {
     setToast({ show: false, message: '', type: '' });
   };
+
+  // Fetch quizzes on component mount
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      setQuizzesLoading(true);
+      try {
+        const response = await handleGetMcq();
+        if (response && response.data) {
+          setQuizzesData({
+            data: Array.isArray(response.data) ? response.data : [],
+            pagination: response.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false },
+            total: response.total || response.data.length
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching quizzes:', err);
+      } finally {
+        setQuizzesLoading(false);
+      }
+    };
+
+    fetchQuizzes();
+  }, []);
 
   // Pagination handlers
   const handlePageChange = (newPage) => {
@@ -181,8 +180,16 @@ const ViewQuiz = () => {
     if (!selectedQuiz) return;
 
     try {
-      await deleteQuizMutation.mutateAsync(selectedQuiz.id);
-      refetchQuizzes();
+      await handleDeleteQuiz(selectedQuiz.id);
+      // Refetch quizzes after deletion
+      const response = await handleGetMcq();
+      if (response && response.data) {
+        setQuizzesData({
+          data: Array.isArray(response.data) ? response.data : [],
+          pagination: response.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false },
+          total: response.total || response.data.length
+        });
+      }
       showToast("Quiz deleted successfully!", "success");
       setShowDeleteModal(false);
       setSelectedQuiz(null);

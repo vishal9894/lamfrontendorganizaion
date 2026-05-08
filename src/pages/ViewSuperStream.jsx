@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { PAGINATION_CONFIG } from "../utils/pagination";
 import { FiSearch, FiEye, FiEdit, FiTrash2, FiX } from "react-icons/fi";
 import { toast } from "react-toastify";
-import { handleGetSuperStream } from "../api/allApi";
+import { handleDeleteSuperStream, handleGetSuperStream, handleUpdateSuperStream } from "../api/allApi";
+import DeleteModal from "../components/DeleteModal";
 
 const ViewSuperStream = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,8 +23,8 @@ const ViewSuperStream = () => {
 
   const [superStreamsData, setSuperStreamsData] = useState({ data: [], pagination: { total: 0, page: 1, limit: 10, totalPages: 1 } });
   const [superStreamsLoading, setSuperStreamsLoading] = useState(false);
-  const updateSuperStreamMutation = null;
-  const deleteSuperStreamMutation = null;
+  const [updateSuperStreamMutation, setUpdateSuperStreamMutation] = useState({ isPending: false });
+  const [deleteSuperStreamMutation, setDeleteSuperStreamMutation] = useState({ isPending: false });
 
   // Fetch super streams data
   useEffect(() => {
@@ -76,12 +77,24 @@ const ViewSuperStream = () => {
     }
 
     try {
-      // Placeholder for update functionality
-      toast.success("Super stream updated successfully!");
+      setUpdateSuperStreamMutation({ isPending: true });
+      await handleUpdateSuperStream(editModal.id, { name: editName });
+
       setEditModal({ isOpen: false, id: null, name: "" });
       setEditName("");
+
+      // Refresh the data
+      const response = await handleGetSuperStream();
+      if (response && response.data) {
+        setSuperStreamsData({
+          data: response.data,
+          pagination: response.pagination || { total: 0, page: 1, limit: 10, totalPages: 1 }
+        });
+      }
     } catch (error) {
       toast.error(error?.response?.data?.message || error?.message || "Failed to update super stream");
+    } finally {
+      setUpdateSuperStreamMutation({ isPending: false });
     }
   };
 
@@ -97,11 +110,24 @@ const ViewSuperStream = () => {
 
   const confirmDelete = async () => {
     try {
-      // Placeholder for delete functionality
+      setDeleteSuperStreamMutation({ isPending: true });
+      await handleDeleteSuperStream(deleteModal.id);
+
       toast.success("Super stream deleted successfully!");
       setDeleteModal({ isOpen: false, id: null, name: "" });
+
+      // Refresh data
+      const response = await handleGetSuperStream();
+      if (response && response.data) {
+        setSuperStreamsData({
+          data: response.data,
+          pagination: response.pagination || { total: 0, page: 1, limit: 10, totalPages: 1 }
+        });
+      }
     } catch (error) {
       toast.error(error?.response?.data?.message || error?.message || "Failed to delete super stream");
+    } finally {
+      setDeleteSuperStreamMutation({ isPending: false });
     }
   };
 
@@ -320,40 +346,18 @@ const ViewSuperStream = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-md w-full mx-4">
-            <div className="p-6">
-              <div className="flex items-center justify-center mb-4">
-                <div className="bg-red-100 rounded-full p-3">
-                  <FiTrash2 className="text-red-600 text-2xl" />
-                </div>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">
-                Delete Super Stream
-              </h3>
-              <p className="text-gray-600 text-center mb-6">
-                Are you sure you want to delete{" "}
-                <span className="font-semibold">{deleteModal.name}</span>? This
-                action cannot be undone.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={cancelDelete}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  disabled={deleteSuperStreamMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {deleteSuperStreamMutation.isPending ? "Deleting..." : "Delete"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DeleteModal
+          isOpen={deleteModal.isOpen}
+          onClose={() => setDeleteModal({ isOpen: false, id: null, name: "" })}
+          onConfirm={confirmDelete}
+          title="Delete Super Stream"
+          message={`Are you sure you want to delete "${deleteModal.name}"? This action cannot be undone.`}
+          itemName={deleteModal.name}
+          isLoading={deleteSuperStreamMutation.isPending}
+          confirmText="Delete"
+          cancelText="Cancel"
+          size="md"
+        />
       )}
     </div>
   );
