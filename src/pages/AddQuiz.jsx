@@ -176,17 +176,17 @@ const AddQuiz = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 py-4 md:py-8 px-3 sm:px-4 md:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="mb-4 md:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Create New Quiz</h1>
-              <p className="mt-2 text-gray-600">Configure your quiz details and question categories</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Create New Quiz</h1>
+              <p className="mt-1 md:mt-2 text-sm md:text-base text-gray-600">Configure your quiz details and question categories</p>
             </div>
-            <div className="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
-              <span className="text-sm text-gray-600">Total Questions:</span>
-              <span className="ml-2 text-xl font-bold text-blue-600">{getTotalQuestions()}</span>
+            <div className="bg-white px-3 md:px-4 py-2 rounded-lg shadow-sm border border-gray-200">
+              <span className="text-xs md:text-sm text-gray-600">Total Questions:</span>
+              <span className="ml-1 md:ml-2 text-lg md:text-xl font-bold text-blue-600">{getTotalQuestions()}</span>
             </div>
           </div>
 
@@ -198,15 +198,15 @@ const AddQuiz = () => {
           <form onSubmit={handleSubmit}>
             {/* Basic Information Section */}
             <div className="border-b border-gray-100">
-              <div className="p-6 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleSection('basic')}>
+              <div className="p-4 md:p-6 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleSection('basic')}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 md:gap-3">
                     <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                       <FiLayers className="text-white" size={16} />
                     </div>
                     <div>
-                      <h2 className="text-lg font-semibold text-gray-800">Basic Information</h2>
-                      <p className="text-sm text-gray-500">Quiz category, name, and duration</p>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-800">Basic Information</h2>
+                      <p className="text-xs md:text-sm text-gray-500">Quiz category, name, and duration</p>
                     </div>
                   </div>
                   <button type="button" className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
@@ -216,54 +216,54 @@ const AddQuiz = () => {
               </div>
 
               {expandedSections.basic && (
-                <div className="p-6 pt-0 animate-slideDown">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <div className="p-4 md:p-6 pt-0 animate-slideDown">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div className="space-y-1.5 md:space-y-2">
+                      <label className="flex items-center gap-2 text-xs md:text-sm font-medium text-gray-700">
                         <FiTag className="text-blue-500" /> Quiz Category <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <input type="text" name="category" placeholder="e.g., Mathematics, Science" value={formData.category} onChange={handleChange}
-                          className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors.category ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
-                        <FiTag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                          className={`w-full pl-10 pr-4 py-2.5 md:py-3 border-2 rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors.category ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
+                        <FiTag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
                       </div>
-                      {errors.category && <p className="text-sm text-red-600 flex items-center gap-1"><FiAlertCircle size={14} />{errors.category}</p>}
+                      {errors.category && <p className="text-xs md:text-sm text-red-600 flex items-center gap-1"><FiAlertCircle size={12} />{errors.category}</p>}
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <div className="space-y-1.5 md:space-y-2">
+                      <label className="flex items-center gap-2 text-xs md:text-sm font-medium text-gray-700">
                         <FiBook className="text-blue-500" /> Quiz Name <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <input type="text" name="name" placeholder="e.g., Mathematics Basics" value={formData.name} onChange={handleChange}
-                          className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors.name ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
-                        <FiBook className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                          className={`w-full pl-10 pr-4 py-2.5 md:py-3 border-2 rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors.name ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
+                        <FiBook className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
                       </div>
-                      {errors.name && <p className="text-sm text-red-600 flex items-center gap-1"><FiAlertCircle size={14} />{errors.name}</p>}
+                      {errors.name && <p className="text-xs md:text-sm text-red-600 flex items-center gap-1"><FiAlertCircle size={12} />{errors.name}</p>}
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <div className="space-y-1.5 md:space-y-2">
+                      <label className="flex items-center gap-2 text-xs md:text-sm font-medium text-gray-700">
                         <FiClock className="text-blue-500" /> Duration (Minutes) <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <input type="number" name="duration" placeholder="60" min="1" value={formData.duration} onChange={handleChange}
-                          className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors.duration ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
-                        <FiClock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                          className={`w-full pl-10 pr-4 py-2.5 md:py-3 border-2 rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors.duration ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
+                        <FiClock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
                       </div>
-                      {errors.duration && <p className="text-sm text-red-600 flex items-center gap-1"><FiAlertCircle size={14} />{errors.duration}</p>}
+                      {errors.duration && <p className="text-xs md:text-sm text-red-600 flex items-center gap-1"><FiAlertCircle size={12} />{errors.duration}</p>}
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <div className="space-y-1.5 md:space-y-2">
+                      <label className="flex items-center gap-2 text-xs md:text-sm font-medium text-gray-700">
                         <FiUser className="text-blue-500" /> Created By <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <input type="text" name="createdBy" placeholder="John Doe" value={formData.createdBy} onChange={handleChange}
-                          className={`w-full pl-10 pr-4 py-3 border-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors.createdBy ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
-                        <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                          className={`w-full pl-10 pr-4 py-2.5 md:py-3 border-2 rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors.createdBy ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
+                        <FiUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
                       </div>
-                      {errors.createdBy && <p className="text-sm text-red-600 flex items-center gap-1"><FiAlertCircle size={14} />{errors.createdBy}</p>}
+                      {errors.createdBy && <p className="text-xs md:text-sm text-red-600 flex items-center gap-1"><FiAlertCircle size={12} />{errors.createdBy}</p>}
                     </div>
                   </div>
                 </div>
@@ -272,19 +272,19 @@ const AddQuiz = () => {
 
             {/* Question Categories Section */}
             <div className="border-b border-gray-100">
-              <div className="p-6 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleSection('questions')}>
+              <div className="p-4 md:p-6 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleSection('questions')}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 md:gap-3">
                     <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg flex items-center justify-center">
                       <FiGrid className="text-white" size={16} />
                     </div>
                     <div>
-                      <h2 className="text-lg font-semibold text-gray-800">Question Categories</h2>
-                      <p className="text-sm text-gray-500">Configure question distribution by category</p>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-800">Question Categories</h2>
+                      <p className="text-xs md:text-sm text-gray-500">Configure question distribution by category</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full font-medium">Total: {getTotalQuestions()} questions</span>
+                  <div className="flex items-center gap-2 md:gap-4">
+                    <span className="text-xs md:text-sm bg-blue-100 text-blue-700 px-2 md:px-3 py-1 md:py-1.5 rounded-full font-medium">Total: {getTotalQuestions()} questions</span>
                     <button type="button" className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
                       {expandedSections.questions ? <FiChevronDown size={20} className="text-gray-400" /> : <FiChevronRight size={20} className="text-gray-400" />}
                     </button>
@@ -293,26 +293,26 @@ const AddQuiz = () => {
               </div>
 
               {expandedSections.questions && (
-                <div className="p-6 pt-0 animate-slideDown">
-                  <div className="space-y-4">
+                <div className="p-4 md:p-6 pt-0 animate-slideDown">
+                  <div className="space-y-3 md:space-y-4">
                     {categories.map((cat, index) => (
-                      <div key={index} className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                            <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full text-white text-xs flex items-center justify-center">{index + 1}</div>
+                      <div key={index} className="bg-gray-50 p-3 md:p-4 rounded-xl border border-gray-200">
+                        <div className="flex items-center justify-between mb-2 md:mb-3">
+                          <span className="text-xs md:text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <div className="w-5 h-5 md:w-6 md:h-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full text-white text-xs flex items-center justify-center">{index + 1}</div>
                             Category {index + 1}
                           </span>
                           <button type="button" onClick={() => removeCategory(index)} disabled={categories.length === 1}
-                            className={`p-2 rounded-lg transition-colors ${categories.length === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-red-500 hover:bg-red-50'}`}>
-                            <FiTrash2 size={18} />
+                            className={`p-1.5 md:p-2 rounded-lg transition-colors ${categories.length === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-red-500 hover:bg-red-50'}`}>
+                            <FiTrash2 size={16} />
                           </button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                           <div className="space-y-1">
                             <label className="text-xs font-medium text-gray-500">Category Name</label>
                             <div className="relative">
                               <input type="text" name="name" placeholder="e.g., Algebra, Geometry" value={cat.name} onChange={(e) => handleCategoryChange(index, e)}
-                                className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors[`cat_name_${index}`] ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
+                                className={`w-full pl-10 pr-4 py-2 md:py-2.5 border rounded-lg text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors[`cat_name_${index}`] ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
                               <FiTag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
                             </div>
                             {errors[`cat_name_${index}`] && <p className="text-xs text-red-600">{errors[`cat_name_${index}`]}</p>}
@@ -321,7 +321,7 @@ const AddQuiz = () => {
                             <label className="text-xs font-medium text-gray-500">Number of Questions</label>
                             <div className="relative">
                               <input type="number" name="count" placeholder="10" min="1" value={cat.count} onChange={(e) => handleCategoryChange(index, e)}
-                                className={`w-full pl-10 pr-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors[`cat_count_${index}`] ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
+                                className={`w-full pl-10 pr-4 py-2 md:py-2.5 border rounded-lg text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all ${errors[`cat_count_${index}`] ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-blue-300'}`} />
                               <FiHelpCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
                             </div>
                             {errors[`cat_count_${index}`] && <p className="text-xs text-red-600">{errors[`cat_count_${index}`]}</p>}
@@ -329,11 +329,11 @@ const AddQuiz = () => {
                         </div>
                       </div>
                     ))}
-                    <button type="button" onClick={addCategory} className="w-full border-2 border-dashed border-gray-200 rounded-xl p-4 flex items-center justify-center gap-2 hover:border-blue-300 hover:bg-blue-50 transition-all group">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center group-hover:shadow-lg transition-shadow">
-                        <FiPlus className="text-white" size={18} />
+                    <button type="button" onClick={addCategory} className="w-full border-2 border-dashed border-gray-200 rounded-xl p-3 md:p-4 flex items-center justify-center gap-2 hover:border-blue-300 hover:bg-blue-50 transition-all group">
+                      <div className="w-7 h-7 md:w-8 md:h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center group-hover:shadow-lg transition-shadow">
+                        <FiPlus className="text-white" size={16} />
                       </div>
-                      <span className="font-medium text-gray-600 group-hover:text-blue-600">Add Question Category</span>
+                      <span className="text-sm md:text-base font-medium text-gray-600 group-hover:text-blue-600">Add Question Category</span>
                     </button>
                   </div>
                 </div>
@@ -342,15 +342,15 @@ const AddQuiz = () => {
 
             {/* Settings Section */}
             <div className="border-b border-gray-100">
-              <div className="p-6 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleSection('settings')}>
+              <div className="p-4 md:p-6 cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleSection('settings')}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 md:gap-3">
                     <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg flex items-center justify-center">
                       <FiSettings className="text-white" size={16} />
                     </div>
                     <div>
-                      <h2 className="text-lg font-semibold text-gray-800">Quiz Settings</h2>
-                      <p className="text-sm text-gray-500">Configure advanced options and features</p>
+                      <h2 className="text-base md:text-lg font-semibold text-gray-800">Quiz Settings</h2>
+                      <p className="text-xs md:text-sm text-gray-500">Configure advanced options and features</p>
                     </div>
                   </div>
                   <button type="button" className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
@@ -360,48 +360,48 @@ const AddQuiz = () => {
               </div>
 
               {expandedSections.settings && (
-                <div className="p-6 pt-0 animate-slideDown">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <div className="p-4 md:p-6 pt-0 animate-slideDown">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div className="space-y-1.5 md:space-y-2">
+                      <label className="flex items-center gap-2 text-xs md:text-sm font-medium text-gray-700">
                         <FiMinusCircle className="text-red-500" /> Negative Mark
                       </label>
                       <div className="relative">
                         <input type="number" name="negativeMarks" placeholder="0.25" min="0" step="0.25" value={formData.negativeMarks} onChange={handleChange}
-                          className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 hover:border-blue-300 transition-all" />
-                        <FiMinusCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                          className="w-full pl-10 pr-4 py-2.5 md:py-3 border-2 border-gray-200 rounded-xl text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 hover:border-blue-300 transition-all" />
+                        <FiMinusCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
                       </div>
                       <p className="text-xs text-gray-500">Deduct marks for wrong answers</p>
                     </div>
-                    <div className="space-y-4">
-                      <label className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all cursor-pointer group">
+                    <div className="space-y-3 md:space-y-4">
+                      <label className="flex items-center gap-2 md:gap-3 p-3 md:p-4 bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all cursor-pointer group">
                         <div className="relative">
                           <input type="checkbox" name="advancedMode" checked={formData.advancedMode} onChange={handleChange} className="sr-only" />
-                          <div className={`w-6 h-6 border-2 rounded-lg flex items-center justify-center transition-all ${formData.advancedMode ? 'bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-600' : 'border-gray-300 group-hover:border-blue-300'}`}>
-                            {formData.advancedMode && <FiCheckCircle className="text-white" size={14} />}
+                          <div className={`w-5 h-5 md:w-6 md:h-6 border-2 rounded-lg flex items-center justify-center transition-all ${formData.advancedMode ? 'bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-600' : 'border-gray-300 group-hover:border-blue-300'}`}>
+                            {formData.advancedMode && <FiCheckCircle className="text-white" size={12} />}
                           </div>
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <FiCpu className={formData.advancedMode ? 'text-purple-600' : 'text-gray-400'} />
-                            <span className="text-sm font-medium text-gray-700">Advanced Mode</span>
+                            <FiCpu className={formData.advancedMode ? 'text-purple-600' : 'text-gray-400'} size={16} />
+                            <span className="text-xs md:text-sm font-medium text-gray-700">Advanced Mode</span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">Enable advanced features and question types</p>
+                          <p className="text-xs text-gray-500 mt-0.5 md:mt-1">Enable advanced features and question types</p>
                         </div>
                       </label>
-                      <label className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all cursor-pointer group">
+                      <label className="flex items-center gap-2 md:gap-3 p-3 md:p-4 bg-gray-50 rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all cursor-pointer group">
                         <div className="relative">
                           <input type="checkbox" name="showSolution" checked={formData.showSolution} onChange={handleChange} className="sr-only" />
-                          <div className={`w-6 h-6 border-2 rounded-lg flex items-center justify-center transition-all ${formData.showSolution ? 'bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-600' : 'border-gray-300 group-hover:border-blue-300'}`}>
-                            {formData.showSolution && <FiCheckCircle className="text-white" size={14} />}
+                          <div className={`w-5 h-5 md:w-6 md:h-6 border-2 rounded-lg flex items-center justify-center transition-all ${formData.showSolution ? 'bg-gradient-to-r from-blue-600 to-indigo-600 border-blue-600' : 'border-gray-300 group-hover:border-blue-300'}`}>
+                            {formData.showSolution && <FiCheckCircle className="text-white" size={12} />}
                           </div>
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <FiEye className={formData.showSolution ? 'text-green-600' : 'text-gray-400'} />
-                            <span className="text-sm font-medium text-gray-700">Show Solution</span>
+                            <FiEye className={formData.showSolution ? 'text-green-600' : 'text-gray-400'} size={16} />
+                            <span className="text-xs md:text-sm font-medium text-gray-700">Show Solution</span>
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">Show solution explanation after wrong answers</p>
+                          <p className="text-xs text-gray-500 mt-0.5 md:mt-1">Show solution explanation after wrong answers</p>
                         </div>
                       </label>
                     </div>
@@ -411,11 +411,11 @@ const AddQuiz = () => {
             </div>
 
             {/* Form Actions */}
-            <div className="p-6 bg-gray-50 border-t border-gray-200">
-              <div className="flex items-center justify-end gap-4">
-                <button type="button" onClick={() => window.history.back()} className="px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-white hover:border-gray-300 transition-all">Cancel</button>
-                <button type="submit" disabled={loading} className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]">
-                  {loading ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Creating...</> : <><FiSave size={20} />Create Quiz</>}
+            <div className="p-4 md:p-6 bg-gray-50 border-t border-gray-200">
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 md:gap-4">
+                <button type="button" onClick={() => window.history.back()} className="w-full sm:w-auto px-6 py-2.5 md:py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-white hover:border-gray-300 transition-all text-sm md:text-base">Cancel</button>
+                <button type="submit" disabled={loading} className="w-full sm:w-auto px-6 md:px-8 py-2.5 md:py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2 md:gap-3 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] text-sm md:text-base">
+                  {loading ? <><div className="w-4 h-4 md:w-5 md:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Creating...</> : <><FiSave size={16} />Create Quiz</>}
                 </button>
               </div>
             </div>

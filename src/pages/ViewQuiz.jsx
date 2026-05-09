@@ -210,76 +210,95 @@ const ViewQuiz = () => {
     : 0;
 
   return (
-    <div className=" bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
 
 
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="mb-4 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <FileQuestion className="w-8 h-8 text-indigo-600" />
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1 md:mb-2 flex items-center gap-2">
+                <FileQuestion className="w-6 h-6 md:w-8 md:h-8 text-indigo-600" />
                 Quiz Management
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm md:text-base text-gray-600">
                 View and manage all quizzes
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <button
-                onClick={() => refetchQuizzes()}
+                onClick={() => {
+                  const fetchQuizzes = async () => {
+                    setQuizzesLoading(true);
+                    try {
+                      const response = await handleGetMcq();
+                      if (response && response.data) {
+                        setQuizzesData({
+                          data: Array.isArray(response.data) ? response.data : [],
+                          pagination: response.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false },
+                          total: response.total || response.data.length
+                        });
+                      }
+                    } catch (err) {
+                      console.error('Error fetching quizzes:', err);
+                    } finally {
+                      setQuizzesLoading(false);
+                    }
+                  };
+                  fetchQuizzes();
+                }}
                 disabled={quizzesLoading}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
+                className="flex-1 sm:flex-none px-3 md:px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-xs md:text-sm font-medium flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 ${quizzesLoading ? 'animate-spin' : ''}`} />
-                Refresh
+                <RefreshCw className={`w-3 h-3 md:w-4 md:h-4 ${quizzesLoading ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
               </button>
               <button
                 onClick={() => window.location.href = '/create-quiz'}
-                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors text-sm font-medium flex items-center gap-2"
+                className="flex-1 sm:flex-none px-3 md:px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors text-xs md:text-sm font-medium flex items-center justify-center gap-2"
               >
-                <BookOpen className="w-4 h-4" />
+                <BookOpen className="w-3 h-3 md:w-4 md:h-4" />
                 Create Quiz
               </button>
             </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <FileQuestion className="w-5 h-5 text-indigo-600" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-4 md:mt-6">
+            <div className="bg-white rounded-xl shadow-sm p-3 md:p-4 border border-gray-100">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <FileQuestion className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Total Quizzes</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalQuizzes}</p>
+                  <p className="text-xs md:text-sm text-gray-500">Total Quizzes</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-900">{totalQuizzes}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-5 h-5 text-blue-600" />
+            <div className="bg-white rounded-xl shadow-sm p-3 md:p-4 border border-gray-100">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <BookOpen className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Total Questions</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalQuestions}</p>
+                  <p className="text-xs md:text-sm text-gray-500">Total Questions</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-900">{totalQuestions}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Clock className="w-5 h-5 text-green-600" />
+            <div className="bg-white rounded-xl shadow-sm p-3 md:p-4 border border-gray-100">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <Clock className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Avg. Duration</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatDuration(avgDuration)}</p>
+                  <p className="text-xs md:text-sm text-gray-500">Avg. Duration</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-900">{formatDuration(avgDuration)}</p>
                 </div>
               </div>
             </div>
@@ -287,9 +306,9 @@ const ViewQuiz = () => {
         </div>
 
         {/* Search Bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 md:p-4 mb-4 md:mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-gray-400" />
             <input
               type="text"
               placeholder="Search quizzes by name or category..."
@@ -298,7 +317,7 @@ const ViewQuiz = () => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
+              className="w-full pl-10 pr-4 py-2 text-sm md:text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
             />
           </div>
         </div>
@@ -306,42 +325,42 @@ const ViewQuiz = () => {
         {/* Quizzes Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {quizzesLoading ? (
-            <div className="flex justify-center items-center py-16">
+            <div className="flex justify-center items-center py-12 md:py-16">
               <div className="relative">
-                <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                <div className="w-10 h-10 md:w-12 md:h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
               </div>
             </div>
           ) : quizzes.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="bg-gray-50 rounded-xl p-8 max-w-md mx-auto">
-                <FileQuestion className="w-16 h-16 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-lg font-medium">
+            <div className="text-center py-12 md:py-16">
+              <div className="bg-gray-50 rounded-xl p-6 md:p-8 max-w-md mx-auto">
+                <FileQuestion className="w-12 h-12 md:w-16 md:h-16 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 text-base md:text-lg font-medium">
                   No quizzes found
                 </p>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-xs md:text-sm text-gray-400 mt-1">
                   Quizzes will appear here once they are created
                 </p>
                 <button
                   onClick={() => window.location.href = '/create-quiz'}
-                  className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                  className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs md:text-sm font-medium"
                 >
                   Create Your First Quiz
                 </button>
               </div>
             </div>
           ) : filteredQuizzes.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="bg-gray-50 rounded-xl p-8 max-w-md mx-auto">
-                <Search className="w-16 h-16 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-lg font-medium">
+            <div className="text-center py-12 md:py-16">
+              <div className="bg-gray-50 rounded-xl p-6 md:p-8 max-w-md mx-auto">
+                <Search className="w-12 h-12 md:w-16 md:h-16 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 text-base md:text-lg font-medium">
                   No matching quizzes
                 </p>
-                <p className="text-sm text-gray-400 mt-1">
+                <p className="text-xs md:text-sm text-gray-400 mt-1">
                   Try adjusting your search
                 </p>
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+                  className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs md:text-sm font-medium"
                 >
                   Clear Search
                 </button>
@@ -349,7 +368,8 @@ const ViewQuiz = () => {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
@@ -388,9 +408,7 @@ const ViewQuiz = () => {
                               <div className="text-sm font-medium text-gray-900">
                                 {quiz.name}
                               </div>
-                              <div className="text-xs text-gray-500">
-                                ID: {quiz.id?.substring(0, 8)}...
-                              </div>
+                             
                             </div>
                           </div>
                         </td>
@@ -476,24 +494,107 @@ const ViewQuiz = () => {
                 </table>
               </div>
 
+              {/* Mobile Card View */}
+              <div className="md:hidden space-y-3 p-3">
+                {filteredQuizzes.map((quiz) => (
+                  <div key={quiz.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg flex items-center justify-center">
+                        <FileQuestion className="w-5 h-5 text-indigo-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-gray-900 truncate">{quiz.name}</h3>
+                       
+                      </div>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {quiz.category}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      <div className="bg-gray-50 rounded-lg p-2">
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Clock className="w-3 h-3" />
+                          Duration
+                        </div>
+                        <p className="text-sm font-medium text-gray-900">{formatDuration(quiz.duration)}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-2">
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <BookOpen className="w-3 h-3" />
+                          Questions
+                        </div>
+                        <p className="text-sm font-medium text-gray-900">{quiz.numberOfQuestions || 0}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-2">
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <AlertCircle className="w-3 h-3" />
+                          Neg. Marking
+                        </div>
+                        <p className="text-xs font-medium text-gray-900">
+                          {quiz.negativeMarking ? `Yes (${quiz.negativeMarks})` : 'No'}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-2">
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Calendar className="w-3 h-3" />
+                          Created
+                        </div>
+                        <p className="text-xs font-medium text-gray-900">{formatDate(quiz.createdAt)}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                      <button
+                        onClick={() => handleViewQuestions(quiz)}
+                        className="flex-1 px-3 py-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                      >
+                        <Eye className="w-3 h-3" />
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleEdit(quiz)}
+                        className="flex-1 px-3 py-2 text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                      >
+                        <Edit className="w-3 h-3" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleAddQuestions(quiz)}
+                        className="flex-1 px-3 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                      >
+                        <Plus className="w-3 h-3" />
+                        Add Qs
+                      </button>
+                      <button
+                        onClick={() => handleDelete(quiz)}
+                        className="px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-xs font-medium"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               {/* Pagination */}
               {pagination.totalPages > 1 && (
-                <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between">
-                  <div className="text-sm text-gray-500">
+                <div className="bg-white border-t border-gray-200 px-4 md:px-6 py-3 md:py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="text-xs md:text-sm text-gray-500">
                     Page {currentPage} of {pagination.totalPages}
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1.5 md:py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === pagination.totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1.5 md:py-1 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>

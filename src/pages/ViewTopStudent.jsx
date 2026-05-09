@@ -286,89 +286,91 @@ const ViewTopStudent = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        
+    <div className=" bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-2">
-                <GraduationCap className="w-8 h-8 text-indigo-600" />
-                Top Students
-              </h1>
-              <p className="text-gray-600">View and manage all outstanding students</p>
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg shadow-indigo-200">
+                <GraduationCap className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Top Students</h1>
+                <p className="text-sm sm:text-base text-gray-500 mt-0.5">View and manage outstanding students</p>
+              </div>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={handleRefresh}
                 disabled={studentsLoading}
-                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
+                className="flex-1 sm:flex-none px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all text-sm font-semibold flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 ${studentsLoading ? 'animate-spin' : ''}`} />
-                Refresh
+                <span className="hidden sm:inline">Refresh</span>
               </button>
               <button
                 onClick={() => window.location.href = '/add-top-student'}
-                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2"
+                className="flex-1 sm:flex-none px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 text-sm font-semibold"
               >
                 <Users className="w-4 h-4" />
-                Add New
+                <span className="hidden sm:inline">Add New</span>
               </button>
             </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-indigo-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-100">
+                  <Users className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Total Students</p>
-                  <p className="text-2xl font-bold text-gray-800">{students.length}</p>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Total</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-0.5">{students.length}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md shadow-emerald-100">
+                  <CheckCircle className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">With Avatar</p>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Avatar</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-0.5">
                     {students.filter(s => s.image).length}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Film className="w-5 h-5 text-blue-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md shadow-blue-100">
+                  <Film className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">With Video</p>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Video</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-0.5">
                     {students.filter(s => s.video_url).length}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Hash className="w-5 h-5 text-purple-600" />
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md shadow-purple-100">
+                  <Hash className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">With Stream</p>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Stream</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-0.5">
                     {students.filter(s => s.streamId).length}
                   </p>
                 </div>
@@ -378,103 +380,175 @@ const ViewTopStudent = () => {
         </div>
 
         {/* Search Bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search students by name, stream ID, or ID..."
+              placeholder="Search by name, stream ID, or ID..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all text-sm"
             />
           </div>
         </div>
 
-        {/* Students Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        {/* Students List */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           {studentsLoading ? (
             <div className="flex justify-center items-center h-64">
               <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
             </div>
           ) : filteredStudents.length === 0 ? (
-            <div className="text-center py-12">
-              <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No students found</p>
+            <div className="text-center py-16">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <GraduationCap className="w-10 h-10 text-gray-400" />
+              </div>
+              <p className="text-gray-500 font-medium">No students found</p>
+              <p className="text-gray-400 text-sm mt-1">Try adjusting your search criteria</p>
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
+              {/* Mobile Card View */}
+              <div className="sm:hidden space-y-3 p-4">
+                {paginatedStudents.map((student, index) => (
+                  <div key={student.id} className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all">
+                    <div className="flex items-start gap-4">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 ring-white shadow-sm">
+                        {student.image ? (
+                          <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-8 h-8 text-indigo-500" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <h3 className="font-semibold text-gray-900 text-base truncate">{student.name}</h3>
+                            <p className="text-xs text-gray-400 mt-0.5">#{((currentPage - 1) * pageSize) + index + 1}</p>
+                          </div>
+                          <div className="flex gap-1 flex-shrink-0">
+                            <button
+                              onClick={() => handleViewDetails(student)}
+                              className="p-2 bg-indigo-50 hover:bg-indigo-100 rounded-xl text-indigo-600 transition-colors"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleEditClick(student)}
+                              className="p-2 bg-emerald-50 hover:bg-emerald-100 rounded-xl text-emerald-600 transition-colors"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(student)}
+                              className="p-2 bg-red-50 hover:bg-red-100 rounded-xl text-red-600 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="mt-3 space-y-2">
+                          {student.streamid && (
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${getStreamBadge(student.streamid)}`}>
+                                {getStreamIcon(student.streamid)}
+                                {student.streamid.length > 15 ? `${student.streamid.substring(0, 15)}...` : student.streamid}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-3 text-xs text-gray-500">
+                            {student.video_url && (
+                              <button
+                                onClick={() => handleViewVideo(student)}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 font-medium transition-colors"
+                              >
+                                <Play className="w-3 h-3" />
+                                <span>Video</span>
+                              </button>
+                            )}
+                            <span className="text-gray-400">•</span>
+                            <span>{formatDate(student.createdAt)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">S.No</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Avatar</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Stream ID</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Video</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Created At</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Actions</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">S.No</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Avatar</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Stream ID</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Video</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created At</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-100">
                     {paginatedStudents.map((student, index) => (
                       <tr key={student.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3 text-gray-600">{((currentPage - 1) * pageSize) + index + 1}</td>
-                        <td className="px-4 py-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
+                        <td className="px-6 py-4 text-sm text-gray-600 font-medium">{((currentPage - 1) * pageSize) + index + 1}</td>
+                        <td className="px-6 py-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm">
                             {student.image ? (
                               <img src={student.image} alt={student.name} className="w-full h-full object-cover" />
                             ) : (
-                              <User className="w-5 h-5 text-indigo-400" />
+                              <User className="w-6 h-6 text-indigo-500" />
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="font-medium text-gray-800">{student.name}</div>
-                          <div className="text-xs text-gray-400">{student.id?.substring(0, 8)}...</div>
+                        <td className="px-6 py-4">
+                          <div className="font-semibold text-gray-900">{student.name}</div>
+                          <div className="text-xs text-gray-400 mt-0.5">{student.id?.substring(0, 8)}...</div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-6 py-4">
                           {student.streamid ? (
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(student.streamid)}`}>
+                            <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold ${getStreamBadge(student.streamid)}`}>
                               {getStreamIcon(student.streamid)}
                               {student.streamid.length > 12 ? `${student.streamid.substring(0, 12)}...` : student.streamid}
                             </span>
-                          ) : <span className="text-gray-400 text-xs">—</span>}
+                          ) : <span className="text-gray-400 text-sm">—</span>}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-6 py-4">
                           {student.video_url ? (
                             <button
                               onClick={() => handleViewVideo(student)}
-                              className="inline-flex items-center px-2 py-1 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-xs font-medium transition-colors"
+                              className="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-xs font-semibold transition-colors"
                             >
-                              <Play className="w-3 h-3 mr-1" /> Play
+                              <Play className="w-3 h-3 mr-1.5" /> Play
                             </button>
-                          ) : <span className="text-gray-400 text-xs">No video</span>}
+                          ) : <span className="text-gray-400 text-sm">No video</span>}
                         </td>
-                        <td className="px-4 py-3 text-gray-600">{formatDate(student.createdAt)}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-6 py-4 text-sm text-gray-600">{formatDate(student.createdAt)}</td>
+                        <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <button
                               onClick={() => handleViewDetails(student)}
-                              className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-colors"
+                              className="p-2 hover:bg-indigo-50 rounded-xl text-indigo-600 transition-colors"
                               title="View"
                             >
                               <Eye className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleEditClick(student)}
-                              className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
+                              className="p-2 hover:bg-emerald-50 rounded-xl text-emerald-600 transition-colors"
                               title="Edit"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(student)}
-                              className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                              className="p-2 hover:bg-red-50 rounded-xl text-red-600 transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -489,53 +563,55 @@ const ViewTopStudent = () => {
 
               {/* Pagination */}
               {totalFilteredPages > 1 && (
-                <div className="px-4 py-3 bg-gray-50 border-t flex items-center justify-between flex-wrap gap-4">
+                <div className="px-4 sm:px-6 py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-sm text-gray-600">
-                    Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredStudents.length)} of {filteredStudents.length} students
+                    Showing <span className="font-semibold text-gray-900">{((currentPage - 1) * pageSize) + 1}</span> to <span className="font-semibold text-gray-900">{Math.min(currentPage * pageSize, filteredStudents.length)}</span> of <span className="font-semibold text-gray-900">{filteredStudents.length}</span> students
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="p-2 border rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-2.5 border border-gray-300 rounded-xl hover:bg-white hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all bg-white"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronLeft className="w-4 h-4 text-gray-600" />
                     </button>
-                    {Array.from({ length: Math.min(5, totalFilteredPages) }, (_, i) => {
-                      let pageNum;
-                      if (totalFilteredPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalFilteredPages - 2) {
-                        pageNum = totalFilteredPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => handlePageChange(pageNum)}
-                          className={`w-8 h-8 rounded-lg transition-colors ${currentPage === pageNum ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100'}`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
+                    <div className="flex gap-1">
+                      {Array.from({ length: Math.min(5, totalFilteredPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalFilteredPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalFilteredPages - 2) {
+                          pageNum = totalFilteredPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => handlePageChange(pageNum)}
+                            className={`w-9 h-9 rounded-xl text-sm font-semibold transition-all ${currentPage === pageNum ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200' : 'hover:bg-white hover:shadow-sm border border-gray-300 bg-white text-gray-600'}`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalFilteredPages}
-                      className="p-2 border rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-2.5 border border-gray-300 rounded-xl hover:bg-white hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all bg-white"
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight className="w-4 h-4 text-gray-600" />
                     </button>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Items per page:</span>
+                    <span className="text-sm text-gray-600">Items/page:</span>
                     <select
                       value={pageSize}
                       onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                      className="px-2 py-1 border rounded-lg text-sm"
+                      className="px-3 py-2 border border-gray-300 rounded-xl bg-white text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     >
                       <option value={5}>5</option>
                       <option value={10}>10</option>
@@ -555,43 +631,45 @@ const ViewTopStudent = () => {
         {/* Edit Modal */}
         {showEditModal && selectedStudent && (
           <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity" onClick={handleEditCancel} />
-            <div className="flex min-h-full items-center justify-center p-4">
-              <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all">
-                <div className="bg-gradient-to-r from-green-600 to-teal-600 px-6 py-5 rounded-t-2xl">
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={handleEditCancel} />
+            <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+              <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg sm:max-w-2xl transform transition-all overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-6">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-white/20 p-2 rounded-xl">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-white/20 p-3 rounded-2xl">
                         <Edit className="w-6 h-6 text-white" />
                       </div>
-                      <h3 className="text-xl font-bold text-white">Edit Student</h3>
+                      <div>
+                        <h3 className="text-xl font-bold text-white">Edit Student</h3>
+                        <p className="text-emerald-100 text-sm mt-0.5">Update student information</p>
+                      </div>
                     </div>
                     <button onClick={handleEditCancel} className="p-2 hover:bg-white/20 rounded-xl transition-colors">
                       <X className="w-5 h-5 text-white" />
                     </button>
                   </div>
-                  <p className="text-green-100 text-sm mt-2 ml-12">Update student information</p>
                 </div>
 
                 <form onSubmit={handleEditSubmit} className="p-6 space-y-5">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Profile Image</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">Profile Image</label>
                     <div className="flex items-center gap-5">
                       <div className="relative">
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden ring-2 ring-white shadow">
+                        <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-lg">
                           {editImagePreview ? (
                             <img src={editImagePreview} alt="Preview" className="w-full h-full object-cover" />
                           ) : (
-                            <User className="w-8 h-8 text-indigo-400" />
+                            <User className="w-10 h-10 text-indigo-500" />
                           )}
                         </div>
                         {editImagePreview && (
                           <button
                             type="button"
                             onClick={() => { setEditImagePreview(''); setEditSelectedFile(null); }}
-                            className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-md"
+                            className="absolute -top-2 -right-2 p-2 bg-red-500 text-white rounded-xl hover:bg-red-600 shadow-lg transition-colors"
                           >
-                            <X className="w-3 h-3" />
+                            <X className="w-4 h-4" />
                           </button>
                         )}
                       </div>
@@ -600,62 +678,62 @@ const ViewTopStudent = () => {
                           type="file"
                           accept="image/*"
                           onChange={handleEditImageChange}
-                          className="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                          className="w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"
                         />
-                        <p className="text-xs text-gray-400 mt-1">Max 2MB. Leave empty to keep current image</p>
+                        <p className="text-xs text-gray-400 mt-2">Max 2MB. Leave empty to keep current image</p>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       name="name"
                       value={editFormData.name}
                       onChange={handleEditInputChange}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 transition-all"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all text-sm"
                       placeholder="Enter student name"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Video URL</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Video URL</label>
                     <input
                       type="url"
                       name="videoUrl"
                       value={editFormData.videoUrl}
                       onChange={handleEditInputChange}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 transition-all"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all text-sm"
                       placeholder="https://youtube.com/..."
                     />
-                    <p className="text-xs text-gray-400 mt-1">YouTube URL or direct video link</p>
+                    <p className="text-xs text-gray-400 mt-1.5">YouTube URL or direct video link</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Stream ID</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Stream ID</label>
                     <input
                       type="text"
                       name="streamId"
                       value={editFormData.streamId}
                       onChange={handleEditInputChange}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 transition-all"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all text-sm"
                       placeholder="Enter stream ID (optional)"
                     />
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                  <div className="flex justify-end gap-3 pt-5 border-t border-gray-200">
                     <button
                       type="button"
                       onClick={handleEditCancel}
-                      className="px-5 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                      className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all font-semibold text-sm"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2 font-medium"
+                      className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2 font-semibold text-sm"
                     >
                       <Save className="w-4 h-4" />
                       Save Changes

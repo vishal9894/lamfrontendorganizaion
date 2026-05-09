@@ -241,51 +241,51 @@ const ViewOmrSheet = () => {
 
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-xl p-4 md:p-6 mb-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-3 rounded-xl">
-                <FileText className="h-8 w-8 text-white" />
+              <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-2 md:p-3 rounded-xl">
+                <FileText className="h-6 w-6 md:h-8 md:w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">OMR Sheets</h1>
-                <p className="text-gray-500 mt-1">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">OMR Sheets</h1>
+                <p className="text-gray-500 mt-1 text-sm md:text-base">
                   Manage and view all your OMR sheets
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-2 md:gap-3 w-full md:w-auto">
               <button
                 onClick={fetchOmrSheets}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 md:px-4 py-2 rounded-lg font-semibold transition-colors flex items-center gap-2 text-sm md:text-base flex-1 md:flex-none justify-center"
               >
                 <Activity className="h-4 w-4" />
-                Refresh
+                <span className="hidden md:inline">Refresh</span>
               </button>
             </div>
           </div>
 
           {/* Search and Filter Bar */}
-          <div className="mt-6 flex flex-col md:flex-row gap-4">
+          <div className="mt-4 md:mt-6 flex flex-col md:flex-row gap-3">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by Exam Key or Title..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 text-sm md:text-base border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-500"
               />
             </div>
 
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="px-4 py-2 text-sm md:text-base border border-gray-200 rounded-xl bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-200"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -294,50 +294,50 @@ const ViewOmrSheet = () => {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
-            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-4 md:mt-6">
+            <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-3 md:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-blue-600 font-semibold">Total Sheets</p>
-                  <p className="text-2xl font-bold text-blue-700">{omrSheets.length}</p>
+                  <p className="text-xs md:text-sm text-blue-600 font-semibold">Total Sheets</p>
+                  <p className="text-xl md:text-2xl font-bold text-blue-700">{omrSheets.length}</p>
                 </div>
-                <FileText className="h-8 w-8 text-blue-600 opacity-50" />
+                <FileText className="h-6 w-6 md:h-8 md:w-8 text-blue-600 opacity-50" />
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-4">
+            <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-3 md:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-green-600 font-semibold">Active Sheets</p>
-                  <p className="text-2xl font-bold text-green-700">
+                  <p className="text-xs md:text-sm text-green-600 font-semibold">Active Sheets</p>
+                  <p className="text-xl md:text-2xl font-bold text-green-700">
                     {omrSheets.filter(s => s.status).length}
                   </p>
                 </div>
-                <CheckCircle2 className="h-8 w-8 text-green-600 opacity-50" />
+                <CheckCircle2 className="h-6 w-6 md:h-8 md:w-8 text-green-600 opacity-50" />
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-4">
+            <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-3 md:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-purple-600 font-semibold">Total Questions</p>
-                  <p className="text-2xl font-bold text-purple-700">
+                  <p className="text-xs md:text-sm text-purple-600 font-semibold">Total Questions</p>
+                  <p className="text-xl md:text-2xl font-bold text-purple-700">
                     {omrSheets.reduce((sum, sheet) => sum + (sheet.totalQuestions || 0), 0)}
                   </p>
                 </div>
-                <BookOpen className="h-8 w-8 text-purple-600 opacity-50" />
+                <BookOpen className="h-6 w-6 md:h-8 md:w-8 text-purple-600 opacity-50" />
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-4">
+            <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl p-3 md:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-orange-600 font-semibold">Inactive Sheets</p>
-                  <p className="text-2xl font-bold text-orange-700">
+                  <p className="text-xs md:text-sm text-orange-600 font-semibold">Inactive Sheets</p>
+                  <p className="text-xl md:text-2xl font-bold text-orange-700">
                     {omrSheets.filter(s => !s.status).length}
                   </p>
                 </div>
-                <AlertCircle className="h-8 w-8 text-orange-600 opacity-50" />
+                <AlertCircle className="h-6 w-6 md:h-8 md:w-8 text-orange-600 opacity-50" />
               </div>
             </div>
           </div>
@@ -345,10 +345,10 @@ const ViewOmrSheet = () => {
 
         {/* Table */}
         {filteredSheets.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-xl p-12 text-center">
-            <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-800 mb-2">No OMR Sheets Found</h3>
-            <p className="text-gray-500">
+          <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center">
+            <FileText className="h-12 w-12 md:h-16 md:w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-2">No OMR Sheets Found</h3>
+            <p className="text-gray-500 text-sm md:text-base">
               {searchTerm || filterStatus !== "all"
                 ? "Try adjusting your search or filter criteria"
                 : "Create your first OMR sheet to get started"}
@@ -356,7 +356,8 @@ const ViewOmrSheet = () => {
           </div>
         ) : (
           <>
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-white rounded-2xl shadow-xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
@@ -498,93 +499,217 @@ const ViewOmrSheet = () => {
                 </div>
               )}
             </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {currentItems.map((sheet) => (
+                <div key={sheet.id} className="bg-white rounded-2xl shadow-xl p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Key className="h-4 w-4 text-gray-400" />
+                        <span className="text-sm font-semibold text-gray-900">{sheet.examKey}</span>
+                      </div>
+                      <h3 className="text-base font-bold text-gray-800">{sheet.title}</h3>
+                      {sheet.description && (
+                        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{sheet.description}</p>
+                      )}
+                    </div>
+                    {getStatusBadge(sheet.status)}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <div className="flex items-center gap-1 text-xs text-gray-600">
+                        <BookOpen className="h-3 w-3 text-blue-500" />
+                        <span>Questions</span>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900 mt-1">{sheet.totalQuestions || 0}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <div className="flex items-center gap-1 text-xs text-gray-600">
+                        <Award className="h-3 w-3 text-green-500" />
+                        <span>Marks</span>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900 mt-1">+{sheet.correctMarks} / -{sheet.wrongMarks}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <div className="flex items-center gap-1 text-xs text-gray-600">
+                        <Timer className="h-3 w-3 text-orange-500" />
+                        <span>Duration</span>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900 mt-1">{sheet.duration} min</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-2">
+                      <div className="flex items-center gap-1 text-xs text-gray-600">
+                        <CalendarIcon className="h-3 w-3 text-blue-500" />
+                        <span>Date</span>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900 mt-1">{formatDate(sheet.examDateTime)}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    {getQuestionTypeBadge(sheet.questionType)}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleViewDetails(sheet)}
+                        className="flex items-center gap-1 px-3 py-1.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-sm font-medium"
+                      >
+                        <Eye className="h-4 w-4" />
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(sheet)}
+                        className="flex items-center gap-1 px-3 py-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-sm font-medium"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Mobile Pagination */}
+              {totalPages > 1 && (
+                <div className="flex flex-col items-center gap-3 bg-white rounded-2xl shadow-xl p-4">
+                  <div className="text-sm text-gray-600">
+                    Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredSheets.length)} of {filteredSheets.length} entries
+                  </div>
+                  <div className="flex gap-2 w-full justify-center">
+                    <button
+                      onClick={() => paginate(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="flex-1 max-w-24 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    >
+                      Previous
+                    </button>
+                    <div className="flex gap-1">
+                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => paginate(pageNum)}
+                            className={`px-3 py-2 rounded-lg transition-colors text-sm font-medium ${currentPage === pageNum
+                              ? "bg-blue-600 text-white"
+                              : "border border-gray-300 hover:bg-gray-50"
+                              }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <button
+                      onClick={() => paginate(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="flex-1 max-w-24 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
           </>
         )}
       </div>
 
       {/* Details Modal */}
       {showModal && selectedSheet && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full scrollbar-thin max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 p-6 rounded-t-2xl">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h2 className="text-2xl font-bold text-white">{selectedSheet.title}</h2>
-                  <p className="text-blue-100 mt-1">Exam Key: {selectedSheet.examKey}</p>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 md:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full scrollbar-thin max-h-[95vh] md:max-h-[90vh] overflow-y-auto my-4">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 p-4 md:p-6 rounded-t-2xl">
+              <div className="flex justify-between items-start gap-4">
+                <div className="flex-1">
+                  <h2 className="text-xl md:text-2xl font-bold text-white">{selectedSheet.title}</h2>
+                  <p className="text-blue-100 mt-1 text-sm md:text-base">Exam Key: {selectedSheet.examKey}</p>
                 </div>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="text-white hover:bg-blue-700 rounded-lg p-1 transition-colors"
+                  className="text-white hover:bg-blue-700 rounded-lg p-1 transition-colors flex-shrink-0"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5 md:h-6 md:w-6" />
                 </button>
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-4 md:p-6">
               {/* Description */}
               {selectedSheet.description && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-bold text-gray-800 mb-2">Description</h3>
-                  <p className="text-gray-600">{selectedSheet.description}</p>
+                <div className="mb-4 md:mb-6">
+                  <h3 className="text-base md:text-lg font-bold text-gray-800 mb-2">Description</h3>
+                  <p className="text-gray-600 text-sm md:text-base">{selectedSheet.description}</p>
                 </div>
               )}
 
               {/* Exam Details */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-gray-50 rounded-xl p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-6">
+                <div className="bg-gray-50 rounded-xl p-3 md:p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <CalendarIcon className="h-5 w-5 text-blue-600" />
-                    <h4 className="font-semibold text-gray-700">Exam Date & Time</h4>
+                    <CalendarIcon className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
+                    <h4 className="font-semibold text-gray-700 text-sm md:text-base">Exam Date & Time</h4>
                   </div>
-                  <p className="text-gray-600">{formatDate(selectedSheet.examDateTime)} at {formatTime(selectedSheet.examDateTime)}</p>
+                  <p className="text-gray-600 text-sm md:text-base">{formatDate(selectedSheet.examDateTime)} at {formatTime(selectedSheet.examDateTime)}</p>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4">
+                <div className="bg-gray-50 rounded-xl p-3 md:p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <ClockIcon className="h-5 w-5 text-blue-600" />
-                    <h4 className="font-semibold text-gray-700">Duration & Buffer</h4>
+                    <ClockIcon className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
+                    <h4 className="font-semibold text-gray-700 text-sm md:text-base">Duration & Buffer</h4>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 text-sm md:text-base">
                     {selectedSheet.duration} minutes + {selectedSheet.bufferTime} minutes buffer
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4">
+                <div className="bg-gray-50 rounded-xl p-3 md:p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Award className="h-5 w-5 text-blue-600" />
-                    <h4 className="font-semibold text-gray-700">Marks Scheme</h4>
+                    <Award className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
+                    <h4 className="font-semibold text-gray-700 text-sm md:text-base">Marks Scheme</h4>
                   </div>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 text-sm md:text-base">
                     +{selectedSheet.correctMarks} for correct / -{selectedSheet.wrongMarks} for wrong
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-xl p-4">
+                <div className="bg-gray-50 rounded-xl p-3 md:p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Monitor className="h-5 w-5 text-blue-600" />
-                    <h4 className="font-semibold text-gray-700">Exam Mode</h4>
+                    <Monitor className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
+                    <h4 className="font-semibold text-gray-700 text-sm md:text-base">Exam Mode</h4>
                   </div>
-                  <p className="text-gray-600 capitalize">{selectedSheet.examMode}</p>
+                  <p className="text-gray-600 capitalize text-sm md:text-base">{selectedSheet.examMode}</p>
                 </div>
               </div>
 
               {/* Questions List */}
               {selectedSheet.questions && selectedSheet.questions.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-blue-600" />
+                  <h3 className="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 md:h-5 md:w-5 text-blue-600" />
                     Questions & Answers
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-2 md:space-y-3">
                     {selectedSheet.questions.map((q, idx) => (
-                      <div key={idx} className="bg-gray-50 rounded-xl p-4">
-                        <div className="flex items-start justify-between">
+                      <div key={idx} className="bg-gray-50 rounded-xl p-3 md:p-4">
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
                           <div>
-                            <p className="font-semibold text-gray-800">
+                            <p className="font-semibold text-gray-800 text-sm md:text-base">
                               Question {q.questionNumber}
                             </p>
-                            <div className="flex items-center gap-2 mt-2">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-2">
                               <span className="text-sm text-gray-600">Correct Answer:</span>
                               <span className="bg-green-100 text-green-700 px-2 py-1 rounded-lg text-sm font-semibold">
                                 {Array.isArray(q.correctAnswer)
@@ -602,10 +727,10 @@ const ViewOmrSheet = () => {
               )}
             </div>
 
-            <div className="border-t p-6 bg-gray-50 rounded-b-2xl">
+            <div className="border-t p-4 md:p-6 bg-gray-50 rounded-b-2xl">
               <button
                 onClick={() => setShowModal(false)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+                className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors text-sm md:text-base"
               >
                 Close
               </button>

@@ -235,24 +235,24 @@ const SocialMedia = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="mb-4 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-2">
-                <Globe className="w-8 h-8 text-indigo-600" />
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1 md:mb-2 flex items-center gap-2">
+                <Globe className="w-6 h-6 md:w-8 md:h-8 text-indigo-600" />
                 Social Media Management
               </h1>
-              <p className="text-gray-600">Manage your social media links and platforms</p>
+              <p className="text-sm md:text-base text-gray-600">Manage your social media links and platforms</p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={fetchSocialMedia}
                 disabled={loading}
-                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2"
+                className="flex-1 sm:flex-none px-3 md:px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2 text-sm"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
                 Refresh
@@ -260,7 +260,7 @@ const SocialMedia = () => {
               {!showAddForm && (
                 <button
                   onClick={() => setShowAddForm(true)}
-                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2"
+                  className="flex-1 sm:flex-none px-3 md:px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-2 text-sm"
                 >
                   <Plus className="w-4 h-4" />
                   Add New
@@ -270,37 +270,37 @@ const SocialMedia = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <Globe className="w-5 h-5 text-indigo-600" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mt-4 md:mt-6">
+            <div className="bg-white rounded-xl p-3 md:p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <Globe className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Total Platforms</p>
-                  <p className="text-2xl font-bold text-gray-800">{socialMedia.length}</p>
+                  <p className="text-xs md:text-sm text-gray-500">Total Platforms</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-800">{socialMedia.length}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
+            <div className="bg-white rounded-xl p-3 md:p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">With Images</p>
-                  <p className="text-2xl font-bold text-gray-800">{socialMedia.filter((s) => s.image).length}</p>
+                  <p className="text-xs md:text-sm text-gray-500">With Images</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-800">{socialMedia.filter((s) => s.image).length}</p>
                 </div>
               </div>
             </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <LinkIcon className="w-5 h-5 text-blue-600" />
+            <div className="bg-white rounded-xl p-3 md:p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <LinkIcon className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Active Links</p>
-                  <p className="text-2xl font-bold text-gray-800">{socialMedia.length}</p>
+                  <p className="text-xs md:text-sm text-gray-500">Active Links</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-800">{socialMedia.length}</p>
                 </div>
               </div>
             </div>
@@ -309,20 +309,20 @@ const SocialMedia = () => {
 
         {/* Add/Edit Form */}
         {showAddForm && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-6 mb-4 md:mb-6">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="text-base md:text-lg font-semibold text-gray-800">
                 {editingId ? "Edit Social Media" : "Add New Social Media"}
               </h2>
               <button onClick={resetForm} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-4 h-4 md:w-5 md:h-5 text-gray-500" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
                     Platform Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -331,12 +331,12 @@ const SocialMedia = () => {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="e.g., YouTube, Twitter, Instagram"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+                    className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">
                     URL <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -345,27 +345,27 @@ const SocialMedia = () => {
                     value={formData.url}
                     onChange={handleInputChange}
                     placeholder="https://example.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+                    className="w-full px-3 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
                     required
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Platform Image (Optional)</label>
-                  <div className="flex items-center gap-4">
-                    <div className="flex-1">
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-indigo-500 transition">
+                  <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Platform Image (Optional)</label>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4">
+                    <div className="flex-1 w-full">
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 md:p-4 hover:border-indigo-500 transition">
                         <input
                           type="file"
                           accept="image/*"
                           onChange={handleImageChange}
-                          className="w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                          className="w-full text-xs md:text-sm text-gray-600 file:mr-2 md:file:mr-4 file:py-1.5 md:file:py-2 file:px-2 md:file:px-4 file:rounded-lg file:border-0 file:text-xs md:file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                         />
-                        <p className="text-xs text-gray-500 mt-2">Supported: JPG, PNG, GIF (Max: 2MB)</p>
+                        <p className="text-xs text-gray-500 mt-1 md:mt-2">Supported: JPG, PNG, GIF (Max: 2MB)</p>
                       </div>
                     </div>
                     {imagePreview && (
                       <div className="relative">
-                        <img src={imagePreview} alt="Preview" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+                        <img src={imagePreview} alt="Preview" className="w-14 h-14 md:w-16 md:h-16 rounded-lg object-cover border border-gray-200" />
                         <button
                           type="button"
                           onClick={() => {
@@ -383,14 +383,14 @@ const SocialMedia = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2">
-                <button type="button" onClick={resetForm} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+              <div className="flex flex-col sm:flex-row justify-end gap-2">
+                <button type="button" onClick={resetForm} className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm">
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2 disabled:opacity-50"
+                  className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
                 >
                   {loading ? (
                     <>
@@ -410,7 +410,7 @@ const SocialMedia = () => {
         )}
 
         {/* Search Bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 md:p-4 mb-4 md:mb-6">
           <div className="relative">
             <input
               type="text"
@@ -420,7 +420,7 @@ const SocialMedia = () => {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+              className="w-full pl-10 pr-4 py-2 text-sm md:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
             />
             <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -430,25 +430,25 @@ const SocialMedia = () => {
 
         {/* Table View */}
         {loading && !showAddForm ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+          <div className="flex justify-center items-center h-48 md:h-64">
+            <div className="w-10 h-10 md:w-12 md:h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             {filteredSocialMedia.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="bg-gray-50 rounded-xl p-8 max-w-md mx-auto">
-                  <Globe className="w-16 h-16 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500 text-lg font-medium">
+              <div className="text-center py-12 md:py-16">
+                <div className="bg-gray-50 rounded-xl p-6 md:p-8 max-w-md mx-auto">
+                  <Globe className="w-12 h-12 md:w-16 md:h-16 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-base md:text-lg font-medium">
                     {searchTerm ? "No matching platforms found" : "No social media links found"}
                   </p>
-                  <p className="text-sm text-gray-400 mt-1 mb-4">
+                  <p className="text-xs md:text-sm text-gray-400 mt-1 mb-4">
                     {searchTerm ? "Try adjusting your search" : "Get started by adding your first social media platform"}
                   </p>
                   {!searchTerm && (
                     <button
                       onClick={() => setShowAddForm(true)}
-                      className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2 mx-auto"
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-2 mx-auto text-sm"
                     >
                       <Plus className="w-4 h-4" />
                       Add Your First Platform
@@ -458,7 +458,8 @@ const SocialMedia = () => {
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full">
                     <thead className="bg-gray-50">
                       <tr>
@@ -535,10 +536,77 @@ const SocialMedia = () => {
                   </table>
                 </div>
 
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-3 p-3">
+                  {currentItems.map((item, index) => (
+                    <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
+                          {item.icon ? (
+                            <img src={item.icon} alt={item.name} className="w-6 h-6 rounded object-cover" />
+                          ) : (
+                            <div className="scale-125">{getPlatformIcon(item.name)}</div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-semibold text-gray-800 truncate">{item.name}</h3>
+                          <p className="text-xs text-gray-500">#{indexOfFirstItem + index + 1}</p>
+                        </div>
+                        {item.image ? (
+                          <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">
+                            <CheckCircle className="w-3 h-3 mr-1" /> Yes
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-xs">No</span>
+                        )}
+                      </div>
+
+                      <div className="space-y-2 mb-3">
+                        <div className="bg-gray-50 rounded-lg p-2">
+                          <span className="text-xs text-gray-500">URL</span>
+                          <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline flex items-center gap-1 text-xs font-medium">
+                            {item.url.length > 50 ? item.url.substring(0, 50) + "..." : item.url}
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-2">
+                          <span className="text-xs text-gray-500">Created</span>
+                          <p className="text-xs font-medium text-gray-800">{formatDate(item.created_at)}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 px-3 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          Visit
+                        </a>
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="flex-1 px-3 py-2 text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-xs font-medium flex items-center justify-center gap-1"
+                        >
+                          <Edit className="w-3 h-3" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(item.id, item.name)}
+                          className="px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-xs font-medium"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
+                  <div className="px-4 md:px-6 py-3 md:py-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="text-xs md:text-sm text-gray-600">
                       Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredSocialMedia.length)} of {filteredSocialMedia.length} platforms
                     </div>
                     <div className="flex gap-2">
@@ -551,7 +619,7 @@ const SocialMedia = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                       </button>
-                      <span className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-sm font-medium">
+                      <span className="px-3 md:px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs md:text-sm font-medium">
                         {currentPage} / {totalPages}
                       </span>
                       <button

@@ -264,92 +264,92 @@ const ViewTopTeacher = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
 
 
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-2">
-                <Award className="w-8 h-8 text-indigo-600" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 flex items-center gap-2">
+                <Award className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600" />
                 Top Teachers & Students
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600">
                 View and manage all outstanding teachers and students
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 onClick={handleRefresh}
                 disabled={teachersLoading}
-                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
               >
                 <RefreshCw className={`w-4 h-4 ${teachersLoading ? 'animate-spin' : ''}`} />
-                Refresh
+                <span className="hidden sm:inline">Refresh</span>
               </button>
               <button
                 onClick={() => window.location.href = '/add-top-teacher'}
-                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-2"
               >
                 <Users className="w-4 h-4" />
-                Add New
+                <span className="hidden sm:inline">Add New</span>
               </button>
             </div>
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-5 h-5 text-indigo-600" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6">
+            <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Total Teachers</p>
-                  <p className="text-2xl font-bold text-gray-800">{teachers.length}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Total Teachers</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-800">{teachers.length}</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
+            <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">With Avatar</p>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-xs sm:text-sm text-gray-500">With Avatar</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-800">
                     {teachers.filter(t => t.image || t.avatar).length}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-5 h-5 text-blue-600" />
+            <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">With Stream</p>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p className="text-xs sm:text-sm text-gray-500">With Stream</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-800">
                     {teachers.filter(t => t.streamid || t.stream_id).length}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <Award className="w-5 h-5 text-purple-600" />
+            <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Active</p>
-                  <p className="text-2xl font-bold text-gray-800">{teachers.length}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Active</p>
+                  <p className="text-lg sm:text-2xl font-bold text-gray-800">{teachers.length}</p>
                 </div>
               </div>
             </div>
@@ -357,15 +357,15 @@ const ViewTopTeacher = () => {
         </div>
 
         {/* Search Bar */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             <input
               type="text"
               placeholder="Search teachers by name, bio, stream ID, or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+              className="w-full pl-9 sm:pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all text-sm"
             />
           </div>
         </div>
@@ -382,105 +382,180 @@ const ViewTopTeacher = () => {
               <p className="text-gray-500">No teachers found</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Avatar
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Bio
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stream ID
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Created At
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {filteredTeachers.map((teacher) => (
-                    <tr key={teacher.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
-                          {(teacher.image || teacher.avatar) ? (
-                            <img
-                              src={teacher.image || teacher.avatar}
-                              alt={teacher.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.style.display = 'none';
-                              }}
-                            />
-                          ) : (
-                            <User className="w-5 h-5 text-indigo-400" />
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-800">{teacher.name}</div>
-                        <div className="text-xs text-gray-400">ID: {teacher.id?.substring(0, 8)}...</div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <p className="text-gray-600 line-clamp-2 max-w-xs">{teacher.bio}</p>
-                      </td>
-                      <td className="px-4 py-3">
+            <>
+              {/* Mobile Card View */}
+              <div className="sm:hidden">
+                {filteredTeachers.map((teacher) => (
+                  <div key={teacher.id} className="border-b border-gray-200 p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {(teacher.image || teacher.avatar) ? (
+                          <img
+                            src={teacher.image || teacher.avatar}
+                            alt={teacher.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <User className="w-6 h-6 text-indigo-400" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-800 truncate">{teacher.name}</h3>
+                        <p className="text-xs text-gray-400">ID: {teacher.id?.substring(0, 8)}...</p>
+                      </div>
+                    </div>
+
+                    {teacher.bio && (
+                      <p className="text-sm text-gray-600 line-clamp-2">{teacher.bio}</p>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
                         {(teacher.streamid || teacher.stream_id) ? (
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(teacher.streamid || teacher.stream_id)}`}>
                             <BookOpen className="w-3 h-3 mr-1" />
-                            {(teacher.streamid || teacher.stream_id).length > 10
-                              ? `${(teacher.streamid || teacher.stream_id).substring(0, 10)}...`
+                            {(teacher.streamid || teacher.stream_id).length > 6
+                              ? `${(teacher.streamid || teacher.stream_id).substring(0, 6)}...`
                               : (teacher.streamid || teacher.stream_id)}
                           </span>
                         ) : (
                           <span className="text-gray-400 text-xs">No stream</span>
                         )}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        <div className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-1 text-gray-400" />
-                          {formatDate(teacher.createdAt || teacher.created_at)}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleViewDetails(teacher)}
-                            className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-colors"
-                            title="View Details"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleEditClick(teacher)}
-                            className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
-                            title="Edit"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(teacher)}
-                            className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleViewDetails(teacher)}
+                          className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-colors"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEditClick(teacher)}
+                          className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
+                          title="Edit"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClick(teacher)}
+                          className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Avatar
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Bio
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Stream ID
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Created At
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {filteredTeachers.map((teacher) => (
+                      <tr key={teacher.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
+                            {(teacher.image || teacher.avatar) ? (
+                              <img
+                                src={teacher.image || teacher.avatar}
+                                alt={teacher.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <User className="w-5 h-5 text-indigo-400" />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-800">{teacher.name}</div>
+                          <div className="text-xs text-gray-400">ID: {teacher.id?.substring(0, 8)}...</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-gray-600 line-clamp-2 max-w-xs">{teacher.bio}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          {(teacher.streamid || teacher.stream_id) ? (
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(teacher.streamid || teacher.stream_id)}`}>
+                              <BookOpen className="w-3 h-3 mr-1" />
+                              {(teacher.streamid || teacher.stream_id).length > 10
+                                ? `${(teacher.streamid || teacher.stream_id).substring(0, 10)}...`
+                                : (teacher.streamid || teacher.stream_id)}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-xs">No stream</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1 text-gray-400" />
+                            {formatDate(teacher.createdAt || teacher.created_at)}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleViewDetails(teacher)}
+                              className="p-1.5 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-colors"
+                              title="View Details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleEditClick(teacher)}
+                              className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
+                              title="Edit"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteClick(teacher)}
+                              className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 
@@ -491,30 +566,30 @@ const ViewTopTeacher = () => {
         {showEditModal && selectedTeacher && (
           <div className="fixed inset-0 z-50 overflow-y-auto">
             <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={handleEditCancel} />
-            <div className="flex min-h-full items-center justify-center p-4">
-              <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl">
-                <div className="bg-gradient-to-r from-green-600 to-teal-600 px-6 py-4 rounded-t-xl">
+            <div className="flex min-h-full items-center justify-center p-2 sm:p-4">
+              <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div className="bg-gradient-to-r from-green-600 to-teal-600 px-4 sm:px-6 py-3 sm:py-4 rounded-t-xl">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <Edit className="w-5 h-5" />
+                    <h3 className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+                      <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
                       Edit Teacher
                     </h3>
                     <button
                       onClick={handleEditCancel}
                       className="p-1 hover:bg-white/20 rounded text-white transition-colors"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                   </div>
                 </div>
 
-                <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleEditSubmit} className="p-4 sm:p-6 space-y-4">
                   {/* Avatar */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Profile Image
                     </label>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
                       <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
                         {editImagePreview ? (
                           <img
@@ -526,12 +601,12 @@ const ViewTopTeacher = () => {
                           <User className="w-8 h-8 text-indigo-400" />
                         )}
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 w-full">
                         <input
                           type="file"
                           accept="image/*"
                           onChange={handleEditImageChange}
-                          className="text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                          className="w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                         />
                         <p className="text-xs text-gray-400 mt-1">Max 2MB. Leave empty to keep current image</p>
                       </div>
@@ -570,17 +645,17 @@ const ViewTopTeacher = () => {
 
 
                   {/* Actions */}
-                  <div className="flex justify-end gap-2 pt-4 border-t">
+                  <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t">
                     <button
                       type="button"
                       onClick={handleEditCancel}
-                      className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition-colors flex items-center gap-2"
+                      className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-lg hover:from-green-700 hover:to-teal-700 transition-colors flex items-center justify-center gap-2"
                     >
                       <Save className="w-4 h-4" />
                       Save Changes

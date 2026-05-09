@@ -390,27 +390,27 @@ const GeneralSetting = () => {
   }
 
   return (
-    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-4 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center gap-2">
-                <Settings className="w-8 h-8 text-indigo-600" />
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-1 md:mb-2 flex items-center gap-2">
+                <Settings className="w-6 h-6 md:w-8 md:h-8 text-indigo-600" />
                 General Settings
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm md:text-base text-gray-600">
                 Configure application settings and preferences
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={fetchSettings}
                 disabled={loading}
-                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2"
+                className="flex-1 sm:flex-none px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-all flex items-center justify-center gap-2 text-sm"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 Refresh
@@ -419,10 +419,10 @@ const GeneralSetting = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mt-4 border-b border-gray-200">
+          <div className="flex gap-2 mt-4 border-b border-gray-200 overflow-x-auto">
             <button
               onClick={() => setActiveTab('general')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'general'
+              className={`px-3 md:px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'general'
                 ? 'text-indigo-600 border-b-2 border-indigo-600'
                 : 'text-gray-500 hover:text-gray-700'
                 }`}
@@ -431,7 +431,7 @@ const GeneralSetting = () => {
             </button>
             <button
               onClick={() => setActiveTab('routing')}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'routing'
+              className={`px-3 md:px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'routing'
                 ? 'text-indigo-600 border-b-2 border-indigo-600'
                 : 'text-gray-500 hover:text-gray-700'
                 }`}
@@ -444,16 +444,16 @@ const GeneralSetting = () => {
         {/* Tab Content */}
         {activeTab === 'general' ? (
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               {/* Left Column */}
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {/* Application Features */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <Settings className="w-5 h-5 text-indigo-600" />
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+                  <h2 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                    <Settings className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                     Application Features
                   </h2>
-                  <div className="space-y-3">
+                  <div className="space-y-2 md:space-y-3">
                     <ToggleItem
                       label="OTP Verification"
                       checked={formData.otp_verification}
@@ -490,12 +490,12 @@ const GeneralSetting = () => {
 
 
                 {/* Features (New) */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <Settings className="w-5 h-5 text-indigo-600" />
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+                  <h2 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                    <Settings className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                     Features
                   </h2>
-                  <div className="space-y-3">
+                  <div className="space-y-2 md:space-y-3">
                     <ToggleItem
                       label="Live Class"
                       checked={formData.features.live_class}
@@ -515,33 +515,33 @@ const GeneralSetting = () => {
                 </div>
 
                 {/* Content Arrangement */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <ArrowUpDown className="w-5 h-5 text-indigo-600" />
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+                  <h2 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                    <ArrowUpDown className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                     Content Arrangement
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         App Content Order
                       </label>
                       <select
                         value={formData.app_content_order}
                         onChange={(e) => setFormData(prev => ({ ...prev, app_content_order: e.target.value }))}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       >
                         <option value="ascending">Ascending</option>
                         <option value="descending">Descending</option>
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         Web Content Order
                       </label>
                       <select
                         value={formData.web_content_order}
                         onChange={(e) => setFormData(prev => ({ ...prev, web_content_order: e.target.value }))}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       >
                         <option value="ascending">Ascending</option>
                         <option value="descending">Descending</option>
@@ -551,14 +551,14 @@ const GeneralSetting = () => {
                 </div>
 
                 {/* Application Details */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <Package className="w-5 h-5 text-indigo-600" />
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+                  <h2 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                    <Package className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                     Application Details
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         Application Package
                       </label>
                       <input
@@ -566,11 +566,11 @@ const GeneralSetting = () => {
                         value={formData.application_package}
                         onChange={(e) => setFormData(prev => ({ ...prev, application_package: e.target.value }))}
                         placeholder="com.example.app"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         Application Version
                       </label>
                       <input
@@ -578,21 +578,21 @@ const GeneralSetting = () => {
                         value={formData.application_version}
                         onChange={(e) => setFormData(prev => ({ ...prev, application_version: e.target.value }))}
                         placeholder="1.0.0"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Upload Size Limits */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <Image className="w-5 h-5 text-indigo-600" />
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+                  <h2 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                    <Image className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                     Upload Size Limits
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         Max Image Size (MB)
                       </label>
                       <input
@@ -601,11 +601,11 @@ const GeneralSetting = () => {
                         onChange={(e) => setFormData(prev => ({ ...prev, max_image_size: parseInt(e.target.value) || 5 }))}
                         min="1"
                         max="100"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         Max PDF Size (MB)
                       </label>
                       <input
@@ -614,7 +614,7 @@ const GeneralSetting = () => {
                         onChange={(e) => setFormData(prev => ({ ...prev, max_pdf_size: parseInt(e.target.value) || 10 }))}
                         min="1"
                         max="100"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       />
                     </div>
                   </div>
@@ -622,16 +622,16 @@ const GeneralSetting = () => {
               </div>
 
               {/* Right Column */}
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {/* Notification Settings */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <Bell className="w-5 h-5 text-indigo-600" />
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+                  <h2 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                    <Bell className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                     Notification Settings
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         OneSignal App ID
                       </label>
                       <input
@@ -639,11 +639,11 @@ const GeneralSetting = () => {
                         value={formData.onesignal_app_id}
                         onChange={(e) => setFormData(prev => ({ ...prev, onesignal_app_id: e.target.value }))}
                         placeholder="Enter OneSignal App ID"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         OneSignal Auth Key
                       </label>
                       <input
@@ -651,21 +651,21 @@ const GeneralSetting = () => {
                         value={formData.onesignal_auth_key}
                         onChange={(e) => setFormData(prev => ({ ...prev, onesignal_auth_key: e.target.value }))}
                         placeholder="Enter OneSignal Auth Key"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Payment & Security */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-indigo-600" />
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+                  <h2 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                     Payment & Security
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         Razorpay Auth
                       </label>
                       <input
@@ -673,11 +673,11 @@ const GeneralSetting = () => {
                         value={formData.razorpay_auth}
                         onChange={(e) => setFormData(prev => ({ ...prev, razorpay_auth: e.target.value }))}
                         placeholder="Enter Razorpay Auth Key"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         Login Attempts Limit
                       </label>
                       <input
@@ -686,11 +686,11 @@ const GeneralSetting = () => {
                         onChange={(e) => setFormData(prev => ({ ...prev, login_attempts_limit: parseInt(e.target.value) || 3 }))}
                         min="1"
                         max="10"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         Support Phone
                       </label>
                       <input
@@ -698,11 +698,11 @@ const GeneralSetting = () => {
                         value={formData.support_phone}
                         onChange={(e) => setFormData(prev => ({ ...prev, support_phone: e.target.value }))}
                         placeholder="+91 98765 43210"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2">
                         Number Flashing Time (seconds)
                       </label>
                       <input
@@ -711,19 +711,19 @@ const GeneralSetting = () => {
                         onChange={(e) => setFormData(prev => ({ ...prev, number_flashing_time: parseInt(e.target.value) || 5 }))}
                         min="1"
                         max="60"
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                        className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Legacy Social Media Links */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <Globe className="w-5 h-5 text-indigo-600" />
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+                  <h2 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
+                    <Globe className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                     Legacy Social Media Links
                   </h2>
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     <SocialInput
                       label="Telegram Link"
                       value={formData.telegram_link}
@@ -760,11 +760,11 @@ const GeneralSetting = () => {
             </div>
 
             {/* Form Actions */}
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-4 md:mt-6 flex justify-end gap-3">
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2 disabled:opacity-50"
+                className="w-full sm:w-auto px-4 md:px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm md:text-base"
               >
                 {saving ? (
                   <>
@@ -782,12 +782,12 @@ const GeneralSetting = () => {
           </form>
         ) : (
           /* Routing Accounts Tab */
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-gray-800">Routing Accounts</h2>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 md:mb-6">
+              <h2 className="text-base md:text-lg font-semibold text-gray-800">Routing Accounts</h2>
               <button
                 onClick={() => setShowAddRouting(!showAddRouting)}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all flex items-center gap-2"
+                className="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 text-sm"
               >
                 <Plus className="w-4 h-4" />
                 Add Account
@@ -796,9 +796,9 @@ const GeneralSetting = () => {
 
             {/* Add Routing Form */}
             {showAddRouting && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700 mb-3">Add New Routing Account</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="mb-4 md:mb-6 p-3 md:p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h3 className="text-xs md:text-sm font-medium text-gray-700 mb-2 md:mb-3">Add New Routing Account</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Account ID</label>
                     <input
@@ -807,7 +807,7 @@ const GeneralSetting = () => {
                       value={routingForm.account_id}
                       onChange={handleRoutingInputChange}
                       placeholder="Enter account ID"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
                     />
                   </div>
                   <div>
@@ -819,10 +819,10 @@ const GeneralSetting = () => {
                       onChange={handleRoutingInputChange}
                       min="1"
                       max="100"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg"
                     />
                   </div>
-                  <div className="flex items-end gap-2">
+                  <div className="flex flex-col sm:flex-row items-end gap-2">
                     <label className="flex items-center gap-2 pb-2">
                       <input
                         type="checkbox"
@@ -831,18 +831,18 @@ const GeneralSetting = () => {
                         onChange={handleRoutingInputChange}
                         className="w-4 h-4 text-indigo-600 rounded"
                       />
-                      <span className="text-sm">Active</span>
+                      <span className="text-xs md:text-sm">Active</span>
                     </label>
                     <button
                       onClick={handleAddRoutingAccount}
                       disabled={saving}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+                      className="flex-1 sm:flex-none px-3 md:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs md:text-sm"
                     >
                       {saving ? 'Adding...' : 'Add'}
                     </button>
                     <button
                       onClick={() => setShowAddRouting(false)}
-                      className="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 text-sm"
+                      className="flex-1 sm:flex-none px-3 md:px-4 py-2 border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 text-xs md:text-sm"
                     >
                       Cancel
                     </button>
@@ -853,50 +853,92 @@ const GeneralSetting = () => {
 
             {/* Routing Accounts List */}
             {routingAccounts.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Account ID</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Percentage</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {routingAccounts.map((account) => (
-                      <tr key={account.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3">{account.account_id}</td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex items-center gap-1">
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Account ID</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Percentage</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {routingAccounts.map((account) => (
+                        <tr key={account.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3">{account.account_id}</td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center gap-1">
+                              <Percent className="w-3 h-3" />
+                              {account.percentage}%
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${account.status
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-gray-100 text-gray-700'
+                              }`}>
+                              {account.status ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <button
+                              onClick={() => handleDeleteRoutingClick(account.id, account.account_id)}
+                              className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-3">
+                  {routingAccounts.map((account) => (
+                    <div key={account.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium text-gray-500">Account ID</span>
+                        <span className="text-sm font-medium text-gray-900">{account.account_id}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        <div>
+                          <span className="text-xs text-gray-500">Percentage</span>
+                          <div className="flex items-center gap-1 text-sm font-medium text-gray-900">
                             <Percent className="w-3 h-3" />
                             {account.percentage}%
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500">Status</span>
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${account.status
                             ? 'bg-green-100 text-green-700'
                             : 'bg-gray-100 text-gray-700'
                             }`}>
                             {account.status ? 'Active' : 'Inactive'}
                           </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() => handleDeleteRoutingClick(account.id, account.account_id)}
-                            className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-end pt-2 border-t border-gray-200">
+                        <button
+                          onClick={() => handleDeleteRoutingClick(account.id, account.account_id)}
+                          className="px-3 py-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-xs font-medium flex items-center gap-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-6 md:py-8 text-gray-500 text-sm md:text-base">
                 No routing accounts found. Add one to get started.
               </div>
             )}
@@ -926,13 +968,13 @@ const ToggleItem = ({ label, checked, onChange }) => (
   <button
     type="button"
     onClick={onChange}
-    className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+    className="w-full flex items-center justify-between p-2.5 md:p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
   >
-    <span className="text-sm font-medium text-gray-700">{label}</span>
+    <span className="text-xs md:text-sm font-medium text-gray-700">{label}</span>
     {checked ? (
-      <ToggleRight className="w-6 h-6 text-indigo-600" />
+      <ToggleRight className="w-5 h-5 md:w-6 md:h-6 text-indigo-600" />
     ) : (
-      <ToggleLeft className="w-6 h-6 text-gray-400" />
+      <ToggleLeft className="w-5 h-5 md:w-6 md:h-6 text-gray-400" />
     )}
   </button>
 );
@@ -940,13 +982,13 @@ const ToggleItem = ({ label, checked, onChange }) => (
 // Social Input Component
 const SocialInput = ({ label, value, onChange, placeholder }) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">{label}</label>
     <input
       type="text"
       value={value}
       onChange={onChange}
       placeholder={placeholder}
-      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+      className="w-full px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
     />
   </div>
 );
