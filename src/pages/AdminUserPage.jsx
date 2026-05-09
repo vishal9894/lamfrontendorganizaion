@@ -192,29 +192,26 @@ const AdminUserPage = () => {
 
     // Validation
     if (!name.trim()) {
-      showToast('Name is required', 'error');;
+      alert('Name is required');
       return;
     }
     if (!email.trim()) {
-      showToast('Email is required', 'error');;
+      alert('Email is required');
       return;
     }
     if (modalType === 'create' && !password.trim()) {
-      showToast('Password is required', 'error');;
+      alert('Password is required');
       return;
     }
     if (modalType === 'create' && password !== confirmPassword) {
-      showToast('Passwords do not match', 'error');;
+      alert('Passwords do not match');
       return;
     }
     if (!roleId) {
-      showToast('Please select a role', 'error');;
+      alert('Please select a role');
       return;
     }
-    if (!organizationId) {
-      showToast('Organization ID is required. Please ensure you are assigned to an organization.', 'error');;
-      return;
-    }
+
 
     const payload = {
       name: name.trim(),
@@ -222,7 +219,7 @@ const AdminUserPage = () => {
       roleName: roleName,
       roleId: roleId,
       status: status ? 'active' : 'inactive',
-      phone_number: phone.trim() || '',
+      phone: phone.trim() || '',
     };
 
     // Only include password if it's provided (for updates)
@@ -251,7 +248,7 @@ const AdminUserPage = () => {
         closeModal();
       }
     } catch (error) {
-      showToast('An error occurred while saving admin', 'error');
+      alert('An error occurred while saving admin');
     } finally {
       setSubmitting(false);
     }
@@ -277,7 +274,7 @@ const AdminUserPage = () => {
       closeModal();
       setDeleteModal({ isOpen: false, admin: null });
     } catch (error) {
-      showToast('An error occurred while deleting admin', 'error');
+      alert('An error occurred while deleting admin');
     } finally {
       setDeleteLoading(false);
     }
@@ -288,73 +285,74 @@ const AdminUserPage = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 via-gray-50 to-indigo-50/30 ">
+    <div className="bg-gradient-to-br from-gray-50 via-gray-50 to-indigo-50/30 min-h-screen">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-lg shadow-indigo-200">
-                <FiUsers className="w-6 h-6 text-white" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="p-2 md:p-3 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-lg shadow-indigo-200">
+                <FiUsers className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                   Admin Management
                 </h1>
-                <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
-                  <FiShield className="w-4 h-4" />
+                <p className="text-xs md:text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
+                  <FiShield className="w-3 h-3 md:w-4 md:h-4" />
                   Create and manage administrator accounts
                 </p>
               </div>
             </div>
             <button
               onClick={() => openModal('create')}
-              className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md shadow-indigo-200 flex items-center gap-2 text-sm font-medium"
+              className="px-3 md:px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md shadow-indigo-200 flex items-center gap-2 text-xs md:text-sm font-medium w-full sm:w-auto justify-center"
             >
               <FiPlus className="w-4 h-4" />
-              Create Admin
+              <span className="hidden sm:inline">Create Admin</span>
+              <span className="sm:hidden">New Admin</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Total Admins</p>
-                <p className="text-3xl font-bold text-gray-900">{admins.length}</p>
+                <p className="text-xs md:text-sm text-gray-500 mb-1">Total Admins</p>
+                <p className="text-2xl md:text-3xl font-bold text-gray-900">{admins.length}</p>
               </div>
-              <div className="p-3 bg-indigo-100 rounded-xl">
-                <FiUsers className="w-6 h-6 text-indigo-600" />
+              <div className="p-2 md:p-3 bg-indigo-100 rounded-xl">
+                <FiUsers className="w-5 h-5 md:w-6 md:h-6 text-indigo-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Active Admins</p>
-                <p className="text-3xl font-bold text-green-600">
+                <p className="text-xs md:text-sm text-gray-500 mb-1">Active Admins</p>
+                <p className="text-2xl md:text-3xl font-bold text-green-600">
                   {admins.filter(a => a.status === true).length}
                 </p>
               </div>
-              <div className="p-3 bg-green-100 rounded-xl">
-                <FiCheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-2 md:p-3 bg-green-100 rounded-xl">
+                <FiCheckCircle className="w-5 h-5 md:w-6 md:h-6 text-green-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Total Roles</p>
-                <p className="text-3xl font-bold text-gray-900">{roles.length}</p>
+                <p className="text-xs md:text-sm text-gray-500 mb-1">Total Roles</p>
+                <p className="text-2xl md:text-3xl font-bold text-gray-900">{roles.length}</p>
               </div>
-              <div className="p-3 bg-purple-100 rounded-xl">
-                <FiShield className="w-6 h-6 text-purple-600" />
+              <div className="p-2 md:p-3 bg-purple-100 rounded-xl">
+                <FiShield className="w-5 h-5 md:w-6 md:h-6 text-purple-600" />
               </div>
             </div>
           </div>
@@ -362,8 +360,8 @@ const AdminUserPage = () => {
 
         {/* Admins Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-lg font-semibold text-gray-900">Administrator Accounts</h2>
+          <div className="px-4 md:px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h2 className="text-base md:text-lg font-semibold text-gray-900">Administrator Accounts</h2>
           </div>
 
           {loading ? (
@@ -372,100 +370,173 @@ const AdminUserPage = () => {
             </div>
           ) : admins.length === 0 ? (
             <div className="text-center py-20">
-              <div className="p-4 bg-gray-50 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                <FiUsers className="w-8 h-8 text-gray-400" />
+              <div className="p-4 bg-gray-50 rounded-full w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 flex items-center justify-center">
+                <FiUsers className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900">No admins found</h3>
-              <p className="text-sm text-gray-500 mt-1">Click "Create Admin" to add your first administrator</p>
+              <h3 className="text-base md:text-lg font-medium text-gray-900">No admins found</h3>
+              <p className="text-xs md:text-sm text-gray-500 mt-1">Click "Create Admin" to add your first administrator</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {admins.map((admin, index) => (
-                    <tr key={admin.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-gray-500">{index + 1}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          {admin.image ? (
-                            <img
-                              src={admin.image}
-                              alt={admin.name}
-                              className="w-8 h-8 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                              {admin.name?.charAt(0).toUpperCase()}
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {admins.map((admin, index) => (
+                      <tr key={admin.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 text-sm text-gray-500">{index + 1}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            {admin.image ? (
+                              <img
+                                src={admin.image}
+                                alt={admin.name}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                {admin.name?.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <span className="text-sm font-medium text-gray-900">{admin.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <FiMail className="w-4 h-4 text-gray-400" />
+                            {admin.email}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <FiPhone className="w-4 h-4 text-gray-400" />
+                            {admin.phone || '-'}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
+                            <FiShield className="w-3 h-3 mr-1" />
+                            {admin.roleName}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${admin.status === true
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                            }`}>
+                            {admin.status === true ? (
+                              <FiCheckCircle className="w-3 h-3 mr-1" />
+                            ) : (
+                              <FiXCircle className="w-3 h-3 mr-1" />
+                            )}
+                            {admin.status === true ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => openModal('update', admin)}
+                              className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                              title="Edit Admin"
+                            >
+                              <FiEdit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(admin.id)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete Admin"
+                            >
+                              <FiTrash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden">
+                {admins.map((admin, index) => (
+                  <div key={admin.id} className="p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        {admin.image ? (
+                          <img
+                            src={admin.image}
+                            alt={admin.name}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                            {admin.name?.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-sm font-medium text-gray-900">
+                            {admin.name}
+                          </h3>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${admin.status === true
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                            }`}>
+                            {admin.status === true ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center gap-4 flex-wrap">
+                          <div className="flex items-center gap-1 text-xs text-gray-600">
+                            <FiMail className="w-3 h-3 text-gray-400" />
+                            {admin.email}
+                          </div>
+                          {admin.phone && (
+                            <div className="flex items-center gap-1 text-xs text-gray-600">
+                              <FiPhone className="w-3 h-3 text-gray-400" />
+                              {admin.phone}
                             </div>
                           )}
-                          <span className="text-sm font-medium text-gray-900">{admin.name}</span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <FiMail className="w-4 h-4 text-gray-400" />
-                          {admin.email}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <FiPhone className="w-4 h-4 text-gray-400" />
-                          {admin.phone || '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
-                          <FiShield className="w-3 h-3 mr-1" />
-                          {admin.roleName}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${admin.status === true
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                          }`}>
-                          {admin.status === true ? (
-                            <FiCheckCircle className="w-3 h-3 mr-1" />
-                          ) : (
-                            <FiXCircle className="w-3 h-3 mr-1" />
-                          )}
-                          {admin.status === true ? 'Active' : 'Inactive'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => openModal('update', admin)}
-                            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                            title="Edit Admin"
-                          >
-                            <FiEdit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(admin.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete Admin"
-                          >
-                            <FiTrash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
+                        <FiShield className="w-3 h-3 mr-1" />
+                        {admin.roleName}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => openModal('update', admin)}
+                        className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                      >
+                        <FiEdit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(admin.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <FiTrash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -475,10 +546,10 @@ const AdminUserPage = () => {
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={closeModal}></div>
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full">
+            <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
               {/* Modal Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-                <h3 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 md:px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                <h3 className="text-lg md:text-xl font-semibold text-gray-900 flex items-center gap-2">
                   <FiUser className="w-5 h-5 text-indigo-600" />
                   {modalType === 'create' ? 'Create New Admin' : 'Edit Admin'}
                 </h3>
@@ -491,7 +562,7 @@ const AdminUserPage = () => {
               </div>
 
               {/* Modal Body */}
-              <form onSubmit={handleSubmit} className="p-6">
+              <form onSubmit={handleSubmit} className="p-4 md:p-6">
                 <div className="space-y-4">
                   {/* Profile Image Upload */}
                   <div>
@@ -505,7 +576,7 @@ const AdminUserPage = () => {
                             <img
                               src={imagePreview}
                               alt="Profile preview"
-                              className="w-20 h-20 rounded-full object-cover border-2 border-indigo-500"
+                              className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-indigo-500"
                             />
                             <button
                               type="button"
@@ -516,8 +587,8 @@ const AdminUserPage = () => {
                             </button>
                           </div>
                         ) : (
-                          <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-2xl">
-                            {name ? name.charAt(0).toUpperCase() : <FiUser className="w-8 h-8" />}
+                          <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold text-xl md:text-2xl">
+                            {name ? name.charAt(0).toUpperCase() : <FiUser className="w-6 h-6 md:w-8 md:h-8" />}
                           </div>
                         )}
                       </div>
@@ -555,7 +626,7 @@ const AdminUserPage = () => {
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                         placeholder="Enter full name"
                         required
                       />
@@ -573,7 +644,7 @@ const AdminUserPage = () => {
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                         placeholder="admin@example.com"
                         required
                       />
@@ -593,7 +664,7 @@ const AdminUserPage = () => {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                             placeholder="Minimum 6 characters"
                             required
                           />
@@ -610,7 +681,7 @@ const AdminUserPage = () => {
                             type="password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                             placeholder="Re-enter password"
                             required
                           />
@@ -630,7 +701,7 @@ const AdminUserPage = () => {
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                         placeholder="10-digit mobile number"
                       />
                     </div>
@@ -649,7 +720,7 @@ const AdminUserPage = () => {
                       <select
                         value={roleId}
                         onChange={handleRoleSelect}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none bg-white"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent appearance-none bg-white text-sm"
                         required
                       >
                         <option value="">Select a role</option>
@@ -670,7 +741,7 @@ const AdminUserPage = () => {
                     <button
                       type="button"
                       onClick={() => setStatus(!status)}
-                      className={`w-full py-2.5 rounded-xl font-medium transition-all ${status
+                      className={`w-full py-2.5 rounded-xl font-medium transition-all text-sm ${status
                         ? 'bg-green-500 text-white hover:bg-green-600'
                         : 'bg-gray-400 text-white hover:bg-gray-500'
                         }`}
@@ -681,18 +752,18 @@ const AdminUserPage = () => {
                 </div>
 
                 {/* Modal Footer */}
-                <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
                   <button
                     type="button"
                     onClick={closeModal}
-                    className="px-5 py-2.5 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors font-medium"
+                    className="px-5 py-2.5 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors font-medium w-full sm:w-auto order-2 sm:order-1"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-5 py-2.5 text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-200"
+                    className="px-5 py-2.5 text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-200 w-full sm:w-auto order-1 sm:order-2"
                   >
                     {submitting ? (
                       <>

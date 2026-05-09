@@ -593,15 +593,15 @@ const AddCourse = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-8 px-4">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-4 sm:py-8 px-3 sm:px-4 min-h-screen">
       <div className="max-w-6xl mx-auto">
         {/* Header with Reset Button */}
-        <div className="mb-8 flex justify-between items-center">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
               Create New Course
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Fill in the details to create a new course
             </p>
           </div>
@@ -611,7 +611,7 @@ const AddCourse = () => {
             className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
             title="Reset form"
           >
-            <RefreshCw className="w-5 h-5" />
+            <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
@@ -644,14 +644,15 @@ const AddCourse = () => {
                 key={tab.id}
                 type="button"
                 onClick={(e) => handleTabChange(tab.id, e)}
-                className={`flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative whitespace-nowrap ${activeTab === tab.id
+                className={`flex-1 px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all relative whitespace-nowrap ${activeTab === tab.id
                   ? "text-indigo-600"
                   : "text-gray-500 hover:text-gray-700"
                   }`}
               >
                 <div className="flex items-center justify-center gap-1 sm:gap-2">
                   <tab.icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden xs:inline">{tab.label}</span>
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden text-xs">{tab.label.split(' ')[0]}</span>
                 </div>
                 {activeTab === tab.id && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600"></div>
@@ -677,7 +678,7 @@ const AddCourse = () => {
                   {validationErrors.coursetype && (
                     <p className="text-xs text-red-500 mt-1">{validationErrors.coursetype}</p>
                   )}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3">
                     {courseTypes.map((type) => {
                       const Icon = type.icon;
                       return (
@@ -711,7 +712,7 @@ const AddCourse = () => {
                 </div>
 
                 {/* Stream Selection */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <Globe className="w-4 h-4 text-indigo-600" />
@@ -843,7 +844,7 @@ const AddCourse = () => {
                     <CheckCircle className="w-4 h-4 text-indigo-600" />
                     Course Features
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3">
                     {features.map((feature) => {
                       const isSelected = currentFeatures.includes(feature.id);
 
@@ -1144,7 +1145,7 @@ const AddCourse = () => {
             {activeTab === "pricing" && (
               <div className="space-y-6 animate-fadeIn">
                 {/* Prices */}
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className="grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <DollarSign className="w-4 h-4 text-indigo-600" />
@@ -1221,7 +1222,7 @@ const AddCourse = () => {
                 </div>
 
                 {/* Duration */}
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className="grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <Clock className="w-4 h-4 text-indigo-600" />
@@ -1256,7 +1257,7 @@ const AddCourse = () => {
                 </div>
 
                 {/* Upgrade Options */}
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className="grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <Clock className="w-4 h-4 text-indigo-600" />
@@ -1308,7 +1309,7 @@ const AddCourse = () => {
                   {validationErrors.courseimage && (
                     <p className="text-xs text-red-500 mt-1">{validationErrors.courseimage}</p>
                   )}
-                  <div className={`border-2 border-dashed rounded-xl p-4 sm:p-6 text-center transition-colors ${validationErrors.courseimage
+                  <div className={`border-2 border-dashed rounded-xl p-3 sm:p-6 text-center transition-colors ${validationErrors.courseimage
                     ? "border-red-500 bg-red-50"
                     : "border-gray-300 hover:border-indigo-500"
                     }`}>
@@ -1317,20 +1318,20 @@ const AddCourse = () => {
                         <img
                           src={filePreview.courseimage}
                           alt="Preview"
-                          className="max-h-48 mx-auto rounded-lg"
+                          className="max-h-32 sm:max-h-48 mx-auto rounded-lg"
                         />
                         <button
                           type="button"
                           onClick={() => removeFile("courseimage")}
-                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          className="absolute top-2 right-2 p-1 sm:p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                       </div>
                     ) : (
                       <label className="cursor-pointer block">
-                        <Upload className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3" />
-                        <p className="text-sm sm:text-base text-gray-600 mb-1">
+                        <Upload className="w-8 h-8 sm:w-10 sm:h-12 text-gray-400 mx-auto mb-2 sm:mb-3" />
+                        <p className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">
                           Click to upload course image
                         </p>
                         <p className="text-xs text-gray-400">
@@ -1350,7 +1351,7 @@ const AddCourse = () => {
                 </div>
 
                 {/* PDF Uploads */}
-                <div className="grid sm:grid-cols-2 gap-6">
+                <div className="grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   {[
                     {
                       name: "timetable",

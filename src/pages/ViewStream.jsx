@@ -151,7 +151,7 @@ const ViewStream = () => {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setEditLoading(true);
-    
+
     try {
       const formData = new FormData();
       formData.append("name", editFormData.name);
@@ -164,10 +164,10 @@ const ViewStream = () => {
         formData.append("image", editFormData.image);
       }
 
-     
-       const response = await handleUpdateStream(selectedStream.id, formData);
-      
-      
+
+      const response = await handleUpdateStream(selectedStream.id, formData);
+
+
       setShowEditModal(false);
       setSelectedStream(null);
       refreshData();
@@ -338,103 +338,106 @@ const ViewStream = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="mb-4 sm:mb-6">
+          <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <FolderTree className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <FolderTree className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">
+                <h1 className="text-xl sm:text-3xl font-bold text-gray-800">
                   Stream Management
                 </h1>
-                <p className="text-sm text-gray-500">
+                <p className="text-xs sm:text-sm text-gray-500">
                   Manage and organize your learning streams
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <button
                 onClick={exportToCSV}
-                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2"
+                className="px-3 sm:px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center justify-center gap-2 text-sm"
               >
                 <Download className="w-4 h-4" />
-                Export CSV
+                <span className="hidden sm:inline">Export CSV</span>
+                <span className="sm:hidden">Export</span>
               </button>
               <button
                 onClick={refreshData}
-                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2"
+                className="px-3 sm:px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all shadow-sm flex items-center justify-center gap-2 text-sm"
               >
                 <RefreshCw className="w-4 h-4" />
-                Refresh
+                <span className="hidden sm:inline">Refresh</span>
+                <span className="sm:hidden">↻</span>
               </button>
               <button
                 onClick={() => (window.location.href = "/steam/add")}
-                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+                className="px-3 sm:px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
               >
                 <Plus className="w-4 h-4" />
-                Add New Stream
+                <span className="hidden sm:inline">Add New Stream</span>
+                <span className="sm:hidden">Add Stream</span>
               </button>
             </div>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <FolderTree className="w-5 h-5 text-indigo-600" />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <FolderTree className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Streams</p>
-                <p className="text-2xl font-bold text-gray-800">
+                <p className="text-xs sm:text-sm text-gray-500">Total Streams</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-800">
                   {totalStreams}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-green-600" />
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Active</p>
-                <p className="text-2xl font-bold text-gray-800">
+                <p className="text-xs sm:text-sm text-gray-500">Active</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-800">
                   {activeStreams}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-purple-600" />
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Total Courses</p>
-                <p className="text-2xl font-bold text-gray-800">
+                <p className="text-xs sm:text-sm text-gray-500">Total Courses</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-800">
                   {totalCourses}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-orange-600" />
+          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-500">Students</p>
-                <p className="text-2xl font-bold text-gray-800">
+                <p className="text-xs sm:text-sm text-gray-500">Students</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-800">
                   {totalStudents.toLocaleString()}
                 </p>
               </div>
@@ -443,26 +446,26 @@ const ViewStream = () => {
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 mb-4 sm:mb-6">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search streams by name, description or ID..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
+                className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 text-sm sm:text-base border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 transition-all"
               />
             </div>
 
             {/* Filter */}
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -472,7 +475,7 @@ const ViewStream = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -484,17 +487,19 @@ const ViewStream = () => {
 
         {/* Bulk Actions */}
         {selectedRows.length > 0 && (
-          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6 flex items-center justify-between">
-            <span className="text-indigo-700">
-              <strong>{selectedRows.length}</strong> streams selected
-            </span>
-            <button
-              onClick={handleBulkDelete}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete Selected
-            </button>
+          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <span className="text-indigo-700 text-sm">
+                <strong>{selectedRows.length}</strong> streams selected
+              </span>
+              <button
+                onClick={handleBulkDelete}
+                className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2 text-sm"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Selected
+              </button>
+            </div>
           </div>
         )}
 
@@ -506,184 +511,333 @@ const ViewStream = () => {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left">
-                        <input
-                          type="checkbox"
-                          checked={selectAll}
-                          onChange={handleSelectAll}
-                          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                        />
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Stream
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        SuperStream
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Description
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Created
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {currentStreams.length > 0 ? (
-                      currentStreams.map((stream) => (
-                        <tr
-                          key={stream.id}
-                          className="hover:bg-gray-50 transition-colors"
-                        >
-                          <td className="px-4 py-3">
-                            <input
-                              type="checkbox"
-                              checked={selectedRows.includes(stream.id)}
-                              onChange={() => handleSelectRow(stream.id)}
-                              className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                            />
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
-                                {stream.image ? (
-                                  <img
-                                    src={stream.image}
-                                    alt={stream.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-indigo-200 to-purple-200 flex items-center justify-center">
-                                    <span className="text-xs font-semibold text-indigo-600">
-                                      {stream.name.charAt(0).toUpperCase()}
-                                    </span>
-                                  </div>
-                                )}
+              {/* Desktop Table View */}
+              <div className="hidden sm:block">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3 text-left">
+                          <input
+                            type="checkbox"
+                            checked={selectAll}
+                            onChange={handleSelectAll}
+                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Stream
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          SuperStream
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Description
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Created
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {currentStreams.length > 0 ? (
+                        currentStreams.map((stream) => (
+                          <tr
+                            key={stream.id}
+                            className="hover:bg-gray-50 transition-colors"
+                          >
+                            <td className="px-4 py-3">
+                              <input
+                                type="checkbox"
+                                checked={selectedRows.includes(stream.id)}
+                                onChange={() => handleSelectRow(stream.id)}
+                                className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden">
+                                  {stream.image ? (
+                                    <img
+                                      src={stream.image}
+                                      alt={stream.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-gradient-to-br from-indigo-200 to-purple-200 flex items-center justify-center">
+                                      <span className="text-xs font-semibold text-indigo-600">
+                                        {stream.name.charAt(0).toUpperCase()}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                <div>
+                                  <div className="font-medium text-gray-900">{stream.name}</div>
+
+                                </div>
                               </div>
-                              <div>
-                                <div className="font-medium text-gray-900">{stream.name}</div>
-                                
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="text-sm text-gray-900">
+                                {stream.superstream?.name || 'N/A'}
                               </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="text-sm text-gray-900">
-                              {stream.superstream?.name || 'N/A'}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="text-sm text-gray-900 max-w-xs truncate">
-                              {stream.description || 'No description'}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${stream.status === 'active'
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="text-sm text-gray-900 max-w-xs truncate">
+                                {stream.description || 'No description'}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${stream.status === 'active'
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-gray-100 text-gray-800'
-                              }`}>
-                              {stream.status || 'inactive'}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="text-sm text-gray-900">
-                              {new Date(stream.createdAt).toLocaleDateString()}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => handleView(stream)}
-                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                title="View"
-                              >
-                                <BookOpen className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleEdit(stream)}
-                                className="p-1 text-green-600 hover:bg-green-50 rounded"
-                                title="Edit"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedStream(stream);
-                                  setShowDeleteModal(true);
-                                }}
-                                className="p-1 text-red-600 hover:bg-red-50 rounded"
-                                title="Delete"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
+                                }`}>
+                                {stream.status || 'inactive'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="text-sm text-gray-900">
+                                {new Date(stream.createdAt).toLocaleDateString()}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => handleView(stream)}
+                                  className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                  title="View"
+                                >
+                                  <BookOpen className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleEdit(stream)}
+                                  className="p-1 text-green-600 hover:bg-green-50 rounded"
+                                  title="Edit"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedStream(stream);
+                                    setShowDeleteModal(true);
+                                  }}
+                                  className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan="7"
+                            className="px-4 py-8 text-center text-gray-500"
+                          >
+                            {searchTerm
+                              ? "No streams match your search"
+                              : "No streams found"}
                           </td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td
-                          colSpan="7"
-                          className="px-4 py-8 text-center text-gray-500"
-                        >
-                          {searchTerm
-                            ? "No streams match your search"
-                            : "No streams found"}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="sm:hidden">
+                {currentStreams.length > 0 ? (
+                  <div className="divide-y divide-gray-200">
+                    {currentStreams.map((stream) => (
+                      <div key={stream.id} className="p-4 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.includes(stream.id)}
+                            onChange={() => handleSelectRow(stream.id)}
+                            className="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {stream.image ? (
+                              <img
+                                src={stream.image}
+                                alt={stream.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-indigo-200 to-purple-200 flex items-center justify-center">
+                                <span className="text-sm font-semibold text-indigo-600">
+                                  {stream.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 truncate">{stream.name}</h3>
+                            
+                            <div className="mt-2">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${stream.status === 'active'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                {stream.status || 'inactive'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleView(stream)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="View"
+                            >
+                              <BookOpen className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(stream)}
+                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                              title="Edit"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedStream(stream);
+                                setShowDeleteModal(true);
+                              }}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between text-sm">
+                          <div>
+                            <span className="text-gray-500">SuperStream:</span>
+                            <p className="text-gray-900 truncate">{stream.superstream?.name || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Created:</span>
+                            <p className="text-gray-900">{new Date(stream.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+
+                        {stream.description && (
+                          <div>
+                            <span className="text-gray-500 text-sm">Description:</span>
+                            <p className="text-gray-900 text-sm mt-1 line-clamp-2">{stream.description}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    {searchTerm
+                      ? "No streams match your search"
+                      : "No streams found"}
+                  </div>
+                )}
               </div>
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-                  <div className="text-sm text-gray-600">
-                    Showing {indexOfFirstItem + 1} to{" "}
-                    {Math.min(indexOfLastItem, sortedStreams.length)} of{" "}
-                    {sortedStreams.length} streams
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-
-                    {[...Array(totalPages)].map((_, i) => (
+                <div className="px-3 sm:px-4 py-3 bg-gray-50 border-t border-gray-200">
+                  {/* Mobile View - Stacked Layout */}
+                  <div className="sm:hidden space-y-3">
+                    <div className="text-center text-sm text-gray-600">
+                      Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, sortedStreams.length)} of {sortedStreams.length} streams
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
                       <button
-                        key={i + 1}
-                        onClick={() => setCurrentPage(i + 1)}
-                        className={`w-8 h-8 rounded-lg transition-colors ${currentPage === i + 1
-                          ? "bg-indigo-600 text-white"
-                          : "hover:bg-gray-100 text-gray-600"
-                          }`}
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {i + 1}
+                        Previous
                       </button>
-                    ))}
+                      <span className="text-sm text-gray-600 px-2">
+                        {currentPage} / {totalPages}
+                      </span>
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Next
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-center gap-1 flex-wrap">
+                      {[...Array(Math.min(totalPages, 5))].map((_, i) => {
+                        const pageNum = i + 1;
+                        return (
+                          <button
+                            key={pageNum}
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={`w-8 h-8 text-xs rounded-lg transition-colors ${currentPage === pageNum
+                              ? "bg-indigo-600 text-white"
+                              : "hover:bg-gray-100 text-gray-600"
+                              }`}
+                          >
+                            {pageNum}
+                          </button>
+                        );
+                      })}
+                      {totalPages > 5 && (
+                        <span className="text-gray-500 text-xs px-1">...</span>
+                      )}
+                    </div>
+                  </div>
 
-                    <button
-                      onClick={() =>
-                        setCurrentPage((p) => Math.min(totalPages, p + 1))
-                      }
-                      disabled={currentPage === totalPages}
-                      className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
+                  {/* Desktop View - Horizontal Layout */}
+                  <div className="hidden sm:flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      Showing {indexOfFirstItem + 1} to{" "}
+                      {Math.min(indexOfLastItem, sortedStreams.length)} of{" "}
+                      {sortedStreams.length} streams
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+
+                      {[...Array(totalPages)].map((_, i) => (
+                        <button
+                          key={i + 1}
+                          onClick={() => setCurrentPage(i + 1)}
+                          className={`w-8 h-8 rounded-lg transition-colors ${currentPage === i + 1
+                            ? "bg-indigo-600 text-white"
+                            : "hover:bg-gray-100 text-gray-600"
+                            }`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -695,17 +849,17 @@ const ViewStream = () => {
         {showEditModal && selectedStream && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-800">Edit Stream</h2>
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800">Edit Stream</h2>
                 <button
                   onClick={() => setShowEditModal(false)}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                 </button>
               </div>
 
-              <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+              <form onSubmit={handleEditSubmit} className="p-4 sm:p-6 space-y-4">
                 {/* Stream Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -717,7 +871,7 @@ const ViewStream = () => {
                     value={editFormData.name}
                     onChange={handleEditInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                     placeholder="Enter stream name"
                   />
                 </div>
@@ -732,7 +886,7 @@ const ViewStream = () => {
                     value={editFormData.description}
                     onChange={handleEditInputChange}
                     rows="3"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                     placeholder="Enter stream description"
                   />
                 </div>
@@ -747,7 +901,7 @@ const ViewStream = () => {
                     value={editFormData.status}
                     onChange={handleEditInputChange}
                     required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                    className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                   >
                     <option value="active">Active</option>
                     <option value="inactive">Inactive</option>
@@ -760,9 +914,9 @@ const ViewStream = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Stream Image
                   </label>
-                  <div className="mt-1 flex items-center gap-4">
+                  <div className="mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                     {editFormData.imagePreview && (
-                      <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0">
                         <img
                           src={editFormData.imagePreview}
                           alt="Preview"
@@ -770,8 +924,8 @@ const ViewStream = () => {
                         />
                       </div>
                     )}
-                    <label className="cursor-pointer bg-white px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                      <span className="text-sm text-gray-600">Choose Image</span>
+                    <label className="cursor-pointer bg-white px-3 sm:px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm">
+                      <span className="text-gray-600">Choose Image</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -786,18 +940,18 @@ const ViewStream = () => {
                 </div>
 
                 {/* Form Actions */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4">
                   <button
                     type="button"
                     onClick={() => setShowEditModal(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors order-2 sm:order-1"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={editLoading}
-                    className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
                   >
                     {editLoading ? (
                       <div className="flex items-center justify-center gap-2">
@@ -818,19 +972,19 @@ const ViewStream = () => {
         {showViewModal && selectedStream && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h2 className="text-xl font-bold text-gray-800">Stream Details</h2>
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800">Stream Details</h2>
                 <button
                   onClick={() => setShowViewModal(false)}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                 </button>
               </div>
 
-              <div className="p-6 space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-24 h-24 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100">
+              <div className="p-4 sm:p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                  <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100 flex-shrink-0">
                     {selectedStream.image ? (
                       <img
                         src={selectedStream.image}
@@ -839,27 +993,27 @@ const ViewStream = () => {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <FolderTree className="w-10 h-10 text-indigo-400" />
+                        <FolderTree className="w-6 h-6 sm:w-10 sm:h-10 text-indigo-400" />
                       </div>
                     )}
                   </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-800">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg sm:text-2xl font-bold text-gray-800 truncate">
                       {selectedStream.name}
                     </h3>
-                    <p className="text-sm text-gray-500">ID: {selectedStream.id}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">ID: {selectedStream.id}</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-medium text-gray-500 uppercase">
                       Status
                     </label>
                     <p className="mt-1">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${selectedStream.status === 'active'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800'
                         }`}>
                         {selectedStream.status || 'inactive'}
                       </span>
@@ -875,7 +1029,7 @@ const ViewStream = () => {
                     </p>
                   </div>
 
-                  <div className="col-span-2">
+                  <div className="col-span-1 sm:col-span-2">
                     <label className="text-xs font-medium text-gray-500 uppercase">
                       Description
                     </label>
@@ -885,7 +1039,7 @@ const ViewStream = () => {
                   </div>
 
                   {selectedStream.superstream && (
-                    <div className="col-span-2">
+                    <div className="col-span-1 sm:col-span-2">
                       <label className="text-xs font-medium text-gray-500 uppercase">
                         SuperStream
                       </label>
@@ -897,20 +1051,20 @@ const ViewStream = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 p-4 sm:p-6 border-t border-gray-200">
                 <button
                   onClick={() => {
                     setShowViewModal(false);
                     handleEdit(selectedStream);
                   }}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                  className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 text-sm order-2 sm:order-1"
                 >
                   <Edit className="w-4 h-4" />
                   Edit Stream
                 </button>
                 <button
                   onClick={() => setShowViewModal(false)}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors order-1 sm:order-2"
                 >
                   Close
                 </button>

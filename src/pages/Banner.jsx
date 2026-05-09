@@ -433,21 +433,21 @@ const Banner = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-3 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
             Banner & News Management
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             Create and manage banners and news items
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-          <div className="flex p-1">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row p-1 gap-1">
             <button
               onClick={() => {
                 setActiveTab("create");
@@ -455,13 +455,14 @@ const Banner = () => {
                 setCurrentPage(1);
                 setSearchTerm("");
               }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === "create"
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${activeTab === "create"
                 ? "bg-indigo-600 text-white shadow-md"
                 : "text-gray-600 hover:bg-gray-100"
                 }`}
             >
               <Plus className="w-4 h-4" />
-              Create Banner/News
+              <span className="hidden sm:inline">Create Banner/News</span>
+              <span className="sm:hidden">Create</span>
             </button>
             <button
               onClick={() => {
@@ -470,13 +471,14 @@ const Banner = () => {
                 setCurrentPage(1);
                 setSearchTerm("");
               }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === "banners"
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${activeTab === "banners"
                 ? "bg-indigo-600 text-white shadow-md"
                 : "text-gray-600 hover:bg-gray-100"
                 }`}
             >
               <Image className="w-4 h-4" />
-              Banner List ({banners.length})
+              <span className="hidden sm:inline">Banners ({banners.length})</span>
+              <span className="sm:hidden">Banners</span>
             </button>
             <button
               onClick={() => {
@@ -485,13 +487,14 @@ const Banner = () => {
                 setCurrentPage(1);
                 setSearchTerm("");
               }}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === "news"
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${activeTab === "news"
                 ? "bg-indigo-600 text-white shadow-md"
                 : "text-gray-600 hover:bg-gray-100"
                 }`}
             >
               <Newspaper className="w-4 h-4" />
-              News List ({news.length})
+              <span className="hidden sm:inline">News ({news.length})</span>
+              <span className="sm:hidden">News</span>
             </button>
           </div>
         </div>
@@ -499,25 +502,25 @@ const Banner = () => {
         {/* Create Form */}
         {activeTab === "create" && (
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="p-6 bg-gradient-to-r from-indigo-600 to-purple-600">
-              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <div className="p-4 sm:p-6 bg-gradient-to-r from-indigo-600 to-purple-600">
+              <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
                 <Plus className="w-5 h-5" />
                 Create New Banner or News
               </h2>
-              <p className="text-indigo-100 text-sm mt-1">
+              <p className="text-indigo-100 text-xs sm:text-sm mt-1">
                 Fill in the details to create a new banner or news item
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Type Selection */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-indigo-600" />
                   Type <span className="text-red-500">*</span>
                 </label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="type"
@@ -526,9 +529,9 @@ const Banner = () => {
                       onChange={handleChange}
                       className="w-4 h-4 text-indigo-600"
                     />
-                    <span className="text-gray-700">Banner</span>
+                    <span className="text-gray-700 text-sm">Banner</span>
                   </label>
-                  <label className="flex items-center gap-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="type"
@@ -537,14 +540,14 @@ const Banner = () => {
                       onChange={handleChange}
                       className="w-4 h-4 text-indigo-600"
                     />
-                    <span className="text-gray-700">News</span>
+                    <span className="text-gray-700 text-sm">News</span>
                   </label>
                 </div>
               </div>
 
               {/* Title */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <FileText className="w-4 h-4 text-indigo-600" />
                   Title <span className="text-red-500">*</span>
                 </label>
@@ -558,14 +561,14 @@ const Banner = () => {
                       ? "e.g., Summer Sale Banner"
                       : "e.g., New Course Announcement"
                   }
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                  className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all text-sm"
                   required
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <AlignLeft className="w-4 h-4 text-indigo-600" />
                   Description <span className="text-red-500">*</span>
                 </label>
@@ -575,21 +578,21 @@ const Banner = () => {
                   onChange={handleChange}
                   rows="4"
                   placeholder="Enter description..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all resize-none"
+                  className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all resize-none text-sm"
                   required
                 />
               </div>
 
               {/* Course Selection */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <Hash className="w-4 h-4 text-indigo-600" />
                   Associated Course
                 </label>
                 <select
                   value={formData.courseId}
                   onChange={handleCourseSelect}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                  className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all text-sm"
                 >
                   <option value="">Select a course (Optional)</option>
                   {loadingCourses ? (
@@ -606,7 +609,7 @@ const Banner = () => {
 
               {/* Course URL */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <ExternalLink className="w-4 h-4 text-indigo-600" />
                   Course URL
                 </label>
@@ -616,24 +619,24 @@ const Banner = () => {
                   value={formData.courseUrl}
                   onChange={handleChange}
                   placeholder="https://example.com/course"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                  className="w-full px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all text-sm"
                 />
               </div>
 
               {/* Image Upload */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-indigo-600" />
                   {formData.type === "banner" ? "Banner Image" : "News Image"} <span className="text-red-500">*</span>
                 </label>
 
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-500 transition-colors">
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 sm:p-6 text-center hover:border-indigo-500 transition-colors">
                   {imagePreview ? (
                     <div className="relative inline-block">
                       <img
                         src={imagePreview}
                         alt="Preview"
-                        className="max-h-48 mx-auto rounded-lg"
+                        className="max-h-32 sm:max-h-48 mx-auto rounded-lg"
                       />
                       <button
                         type="button"
@@ -645,10 +648,10 @@ const Banner = () => {
                     </div>
                   ) : (
                     <label className="cursor-pointer block">
-                      <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Upload className="w-8 h-8 text-indigo-600" />
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Upload className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600" />
                       </div>
-                      <p className="text-gray-700 font-medium mb-1">
+                      <p className="text-gray-700 font-medium mb-1 text-sm">
                         Click to upload image
                       </p>
                       <p className="text-xs text-gray-400">
@@ -680,7 +683,7 @@ const Banner = () => {
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                 </label>
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-xs sm:text-sm font-medium text-gray-700">
                   Publish immediately
                 </span>
               </div>
@@ -690,16 +693,16 @@ const Banner = () => {
                 <button
                   type="submit"
                   disabled={submitLoading}
-                  className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   {submitLoading ? (
                     <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       Creating...
                     </>
                   ) : (
                     <>
-                      <Save className="w-5 h-5" />
+                      <Save className="w-4 h-4 sm:w-5 sm:h-5" />
                       Create {formData.type === "banner" ? "Banner" : "News"}
                     </>
                   )}
@@ -712,50 +715,124 @@ const Banner = () => {
         {/* Banner List Tab */}
         {activeTab === "banners" && (
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="p-6 bg-gradient-to-r from-indigo-600 to-purple-600">
-              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <div className="p-4 sm:p-6 bg-gradient-to-r from-indigo-600 to-purple-600">
+              <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
                 <Image className="w-5 h-5" />
                 Banners List
               </h2>
-              <p className="text-indigo-100 text-sm mt-1">
+              <p className="text-indigo-100 text-xs sm:text-sm mt-1">
                 Total banners: {banners.length}
               </p>
             </div>
 
-            <div className="p-6 border-b border-gray-100">
-              <div className="flex gap-4">
+            <div className="p-4 sm:p-6 border-b border-gray-100">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search banners..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                    className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 text-sm"
                   />
                 </div>
                 <button
                   onClick={() => {/* Placeholder for refresh */ }}
-                  className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2"
+                  className="px-3 sm:px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 text-sm"
                 >
                   <RefreshCw className={`w-4 h-4 ${bannersLoading ? "animate-spin" : ""}`} />
-                  Refresh
+                  <span className="hidden sm:inline">Refresh</span>
                 </button>
               </div>
             </div>
 
             {bannersLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+              <div className="flex justify-center items-center h-48 sm:h-64">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
               </div>
             ) : filteredBanners.length === 0 ? (
-              <div className="text-center py-12">
-                <Image className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No banners found</p>
+              <div className="text-center py-8 sm:py-12">
+                <Image className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-sm sm:text-base">No banners found</p>
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
+                {/* Mobile Card View */}
+                <div className="sm:hidden p-4 space-y-4">
+                  {filteredBanners.map((banner) => (
+                    <div key={banner.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-start gap-3">
+                        {banner.image && (
+                          <img
+                            src={banner.image}
+                            alt={banner.title}
+                            className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-800 text-sm truncate">{banner.title}</h3>
+                          {banner.description && (
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{banner.description}</p>
+                          )}
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className="text-xs text-gray-600">
+                              {getCourseDisplay(banner.courseId, banner.courseName)}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              {publishingId === banner.id ? (
+                                <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">
+                                  <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                                  Updating...
+                                </span>
+                              ) : banner.status ? (
+                                <button
+                                  onClick={() => handlePublishToggle(banner)}
+                                  className="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs hover:bg-green-200 transition-colors"
+                                >
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Published
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handlePublishToggle(banner)}
+                                  className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs hover:bg-gray-200 transition-colors"
+                                >
+                                  <XCircle className="w-3 h-3 mr-1" />
+                                  Draft
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-3 flex items-center justify-between">
+                            <span className="text-xs text-gray-500">
+                              {banner.createdAt ? new Date(banner.createdAt).toLocaleDateString() : "N/A"}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleEdit(banner)}
+                                className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
+                                title="Edit"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClick(banner)}
+                                className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50">
                       <tr>
@@ -841,28 +918,30 @@ const Banner = () => {
 
                 {/* Pagination */}
                 {bannerTotalPages > 1 && (
-                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
-                      Showing {bannerIndexFirst + 1} to {Math.min(bannerIndexLast, filteredBanners.length)} of {filteredBanners.length} banners
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <span className="px-3 py-2 text-sm text-gray-600">
-                        Page {currentPage} of {bannerTotalPages}
-                      </span>
-                      <button
-                        onClick={() => setCurrentPage((p) => Math.min(bannerTotalPages, p + 1))}
-                        disabled={currentPage === bannerTotalPages}
-                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
+                  <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <div className="text-xs sm:text-sm text-gray-600">
+                        Showing {bannerIndexFirst + 1} to {Math.min(bannerIndexLast, filteredBanners.length)} of {filteredBanners.length} banners
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          disabled={currentPage === 1}
+                          className="p-1.5 sm:p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <span className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600">
+                          Page {currentPage} of {bannerTotalPages}
+                        </span>
+                        <button
+                          onClick={() => setCurrentPage((p) => Math.min(bannerTotalPages, p + 1))}
+                          disabled={currentPage === bannerTotalPages}
+                          className="p-1.5 sm:p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -874,50 +953,124 @@ const Banner = () => {
         {/* News List Tab */}
         {activeTab === "news" && (
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="p-6 bg-gradient-to-r from-indigo-600 to-purple-600">
-              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <div className="p-4 sm:p-6 bg-gradient-to-r from-indigo-600 to-purple-600">
+              <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center gap-2">
                 <Newspaper className="w-5 h-5" />
                 News List
               </h2>
-              <p className="text-indigo-100 text-sm mt-1">
+              <p className="text-indigo-100 text-xs sm:text-sm mt-1">
                 Total news: {news.length}
               </p>
             </div>
 
-            <div className="p-6 border-b border-gray-100">
-              <div className="flex gap-4">
+            <div className="p-4 sm:p-6 border-b border-gray-100">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search news..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+                    className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 text-sm"
                   />
                 </div>
                 <button
                   onClick={fetchNews}
-                  className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2"
+                  className="px-3 sm:px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 text-sm"
                 >
                   <RefreshCw className={`w-4 h-4 ${loadingNews ? "animate-spin" : ""}`} />
-                  Refresh
+                  <span className="hidden sm:inline">Refresh</span>
                 </button>
               </div>
             </div>
 
             {loadingNews ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+              <div className="flex justify-center items-center h-48 sm:h-64">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
               </div>
             ) : currentNews.length === 0 ? (
-              <div className="text-center py-12">
-                <Newspaper className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No news found</p>
+              <div className="text-center py-8 sm:py-12">
+                <Newspaper className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-sm sm:text-base">No news found</p>
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
+                {/* Mobile Card View */}
+                <div className="sm:hidden p-4 space-y-4">
+                  {currentNews.map((item) => (
+                    <div key={item.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                      <div className="flex items-start gap-3">
+                        {item.image && (
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-800 text-sm truncate">{item.title}</h3>
+                          {item.description && (
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
+                          )}
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className="text-xs text-gray-600">
+                              {getCourseDisplay(item.courseId, item.courseName)}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              {publishingId === item.id ? (
+                                <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">
+                                  <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                                  Updating...
+                                </span>
+                              ) : item.status ? (
+                                <button
+                                  onClick={() => handlePublishToggle(item)}
+                                  className="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs hover:bg-green-200 transition-colors"
+                                >
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Published
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handlePublishToggle(item)}
+                                  className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs hover:bg-gray-200 transition-colors"
+                                >
+                                  <XCircle className="w-3 h-3 mr-1" />
+                                  Draft
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-3 flex items-center justify-between">
+                            <span className="text-xs text-gray-500">
+                              {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "N/A"}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => handleEdit(item)}
+                                className="p-1.5 hover:bg-green-50 rounded-lg text-green-600 transition-colors"
+                                title="Edit"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClick(item)}
+                                className="p-1.5 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50">
                       <tr>
@@ -1006,28 +1159,30 @@ const Banner = () => {
 
                 {/* Pagination */}
                 {newsTotalPages > 1 && (
-                  <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-                    <div className="text-sm text-gray-600">
-                      Showing {newsIndexFirst + 1} to {Math.min(newsIndexLast, filteredNews.length)} of {filteredNews.length} news
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                        disabled={currentPage === 1}
-                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronLeft className="w-4 h-4" />
-                      </button>
-                      <span className="px-3 py-2 text-sm text-gray-600">
-                        Page {currentPage} of {newsTotalPages}
-                      </span>
-                      <button
-                        onClick={() => setCurrentPage((p) => Math.min(newsTotalPages, p + 1))}
-                        disabled={currentPage === newsTotalPages}
-                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
+                  <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <div className="text-xs sm:text-sm text-gray-600">
+                        Showing {newsIndexFirst + 1} to {Math.min(newsIndexLast, filteredNews.length)} of {filteredNews.length} news
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          disabled={currentPage === 1}
+                          className="p-1.5 sm:p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <span className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600">
+                          Page {currentPage} of {newsTotalPages}
+                        </span>
+                        <button
+                          onClick={() => setCurrentPage((p) => Math.min(newsTotalPages, p + 1))}
+                          disabled={currentPage === newsTotalPages}
+                          className="p-1.5 sm:p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1047,26 +1202,9 @@ const Banner = () => {
           isLoading={false}
           confirmText="Delete"
           cancelText="Cancel"
-          size="md"
+          size="sm"
         />
       </div>
-
-      {/* Animation styles */}
-      <style>{`
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-slideDown {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 };

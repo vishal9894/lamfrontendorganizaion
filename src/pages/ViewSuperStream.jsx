@@ -152,24 +152,24 @@ const ViewSuperStream = () => {
   });
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Super Streams</h1>
-        <p className="text-gray-500">Manage your super streams</p>
+    <div className="p-4 sm:p-6">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-1 sm:mb-2">Super Streams</h1>
+        <p className="text-sm sm:text-base text-gray-500">Manage your super streams</p>
       </div>
 
       {/* Search */}
-      <div className="relative mb-6 max-w-md">
+      <div className="relative mb-4 sm:mb-6 w-full sm:max-w-md">
         <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
         <input
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="Search by name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      {/* Table */}
+      {/* Loading State */}
       {superStreamsLoading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -181,138 +181,251 @@ const ViewSuperStream = () => {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Students
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {filteredStreams.map((stream) => (
-                  <tr key={stream.id || stream._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">{getStreamName(stream)}</div>
-                    </td>
-                    <td className="px-6 py-4">
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden sm:block bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Students
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Created
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredStreams.map((stream) => (
+                    <tr key={stream.id || stream._id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-gray-900">{getStreamName(stream)}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${stream.status === "Active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                            }`}
+                        >
+                          {stream.status || "Active"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">{stream.students || 0}</td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {stream.createdAt
+                          ? new Date(stream.createdAt).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <button
+                            className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+                            title="View"
+                            onClick={() => toast.info('View feature coming soon')}
+                          >
+                            <FiEye size={18} />
+                          </button>
+                          <button
+                            className="text-green-600 hover:text-green-800 transition-colors cursor-pointer"
+                            title="Edit"
+                            onClick={() => handleEditClick(stream.id || stream._id, getStreamName(stream))}
+                          >
+                            <FiEdit size={18} />
+                          </button>
+                          <button
+                            className="text-red-600 hover:text-red-800 transition-colors cursor-pointer"
+                            title="Delete"
+                            onClick={() => handleDeleteClick(stream.id || stream._id, getStreamName(stream))}
+                          >
+                            <FiTrash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="sm:hidden space-y-3">
+            {filteredStreams.map((stream) => (
+              <div key={stream.id || stream._id} className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold text-gray-900 truncate">
+                      {getStreamName(stream)}
+                    </h3>
+                    <div className="mt-1">
                       <span
-                        className={`px-2 py-1 text-xs rounded-full ${stream.status === "Active"
+                        className={`inline-block px-2 py-1 text-xs rounded-full ${stream.status === "Active"
                           ? "bg-green-100 text-green-800"
                           : "bg-gray-100 text-gray-800"
                           }`}
                       >
                         {stream.status || "Active"}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{stream.students || 0}</td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {stream.createdAt
-                        ? new Date(stream.createdAt).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <button
-                          className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
-                          title="View"
-                          onClick={() => toast.info('View feature coming soon')}
-                        >
-                          <FiEye size={18} />
-                        </button>
-                        <button
-                          className="text-green-600 hover:text-green-800 transition-colors cursor-pointer"
-                          title="Edit"
-                          onClick={() => handleEditClick(stream.id || stream._id, getStreamName(stream))}
-                        >
-                          <FiEdit size={18} />
-                        </button>
-                        <button
-                          className="text-red-600 hover:text-red-800 transition-colors cursor-pointer"
-                          title="Delete"
-                          onClick={() => handleDeleteClick(stream.id || stream._id, getStreamName(stream))}
-                        >
-                          <FiTrash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 ml-3">
+                    <button
+                      className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      title="View"
+                      onClick={() => toast.info('View feature coming soon')}
+                    >
+                      <FiEye size={16} />
+                    </button>
+                    <button
+                      className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      title="Edit"
+                      onClick={() => handleEditClick(stream.id || stream._id, getStreamName(stream))}
+                    >
+                      <FiEdit size={16} />
+                    </button>
+                    <button
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete"
+                      onClick={() => handleDeleteClick(stream.id || stream._id, getStreamName(stream))}
+                    >
+                      <FiTrash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-2 text-sm">
+                  <div>
+                    <span className="text-gray-500">SuperStream:</span>
+                    <span className="ml-2 text-gray-900 font-medium">{stream.superstream?.name || 'N/A'}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <span className="text-gray-500">Students:</span>
+                      <span className="ml-2 text-gray-900 font-medium">{stream.students || 0}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Created:</span>
+                      <span className="ml-2 text-gray-900">
+                        {stream.createdAt
+                          ? new Date(stream.createdAt).toLocaleDateString()
+                          : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        </>
       )}
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="mt-4 bg-white rounded-lg border border-gray-200 p-4 flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalSuperStreams)} of {totalSuperStreams} streams
+        <div className="mt-4 bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+          {/* Mobile View - Stacked Layout */}
+          <div className="sm:hidden space-y-3">
+            <div className="text-center text-sm text-gray-600">
+              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalSuperStreams)} of {totalSuperStreams} streams
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-600 px-2">
+                {currentPage} / {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === pagination.totalPages}
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              <label className="text-sm text-gray-600">Items:</label>
+              <select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                className="px-2 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 bg-white"
+              >
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <label className="text-sm text-gray-600">Items per page:</label>
-            <select
-              value={pageSize}
-              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 bg-white"
-            >
-              <option value="10">10</option>
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <span className="text-sm text-gray-600">
-              Page {currentPage} of {pagination.totalPages}
-            </span>
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === pagination.totalPages}
-              className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
+
+          {/* Desktop View - Horizontal Layout */}
+          <div className="hidden sm:flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalSuperStreams)} of {totalSuperStreams} streams
+            </div>
+            <div className="flex items-center gap-3">
+              <label className="text-sm text-gray-600">Items per page:</label>
+              <select
+                value={pageSize}
+                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-500 bg-white"
+              >
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-gray-600">
+                Page {currentPage} of {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === pagination.totalPages}
+                className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Edit Modal */}
       {editModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-md w-full mx-4">
-            <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-lg font-semibold text-gray-900">Edit Super Stream</h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center p-4 sm:p-6 border-b">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">Edit Super Stream</h3>
               <button
                 onClick={cancelEdit}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors p-1"
               >
                 <FiX size={20} />
               </button>
             </div>
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Stream Name
               </label>
@@ -320,22 +433,22 @@ const ViewSuperStream = () => {
                 type="text"
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter stream name"
                 autoFocus
               />
             </div>
-            <div className="flex justify-end gap-3 p-6 border-t">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 p-4 sm:p-6 border-t">
               <button
                 onClick={cancelEdit}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors order-2 sm:order-1"
               >
                 Cancel
               </button>
               <button
                 onClick={handleUpdate}
                 disabled={updateSuperStreamMutation.isPending}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
               >
                 {updateSuperStreamMutation.isPending ? "Updating..." : "Update"}
               </button>

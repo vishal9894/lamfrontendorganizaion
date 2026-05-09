@@ -9,7 +9,8 @@ const CourseTable = ({ courses, onCourseSelect, loading }) => {
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-      <div className="overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200">
@@ -86,6 +87,61 @@ const CourseTable = ({ courses, onCourseSelect, loading }) => {
         </table>
       </div>
 
+      {/* Mobile Card View */}
+      <div className="md:hidden">
+        {courses.map((course) => (
+          <div
+            key={course.id}
+            onClick={() => onCourseSelect(course)}
+            className="p-4 border-b border-gray-200 hover:bg-blue-50 transition-all duration-200 cursor-pointer group"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 h-12 w-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                {course.courseImage ? (
+                  <img
+                    src={course.courseImage}
+                    alt={course.title}
+                    className="h-12 w-12 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div>{course.title?.charAt(0) || "C"}</div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition truncate">
+                  {course.title}
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">ID: {course.id}</p>
+              </div>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between">
+              <div>
+                <div className="text-sm font-semibold text-gray-900">
+                  ₹{course.currentPrice?.toLocaleString() || "0"}
+                </div>
+                {course.originalPrice && (
+                  <div className="text-xs text-gray-400 line-through">
+                    ₹{course.originalPrice?.toLocaleString()}
+                  </div>
+                )}
+              </div>
+              <span
+                className={`px-3 py-1 text-xs font-semibold rounded-full shadow-sm transition ${course.status
+                  ? "bg-green-100 text-green-700 ring-1 ring-green-300"
+                  : "bg-red-100 text-red-700 ring-1 ring-red-300"
+                  }`}
+              >
+                {course.status ? "Active" : "Inactive"}
+              </span>
+            </div>
+
+            <button className="mt-3 w-full text-blue-600 hover:text-blue-800 font-medium text-sm transition text-center">
+              View Content →
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

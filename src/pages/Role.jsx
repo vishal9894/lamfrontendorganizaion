@@ -254,41 +254,42 @@ const Role = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-gray-50 via-gray-50 to-indigo-50/30">
+    <div className="bg-gradient-to-br from-gray-50 via-gray-50 to-indigo-50/30 min-h-screen">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-lg shadow-indigo-200">
-                <FiShield className="w-6 h-6 text-white" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="p-2 md:p-3 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl shadow-lg shadow-indigo-200">
+                <FiShield className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
                   Role Management
                 </h1>
-                <p className="text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
-                  <FiShield className="w-4 h-4" />
+                <p className="text-xs md:text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
+                  <FiShield className="w-3 h-3 md:w-4 md:h-4" />
                   Create and manage roles with permissions
                 </p>
               </div>
             </div>
             <button
               onClick={() => setShowCreateRoleModal(true)}
-              className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md shadow-indigo-200 flex items-center gap-2 text-sm font-medium"
+              className="px-3 md:px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md shadow-indigo-200 flex items-center gap-2 text-xs md:text-sm font-medium w-full sm:w-auto justify-center"
             >
               <FiPlus className="w-4 h-4" />
-              Create New Role
+              <span className="hidden sm:inline">Create New Role</span>
+              <span className="sm:hidden">New Role</span>
             </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         {/* Roles Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-lg font-semibold text-gray-900">
+          <div className="px-4 md:px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <h2 className="text-base md:text-lg font-semibold text-gray-900">
               Available Roles
             </h2>
           </div>
@@ -299,92 +300,144 @@ const Role = () => {
             </div>
           ) : roles.length === 0 ? (
             <div className="text-center py-20">
-              <div className="p-4 bg-gray-50 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                <FiShield className="w-8 h-8 text-gray-400" />
+              <div className="p-4 bg-gray-50 rounded-full w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 flex items-center justify-center">
+                <FiShield className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900">
+              <h3 className="text-base md:text-lg font-medium text-gray-900">
                 No roles found
               </h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="text-xs md:text-sm text-gray-500 mt-1">
                 Click "Create New Role" to add your first role
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Role Name
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Description
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Permissions
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Users
-                    </th>
-                    <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {roles.map((role) => (
-                    <tr
-                      key={role.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
+            <>
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Role Name
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Description
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Permissions
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Users
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {roles.map((role) => (
+                      <tr
+                        key={role.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(role.name)} mr-3`}
+                            >
+                              {role.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {role.description || "No description"}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
+                            {role.permissionCount || 0} permissions
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center gap-1 text-sm text-gray-600">
+                            <FiUsers className="w-4 h-4" />
+                            {role.user_count || 0}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleEditRole(role)}
+                              className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                              title="Edit Role"
+                            >
+                              <FiEdit2 className="w-4 h-4" />
+                            </button>
+                            {!role.is_default && (
+                              <button
+                                onClick={() => handleDeleteRole(role.id)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete Role"
+                              >
+                                <FiTrash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="md:hidden">
+                {roles.map((role) => (
+                  <div key={role.id} className="p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(role.name)} mr-3`}
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleColor(role.name)}`}
                           >
                             {role.name}
                           </span>
+                          <p className="text-sm text-gray-600">
+                            {role.description || "No description"}
+                          </p>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {role.description || "No description"}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
-                          {role.permissionCount || 0} permissions
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1 text-sm text-gray-600">
-                          <FiUsers className="w-4 h-4" />
-                          {role.user_count || 0}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleEditRole(role)}
-                            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                            title="Edit Role"
-                          >
-                            <FiEdit2 className="w-4 h-4" />
-                          </button>
-                          {!role.is_default && (
-                            <button
-                              onClick={() => handleDeleteRole(role.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete Role"
-                            >
-                              <FiTrash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="inline-flex items-center px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium">
+                        {role.permissionCount || 0} permissions
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-xs text-gray-600">
+                        <FiUsers className="w-3 h-3" />
+                        {role.user_count || 0} users
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleEditRole(role)}
+                        className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                      >
+                        <FiEdit2 className="w-4 h-4" />
+                      </button>
+                      {!role.is_default && (
+                        <button
+                          onClick={() => handleDeleteRole(role.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <FiTrash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
 
@@ -393,7 +446,7 @@ const Role = () => {
 
       {/* Create/Edit Role Modal */}
       {showCreateRoleModal && (
-        <div className="fixed inset-0 z-50  overflow-y-auto">
+        <div className="fixed inset-0 z-50 overflow-y-auto">
           <div
             className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
             onClick={handleCloseCreateModal}
@@ -401,8 +454,8 @@ const Role = () => {
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="relative bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] scrollbar-thin overflow-y-auto">
               {/* Modal Header */}
-              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 md:px-6 py-4 flex items-center justify-between">
+                <h3 className="text-lg md:text-xl font-semibold text-gray-900">
                   {selectedRole ? "Edit Role" : "Create New Role"}
                 </h3>
                 <button
@@ -414,9 +467,9 @@ const Role = () => {
               </div>
 
               {/* Modal Body */}
-              <div className="p-6">
+              <div className="p-4 md:p-6">
                 {/* Basic Info */}
-                <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-5 mb-6 border border-gray-200">
+                <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 md:p-5 mb-6 border border-gray-200">
                   <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center gap-2">
                     <FiShield className="w-4 h-4 text-indigo-600" />
                     Basic Information
@@ -430,7 +483,7 @@ const Role = () => {
                         type="text"
                         value={newRoleName}
                         onChange={(e) => setNewRoleName(e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                         placeholder="e.g., Content Manager"
                       />
                     </div>
@@ -442,7 +495,7 @@ const Role = () => {
                         type="text"
                         value={newRoleDescription}
                         onChange={(e) => setNewRoleDescription(e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
                         placeholder="Brief description of the role"
                       />
                     </div>
@@ -450,7 +503,7 @@ const Role = () => {
                 </div>
 
                 {/* Permissions Section */}
-                <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-5 border border-gray-200">
+                <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 md:p-5 border border-gray-200">
                   <h4 className="text-md font-medium text-gray-900 mb-4 flex items-center gap-2">
                     <FiShield className="w-4 h-4 text-indigo-600" />
                     Select Permissions
@@ -475,17 +528,17 @@ const Role = () => {
                 </div>
 
                 {/* Modal Footer */}
-                <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
                   <button
                     onClick={handleCloseCreateModal}
-                    className="px-5 py-2.5 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors font-medium"
+                    className="px-5 py-2.5 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors font-medium w-full sm:w-auto order-2 sm:order-1"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleSaveRole}
                     disabled={creating || loadingRolePermissions}
-                    className="px-5 py-2.5 text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-200"
+                    className="px-5 py-2.5 text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all font-medium flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-200 w-full sm:w-auto order-1 sm:order-2"
                   >
                     {creating ? (
                       <>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, CircularProgress, Typography, Skeleton, Backdrop } from '@mui/material';
+import { Box, CircularProgress, Typography, Skeleton, Backdrop, LinearProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 
 // Loading variants for different contexts
@@ -17,16 +17,20 @@ export const LoadingVariants = {
   // Inline loading
   INLINE: 'inline',
   // Backdrop loading
-  BACKDROP: 'backdrop'
+  BACKDROP: 'backdrop',
+  // Progress loading with percentage
+  PROGRESS: 'progress'
 };
 
 // Main Loading Component
-const LoadingState = ({ 
+const LoadingState = ({
   variant = LoadingVariants.COMPONENT,
   size = 'medium',
   message = 'Loading...',
   showBackdrop = false,
-  sx = {}
+  sx = {},
+  progress = 0,
+  subMessage = ''
 }) => {
   const getSize = () => {
     switch (size) {
@@ -48,23 +52,96 @@ const LoadingState = ({
             justifyContent="center"
             minHeight="100vh"
             sx={{
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               ...sx
             }}
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.5 }}
             >
-              <CircularProgress size={getSize()} thickness={4} />
+              <Box
+                sx={{
+                  position: 'relative',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <CircularProgress
+                  size={getSize() * 1.5}
+                  thickness={3}
+                  sx={{
+                    color: 'rgba(255, 255, 255, 0.3)',
+                  }}
+                />
+                <CircularProgress
+                  size={getSize() * 1.5}
+                  thickness={3}
+                  sx={{
+                    position: 'absolute',
+                    color: '#fff',
+                    animation: 'spin 2s linear infinite',
+                    '@keyframes spin': {
+                      '0%': { transform: 'rotate(0deg)' },
+                      '100%': { transform: 'rotate(360deg)' }
+                    }
+                  }}
+                />
+              </Box>
             </motion.div>
-            <Typography 
-              variant="h6" 
-              sx={{ mt: 2, color: 'text.secondary' }}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
             >
-              {message}
-            </Typography>
+              <Typography
+                variant="h4"
+                sx={{ mt: 4, color: '#fff', fontWeight: 600 }}
+              >
+                {message}
+              </Typography>
+              {subMessage && (
+                <Typography
+                  variant="body1"
+                  sx={{ mt: 2, color: 'rgba(255, 255, 255, 0.8)' }}
+                >
+                  {subMessage}
+                </Typography>
+              )}
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+            >
+              <Box sx={{ mt: 4, display: 'flex', gap: 1 }}>
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    animate={{
+                      y: [0, -10, 0],
+                      opacity: [0.4, 1, 0.4]
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      delay: i * 0.2
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: '#fff'
+                      }}
+                    />
+                  </motion.div>
+                ))}
+              </Box>
+            </motion.div>
           </Box>
         );
 
@@ -80,8 +157,8 @@ const LoadingState = ({
           >
             <CircularProgress size={getSize()} />
             {message && (
-              <Typography 
-                variant="body2" 
+              <Typography
+                variant="body2"
                 sx={{ mt: 1, color: 'text.secondary' }}
               >
                 {message}
@@ -142,15 +219,21 @@ const LoadingState = ({
       case LoadingVariants.BACKDROP:
         return (
           <Backdrop
-            sx={{ 
-              color: '#fff', 
+            sx={{
+              color: '#fff',
               zIndex: (theme) => theme.zIndex.drawer + 1,
-              ...sx 
+              ...sx
             }}
             open={true}
           >
             <Box display="flex" flexDirection="column" alignItems="center">
-              <CircularProgress color="inherit" size={getSize()} />
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <CircularProgress color="inherit" size={getSize()} />
+              </motion.div>
               {message && (
                 <Typography sx={{ mt: 2 }}>
                   {message}
@@ -158,6 +241,41 @@ const LoadingState = ({
               )}
             </Box>
           </Backdrop>
+        );
+
+      case LoadingVariants.PROGRESS:
+        return (
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            p={4}
+            sx={sx}
+          >
+            <Box sx={{ width: '100%', maxWidth: 400, mb: 2 }}>
+              <LinearProgress
+                variant="determinate"
+                value={progress}
+                sx={{
+                  height: 8,
+                  borderRadius: 4,
+                  '& .MuiLinearProgress-bar': {
+                    borderRadius: 4,
+                    background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)'
+                  }
+                }}
+              />
+            </Box>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              {message} {progress > 0 && `(${Math.round(progress)}%)`}
+            </Typography>
+            {subMessage && (
+              <Typography variant="caption" sx={{ color: 'text.disabled', mt: 1 }}>
+                {subMessage}
+              </Typography>
+            )}
+          </Box>
         );
 
       default:
@@ -214,33 +332,33 @@ export const LoadingConfigs = {
     size: 'medium',
     message: 'Fetching data...'
   },
-  
+
   // Form submission
   FORM_SUBMISSION: {
     variant: LoadingVariants.BUTTON,
     size: 'small',
     message: 'Submitting...'
   },
-  
+
   // File upload
   FILE_UPLOAD: {
     variant: LoadingVariants.BACKDROP,
     size: 'large',
     message: 'Uploading file...'
   },
-  
+
   // Table loading
   TABLE_LOADING: {
     variant: LoadingVariants.TABLE,
     message: ''
   },
-  
+
   // Card loading
   CARD_LOADING: {
     variant: LoadingVariants.CARD,
     message: ''
   },
-  
+
   // Initial page load
   INITIAL_LOAD: {
     variant: LoadingVariants.FULL_PAGE,

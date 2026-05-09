@@ -559,16 +559,16 @@ const FolderManagement = ({
 
 
       {/* Header */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <div className="mb-4 md:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm"
+          className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm text-sm md:text-base"
         >
           ← {folderStack.length > 0 ? "Back" : "Back to Courses"}
         </button>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 text-sm overflow-x-auto pb-1">
+        <div className="flex-1 min-w-0 w-full sm:w-auto">
+          <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm overflow-x-auto pb-1">
             <button
               onClick={() => onBreadcrumbClick(-1)}
               className="text-gray-500 hover:text-blue-600 transition font-medium whitespace-nowrap"
@@ -596,29 +596,31 @@ const FolderManagement = ({
             )}
           </div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-gray-400">📍 {getCurrentPath()}</span>
+            <span className="text-xs text-gray-400 truncate">📍 {getCurrentPath()}</span>
             {folderStack.length > 0 && (
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full whitespace-nowrap">
                 Level {folderStack.length + 1}
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-2 md:gap-4 w-full sm:w-auto">
           <button
             onClick={() => handleOpenCreateModal(currentFolder)}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-5 py-2.5 rounded-lg transition shadow-md flex items-center gap-2"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-3 md:px-5 py-2 md:py-2.5 rounded-lg transition shadow-md flex items-center gap-2 text-sm md:text-base flex-1 sm:flex-none justify-center"
           >
-            <span className="text-xl">+</span>
-            {currentFolder ? "Create Subfolder" : "Add Folder"}
+            <span className="text-lg md:text-xl">+</span>
+            <span className="hidden sm:inline">{currentFolder ? "Create Subfolder" : "Add Folder"}</span>
+            <span className="sm:hidden">{currentFolder ? "Subfolder" : "Folder"}</span>
           </button>
           <button
             onClick={() => setOpenFileModal(true)}
-            className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-5 py-2.5 rounded-lg transition shadow-md flex items-center gap-2"
+            className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white px-3 md:px-5 py-2 md:py-2.5 rounded-lg transition shadow-md flex items-center gap-2 text-sm md:text-base flex-1 sm:flex-none justify-center"
           >
-            <span className="text-xl">📄</span>
-            Add Content
+            <span className="text-lg md:text-xl">📄</span>
+            <span className="hidden sm:inline">Add Content</span>
+            <span className="sm:hidden">Content</span>
           </button>
         </div>
       </div>
@@ -626,7 +628,8 @@ const FolderManagement = ({
       {/* Combined Content Table */}
       {allItems.length > 0 && (
         <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200">
@@ -653,14 +656,110 @@ const FolderManagement = ({
             </table>
           </div>
 
+          {/* Mobile Card View */}
+          <div className="md:hidden">
+            {paginatedItems.map((item) => {
+              const { icon, color, bg } = getContentTypeIcon(
+                item.type || item.contentType,
+                item.itemType
+              );
+
+              const handleItemClick = () => {
+                if (item.itemType === 'folder') {
+                  onOpenFolder(item);
+                }
+              };
+
+              return (
+                <div
+                  key={`${item.itemType}-${item.id}`}
+                  onClick={handleItemClick}
+                  className={`p-4 border-b border-gray-200 hover:bg-blue-50 transition-all duration-200 ${item.itemType === 'folder' ? 'cursor-pointer' : ''
+                    }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      {item.image || item.thumbnail ? (
+                        <div className="w-12 h-12 rounded-full overflow-hidden shadow-md border">
+                          <img
+                            src={item.image || item.thumbnail}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          className={`w-12 h-12 rounded-full bg-gradient-to-br ${color} flex items-center justify-center text-white text-xl shadow-md`}
+                        >
+                          {icon}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium text-gray-900 truncate">
+                        {item.name}
+                      </h3>
+                      {item.description && (
+                        <p className="text-xs text-gray-500 mt-1 truncate">
+                          📝 {item.description}
+                        </p>
+                      )}
+                      {item.itemType === 'folder' && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {item.events?.length || 0} events, {item.files?.length || 0} files
+                        </p>
+                      )}
+                    </div>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={(e) => handleDropdownOpen(e, item.id)}
+                        className="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition"
+                      >
+                        <HiOutlineDotsVertical className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bg} text-gray-700`}
+                    >
+                      {item.itemType === 'folder' ? 'FOLDER' : (item.type || item.contentType)?.toUpperCase() || 'CONTENT'}
+                    </span>
+                    {item.accessType && (
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.accessType === "free"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-purple-100 text-purple-800"
+                          }`}
+                      >
+                        {item.accessType}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="mt-2 text-xs text-gray-500">
+                    Created: {formatDate(item.createdAt)}
+                  </div>
+
+                  {item.videoLink && (
+                    <div className="mt-1 text-xs text-gray-500 truncate">
+                      🔗 {item.videoLink}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
           {/* Custom Pagination UI */}
           {contentPagination.totalPages > 0 && (
-            <div className="flex items-center justify-between px-6 py-4 mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 md:px-6 py-4 mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <span>Page {contentPagination.page} of {contentPagination.totalPages}</span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-center gap-2">
                 <button
                   onClick={() => handlePageChange(contentPagination.page - 1)}
                   disabled={contentPagination.page === 1}
@@ -669,23 +768,52 @@ const FolderManagement = ({
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
-                  Previous
+                  <span className="hidden sm:inline">Previous</span>
                 </button>
 
-                {/* Page number buttons */}
+                {/* Page number buttons - show limited on mobile */}
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: contentPagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${pageNum === contentPagination.page
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
-                        }`}
-                    >
-                      {pageNum}
-                    </button>
-                  ))}
+                  {(() => {
+                    const pages = [];
+                    const totalPages = contentPagination.totalPages;
+                    const currentPage = contentPagination.page;
+
+                    // Always show first page
+                    pages.push(1);
+
+                    // Show current page and adjacent pages
+                    if (currentPage > 2) {
+                      if (currentPage > 3) pages.push('...');
+                      pages.push(currentPage - 1);
+                    }
+                    if (currentPage !== 1 && currentPage !== totalPages) {
+                      pages.push(currentPage);
+                    }
+                    if (currentPage < totalPages - 1) {
+                      pages.push(currentPage + 1);
+                      if (currentPage < totalPages - 2) pages.push('...');
+                    }
+
+                    // Always show last page if more than 1 page
+                    if (totalPages > 1) pages.push(totalPages);
+
+                    return pages.filter((page, index, arr) => arr.indexOf(page) === index).map((pageNum, index) => (
+                      pageNum === '...' ? (
+                        <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-400">...</span>
+                      ) : (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${pageNum === contentPagination.page
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                            }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    ));
+                  })()}
                 </div>
 
                 <button
@@ -693,7 +821,7 @@ const FolderManagement = ({
                   disabled={contentPagination.page === contentPagination.totalPages}
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Next
+                  <span className="hidden sm:inline">Next</span>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>

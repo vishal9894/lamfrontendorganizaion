@@ -352,16 +352,15 @@ const Course = () => {
     );
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100  p-8">
-     
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8 lg:p-8 min-h-screen">
 
       {!selectedCourse && (
         <div>
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Courses
             </h1>
-            <p className="text-gray-500 mt-2">
+            <p className="text-gray-500 mt-2 text-sm md:text-base">
               Select a course to view its folders and content
             </p>
           </div>
@@ -374,35 +373,64 @@ const Course = () => {
 
           {/* Custom Pagination UI */}
           {pagination.totalPages > 0 && (
-            <div className="flex items-center justify-between px-6 py-4 mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 md:px-6 py-4 mt-6 bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <span>Page {pagination.page} of {pagination.totalPages}</span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-center gap-2">
                 <button
                   onClick={() => handlePageChange(pagination.page - 1)}
                   disabled={pagination.page === 1}
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ArrowLeft className="w-4 h-4" />
-                  Previous
+                  <span className="hidden sm:inline">Previous</span>
                 </button>
 
-                {/* Page number buttons */}
+                {/* Page number buttons - show limited on mobile */}
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${pageNum === pagination.page
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
-                        }`}
-                    >
-                      {pageNum}
-                    </button>
-                  ))}
+                  {(() => {
+                    const pages = [];
+                    const totalPages = pagination.totalPages;
+                    const currentPage = pagination.page;
+
+                    // Always show first page
+                    pages.push(1);
+
+                    // Show current page and adjacent pages
+                    if (currentPage > 2) {
+                      if (currentPage > 3) pages.push('...');
+                      pages.push(currentPage - 1);
+                    }
+                    if (currentPage !== 1 && currentPage !== totalPages) {
+                      pages.push(currentPage);
+                    }
+                    if (currentPage < totalPages - 1) {
+                      pages.push(currentPage + 1);
+                      if (currentPage < totalPages - 2) pages.push('...');
+                    }
+
+                    // Always show last page if more than 1 page
+                    if (totalPages > 1) pages.push(totalPages);
+
+                    return pages.filter((page, index, arr) => arr.indexOf(page) === index).map((pageNum, index) => (
+                      pageNum === '...' ? (
+                        <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-400">...</span>
+                      ) : (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${pageNum === pagination.page
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                            }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    ));
+                  })()}
                 </div>
 
                 <button
@@ -410,7 +438,7 @@ const Course = () => {
                   disabled={pagination.page === pagination.totalPages}
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Next
+                  <span className="hidden sm:inline">Next</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
