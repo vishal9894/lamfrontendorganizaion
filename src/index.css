@@ -6,29 +6,19 @@ body {
   margin: 0;
 }
 
-/* Dark mode input styles - auto-detect browser dark mode */
-@media (prefers-color-scheme: dark) {
+/* Force consistent input colors regardless of browser color scheme */
+input,
+textarea,
+select {
+  color-scheme: light;
+  background-color: white;
+  color: #1f2937;
+  border-color: #d1d5db;
+}
 
-  input,
-  textarea,
-  select {
-    background-color: #1f2937 !important;
-    border-color: #374151 !important;
-    color: #f9fafb !important;
-  }
-
-  input::placeholder,
-  textarea::placeholder {
-    color: #9ca3af !important;
-  }
-
-  input:focus,
-  textarea:focus,
-  select:focus {
-    background-color: #1f2937 !important;
-    border-color: #6366f1 !important;
-    color: #f9fafb !important;
-  }
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
