@@ -1151,7 +1151,7 @@ export const handleDeleteAllBulkQuestions = async () => {
 
 export const handleCreateSetting = async (data) => {
   try {
-    const res = await api.post(`/api/setting/create-setting`, data);
+    const res = await api.post(`/settings`, data);
     return res.data;
   } catch (error) {
     console.error('Create setting error:', error);
@@ -1164,7 +1164,7 @@ export const handleCreateSetting = async (data) => {
 
 export const handleGetAllSettings = async () => {
   try {
-    const res = await api.get('/api/setting/get-setting');
+    const res = await api.get('/settings');
     return res.data;
   } catch (error) {
     console.error('Get settings error:', error);
@@ -1177,7 +1177,7 @@ export const handleGetAllSettings = async () => {
 
 export const handleCreateRouteSetting = async (data) => {
   try {
-    const res = await api.post(`/api/setting/create-routing_account`, data);
+    const res = await api.post(`/settings/routing-account`, data);
     return res.data;
   } catch (error) {
     console.error('Create route setting error:', error);
@@ -1190,7 +1190,7 @@ export const handleCreateRouteSetting = async (data) => {
 
 export const handleDeleteRoutingAccount = async (id) => {
   try {
-    const res = await api.delete(`/api/setting/delete-routing_account/${id}`);
+    const res = await api.delete(`/settings/routing-account/${id}`);
     return res.data;
   } catch (error) {
     console.error('Delete routing account error:', error);
@@ -1203,7 +1203,7 @@ export const handleDeleteRoutingAccount = async (id) => {
 
 export const handleGetRoutingAccount = async () => {
   try {
-    const res = await api.get('/api/setting/get-routing_account');
+    const res = await api.get('/settings/routing-account');
     return res.data;
   } catch (error) {
     console.error('Get routing account error:', error);

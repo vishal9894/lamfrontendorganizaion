@@ -23,37 +23,9 @@ import {
   handleCreateRouteSetting,
   handleDeleteRoutingAccount
 } from '../api/allApi';
+import DeleteModal from '../components/DeleteModal';
 
-// Delete Modal Component
-const DeleteModal = ({ isOpen, onClose, onConfirm, title, message, itemName, isLoading, confirmText, cancelText, size }) => {
-  if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className={`bg-white rounded-lg shadow-xl w-full ${size === 'md' ? 'max-w-md' : 'max-w-lg'} mx-4`}>
-        <div className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-          <p className="text-gray-600">{message}</p>
-        </div>
-        <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50 rounded-b-lg">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            {cancelText || 'Cancel'}
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isLoading}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? 'Deleting...' : (confirmText || 'Delete')}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const GeneralSetting = () => {
   const [loading, setLoading] = useState(false);
@@ -135,63 +107,65 @@ const GeneralSetting = () => {
     try {
       setLoading(true);
       const response = await handleGetAllSettings();
+      console.log(response);
 
-      if (response?.success && response?.data) {
-        const settingsData = response.data;
 
-        // Get the main settings object (prefer all_settings if it exists)
-        const mainSettings = settingsData.all_settings || settingsData;
 
-        setFormData(prev => ({
-          ...prev,
-          // Flat settings - check both mainSettings and root settingsData
-          otp_verification: mainSettings.otp_verification === true || mainSettings.otp_verification === 'true' || settingsData.otp_verification === true || false,
-          video_download: mainSettings.video_download === true || mainSettings.video_download === 'true' || settingsData.video_download === true || false,
-          pdf_download: mainSettings.pdf_download === true || mainSettings.pdf_download === 'true' || settingsData.pdf_download === true || false,
-          group_joining: mainSettings.group_joining === true || mainSettings.group_joining === 'true' || settingsData.group_joining === true || false,
-          buy_or_upgrade: mainSettings.buy_or_upgrade === true || mainSettings.buy_or_upgrade === 'true' || settingsData.buy_or_upgrade === true || false,
-          test_reattempts: mainSettings.test_reattempts === true || mainSettings.test_reattempts === 'true' || settingsData.test_reattempts === true || false,
+      const settingsData = response;
 
-          // Content Order
-          app_content_order: mainSettings.app_content_order || settingsData.app_content_order || 'ascending',
-          web_content_order: mainSettings.web_content_order || settingsData.web_content_order || 'ascending',
+      // Get the main settings object (prefer all_settings if it exists)
+      const mainSettings = settingsData.all_settings || settingsData;
 
-          // Application Details
-          application_package: mainSettings.application_package || settingsData.application_package || '',
-          application_version: mainSettings.application_version || settingsData.application_version || '',
+      setFormData(prev => ({
+        ...prev,
+        // Flat settings - check both mainSettings and root settingsData
+        otp_verification: mainSettings.otp_verification === true || mainSettings.otp_verification === 'true' || settingsData.otp_verification === true || false,
+        video_download: mainSettings.video_download === true || mainSettings.video_download === 'true' || settingsData.video_download === true || false,
+        pdf_download: mainSettings.pdf_download === true || mainSettings.pdf_download === 'true' || settingsData.pdf_download === true || false,
+        group_joining: mainSettings.group_joining === true || mainSettings.group_joining === 'true' || settingsData.group_joining === true || false,
+        buy_or_upgrade: mainSettings.buy_or_upgrade === true || mainSettings.buy_or_upgrade === 'true' || settingsData.buy_or_upgrade === true || false,
+        test_reattempts: mainSettings.test_reattempts === true || mainSettings.test_reattempts === 'true' || settingsData.test_reattempts === true || false,
 
-          // Upload Size Limits
-          max_image_size: parseInt(mainSettings.max_image_size) || parseInt(settingsData.max_image_size) || 5,
-          max_pdf_size: parseInt(mainSettings.max_pdf_size) || parseInt(settingsData.max_pdf_size) || 10,
+        // Content Order
+        app_content_order: mainSettings.app_content_order || settingsData.app_content_order || 'ascending',
+        web_content_order: mainSettings.web_content_order || settingsData.web_content_order || 'ascending',
 
-          // Notification Settings
-          onesignal_app_id: mainSettings.onesignal_app_id || settingsData.onesignal_app_id || '',
-          onesignal_auth_key: mainSettings.onesignal_auth_key || settingsData.onesignal_auth_key || '',
+        // Application Details
+        application_package: mainSettings.application_package || settingsData.application_package || '',
+        application_version: mainSettings.application_version || settingsData.application_version || '',
 
-          // Payment & Security
-          razorpay_auth: mainSettings.razorpay_auth || settingsData.razorpay_auth || '',
-          login_attempts_limit: parseInt(mainSettings.login_attempts_limit) || parseInt(settingsData.login_attempts_limit) || 3,
-          support_phone: mainSettings.support_phone || settingsData.support_phone || '',
-          number_flashing_time: parseInt(mainSettings.number_flashing_time) || parseInt(settingsData.number_flashing_time) || 5,
+        // Upload Size Limits
+        max_image_size: parseInt(mainSettings.max_image_size) || parseInt(settingsData.max_image_size) || 5,
+        max_pdf_size: parseInt(mainSettings.max_pdf_size) || parseInt(settingsData.max_pdf_size) || 10,
 
-          // Social Media Links (Legacy)
-          telegram_link: mainSettings.telegram_link || settingsData.telegram_link || '',
-          facebook_link: mainSettings.facebook_link || settingsData.facebook_link || '',
-          youtube_link: mainSettings.youtube_link || settingsData.youtube_link || '',
-          board_result_link: mainSettings.board_result_link || settingsData.board_result_link || '',
-          ytdl_link: mainSettings.ytdl_link || settingsData.ytdl_link || '',
+        // Notification Settings
+        onesignal_app_id: mainSettings.onesignal_app_id || settingsData.onesignal_app_id || '',
+        onesignal_auth_key: mainSettings.onesignal_auth_key || settingsData.onesignal_auth_key || '',
 
-          // Nested objects - prefer from mainSettings, fallback to settingsData
-          social_media: {
-            ...prev.social_media,
-            ...(mainSettings.social_media || settingsData.social_media || {})
-          },
-          features: {
-            ...prev.features,
-            ...(mainSettings.features || settingsData.features || {})
-          }
-        }));
-      }
+        // Payment & Security
+        razorpay_auth: mainSettings.razorpay_auth || settingsData.razorpay_auth || '',
+        login_attempts_limit: parseInt(mainSettings.login_attempts_limit) || parseInt(settingsData.login_attempts_limit) || 3,
+        support_phone: mainSettings.support_phone || settingsData.support_phone || '',
+        number_flashing_time: parseInt(mainSettings.number_flashing_time) || parseInt(settingsData.number_flashing_time) || 5,
+
+        // Social Media Links (Legacy)
+        telegram_link: mainSettings.telegram_link || settingsData.telegram_link || '',
+        facebook_link: mainSettings.facebook_link || settingsData.facebook_link || '',
+        youtube_link: mainSettings.youtube_link || settingsData.youtube_link || '',
+        board_result_link: mainSettings.board_result_link || settingsData.board_result_link || '',
+        ytdl_link: mainSettings.ytdl_link || settingsData.ytdl_link || '',
+
+        // Nested objects - prefer from mainSettings, fallback to settingsData
+        social_media: {
+          ...prev.social_media,
+          ...(mainSettings.social_media || settingsData.social_media || {})
+        },
+        features: {
+          ...prev.features,
+          ...(mainSettings.features || settingsData.features || {})
+        }
+      }));
+
     } catch (err) {
       setError('Failed to load settings');
     } finally {
@@ -203,11 +177,29 @@ const GeneralSetting = () => {
     try {
       const response = await handleGetRoutingAccount();
 
-      if (response?.success && response?.data) {
-        setRoutingAccounts(response.data);
+      if (response && Array.isArray(response)) {
+
+        const processedData = response.map(account => ({
+          ...account,
+          account_id: parseInt(account.account_id),
+          percentage: parseFloat(account.percentage)
+        }));
+        setRoutingAccounts(processedData);
+      } else if (response?.data && Array.isArray(response.data)) {
+
+        const processedData = response.data.map(account => ({
+          ...account,
+          account_id: parseInt(account.account_id),
+          percentage: parseFloat(account.percentage)
+        }));
+        setRoutingAccounts(processedData);
+      } else {
+
+        setRoutingAccounts([]);
       }
     } catch (err) {
-      // Silent error handling
+      console.error('Error fetching routing accounts:', err);
+      setRoutingAccounts([]);
     }
   };
 
@@ -259,7 +251,7 @@ const GeneralSetting = () => {
     try {
       setSaving(true);
       const response = await handleCreateRouteSetting({
-        account_id: routingForm.account_id,
+        account_id: parseInt(routingForm.account_id),
         percentage: parseInt(routingForm.percentage),
         status: routingForm.status
       });
@@ -291,14 +283,11 @@ const GeneralSetting = () => {
     try {
       const response = await handleDeleteRoutingAccount(deleteModal.id);
 
-      if (response?.success) {
-        await fetchRoutingAccounts();
-        setDeleteModal({ show: false, id: null, name: '' });
-        setSuccess(true);
-        setTimeout(() => setSuccess(false), 3000);
-      } else {
-        setError(response?.message || 'Failed to delete routing account');
-      }
+      // Close modal and refresh data on successful deletion
+      setDeleteModal({ show: false, id: null, name: '' });
+      await fetchRoutingAccounts();
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError(err.message || 'Failed to delete routing account');
     } finally {
@@ -308,7 +297,7 @@ const GeneralSetting = () => {
 
   // Create a single settings object to save
   const createSettingsPayload = () => {
-    // Create the full settings object
+    // Create the full settings object (without features since UI is removed)
     const settings = {
       // Flat settings
       otp_verification: formData.otp_verification,
@@ -335,9 +324,8 @@ const GeneralSetting = () => {
       board_result_link: formData.board_result_link,
       ytdl_link: formData.ytdl_link,
 
-      // Nested objects
-      social_media: formData.social_media,
-      features: formData.features
+      // Nested objects (only social_media, no features)
+      social_media: formData.social_media
     };
 
     // Return as all_settings to match your API structure
@@ -353,14 +341,16 @@ const GeneralSetting = () => {
       setSaving(true);
       setError(null);
 
-      // Create a single settings object
+      // Create a single settings object with only active features
       const settingsPayload = createSettingsPayload();
 
-      // Save all settings in one API call
+      // Get the settings directly (without the all_settings wrapper)
+      const finalSettings = settingsPayload.all_settings;
+
+      // Save settings with current toggle values (true will show as true, false as false)
       const response = await handleCreateSetting({
-        setting_key: 'all_settings',
-        setting_value: JSON.stringify(settingsPayload),
-        description: 'All application settings'
+        key: 'all_settings',
+        value: JSON.stringify(finalSettings)
       });
 
       await fetchSettings();
@@ -487,32 +477,6 @@ const GeneralSetting = () => {
                   </div>
                 </div>
 
-
-
-                {/* Features (New) */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
-                  <h2 className="text-base md:text-lg font-semibold text-gray-800 mb-3 md:mb-4 flex items-center gap-2">
-                    <Settings className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
-                    Features
-                  </h2>
-                  <div className="space-y-2 md:space-y-3">
-                    <ToggleItem
-                      label="Live Class"
-                      checked={formData.features.live_class}
-                      onChange={() => handleFeatureToggle('live_class')}
-                    />
-                    <ToggleItem
-                      label="PDF Download"
-                      checked={formData.features.pdf_download}
-                      onChange={() => handleFeatureToggle('pdf_download')}
-                    />
-                    <ToggleItem
-                      label="Video Download"
-                      checked={formData.features.video_download}
-                      onChange={() => handleFeatureToggle('video_download')}
-                    />
-                  </div>
-                </div>
 
                 {/* Content Arrangement */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">

@@ -6,7 +6,6 @@ body {
   margin: 0;
 }
 
-/* Force consistent input colors regardless of browser color scheme */
 input,
 textarea,
 select {

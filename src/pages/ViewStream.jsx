@@ -87,10 +87,6 @@ const ViewStream = () => {
     }
   };
 
-  useEffect(() => {
-    fetchStreams();
-  }, []);
-
   const streams = streamsData?.data || [];
   const pagination = streamsData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
   const totalStreams = streamsData?.total || 0;
@@ -117,8 +113,9 @@ const ViewStream = () => {
     fetchStreams();
   };
 
+  // Single useEffect for initial load and when dependencies change
   useEffect(() => {
-    refreshData();
+    fetchStreams();
   }, [currentPage, pageSize, searchTerm, filterStatus]);
 
   const handleDelete = async (id) => {
@@ -683,7 +680,7 @@ const ViewStream = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-gray-900 truncate">{stream.name}</h3>
-                            
+
                             <div className="mt-2">
                               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${stream.status === 'active'
                                 ? 'bg-green-100 text-green-800'
