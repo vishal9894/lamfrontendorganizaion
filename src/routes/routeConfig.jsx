@@ -50,6 +50,7 @@ const RouteLoading = () => (
   </div>
 );
 
+
 // Public routes (no authentication required)
 export const publicRoutes = [
   {
