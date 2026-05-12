@@ -418,7 +418,6 @@ export const handleGetFolders = async (courseId) => {
     const res = await api.get(`/folders/${courseId}`);
     return res.data;
   } catch (error) {
-    console.error("Get folders error:", error);
     const message = error.response?.data?.message || "Failed to fetch folders";
     toast.error(message);
     return { success: false, message, data: [] };
@@ -436,7 +435,6 @@ export const handleCreateFolder = async (data) => {
     toast.success("Folder created successfully");
     return res.data;
   } catch (error) {
-    console.error("Create folder error:", error);
     const message = error.response?.data?.message || "Failed to create folder";
     toast.error(message);
     return { success: false, message, data: null };
@@ -449,7 +447,6 @@ export const handleUpdateFolder = async (folderId, data) => {
     toast.success("Folder updated successfully");
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Update folder error:", error);
     const message = error.response?.data?.message || "Failed to update folder";
     toast.error(message);
     return { success: false, message, data: null };
@@ -463,7 +460,6 @@ export const handleDeleteFolder = async (id) => {
     toast.success("Folder deleted successfully");
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Delete folder error:", error);
     const message = error.response?.data?.message || "Failed to delete folder";
     toast.error(message);
     return { success: false, message, data: null };
@@ -489,8 +485,6 @@ export const handleCreateFile = async (formData) => {
       data: res.data,
     };
   } catch (error) {
-    console.error("Upload content error:", error);
-
     const message =
       error.response?.data?.message || "Failed to upload content";
 
@@ -567,8 +561,6 @@ export const handleCreateStream = async (formData) => {
 
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Create stream error:", error);
-
     const message =
       error.response?.data?.message || "Failed to create stream";
 
@@ -606,8 +598,6 @@ export const handleDeleteStream = async (id) => {
 
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Delete stream error:", error);
-
     const message =
       error.response?.data?.message || "Failed to delete stream";
 
@@ -628,8 +618,6 @@ export const handleUpdateStream = async (id, formData) => {
 
     return { success: true, data: res.data };
   } catch (error) {
-    console.error("Update stream error:", error);
-
     const message =
       error.response?.data?.message || "Failed to update stream";
 
@@ -648,7 +636,6 @@ export const handleGetTests = async (testId) => {
     const res = await api.get(`/file-contents/test/${testId}`);
     return res.data;
   } catch (error) {
-    console.error("Error fetching tests:", error);
     throw error;
   }
 }
@@ -657,7 +644,6 @@ export const handleGetTestQuestions = async (testId) => {
     const response = await api.get(`testquestions?contentId=${testId}`);
     return response.data;
   } catch (error) {
-    console.error("Error fetching questions:", error);
     throw error;
   }
 };
@@ -671,7 +657,6 @@ export const handleCreateTestQuestion = async (testId, questionData) => {
     });
     return response.data;
   } catch (error) {
-    console.error("Error creating question:", error);
     throw error;
   }
 };
@@ -686,7 +671,6 @@ export const handleBulkUploadQuestions = async (testId, formData) => {
     return response.data;
 
   } catch (error) {
-    console.error("Error uploading questions:", error);
     throw error;
   }
 };
@@ -696,7 +680,6 @@ export const handleDeleteTestQuestion = async (questionId) => {
     const response = await api.delete(`/testquestions/${questionId}`);
     return response.data;
   } catch (error) {
-    console.error("Error deleting question:", error);
     throw error;
   }
 };
@@ -740,7 +723,6 @@ export const handleDeleteOmrSheet = async (id) => {
     const res = await api.delete(`/omr-sheets/${id}`);
     return res.data;
   } catch (error) {
-    console.error("Error deleting OMR sheet:", error);
     throw error.response?.data || error.message || "Failed to delete OMR sheet";
   }
 };
@@ -761,7 +743,6 @@ export const handleCreateTeacher = async (formData) => {
     toast.success(res.data.message);
     return res.data;
   } catch (error) {
-    console.error("Error uploading teacher:", error);
     toast.error("Failed to create teacher. Please try again.");
   }
 };
@@ -873,7 +854,6 @@ export const handleCreateEvent = async (formData) => {
     );
     return res.data;
   } catch (error) {
-    console.error(error);
     throw error.response?.data || error;
   }
 };
@@ -932,7 +912,6 @@ export const handleCreateAttachment = async (formData) => {
     });
     return res.data;
   } catch (error) {
-    console.error("Create attachment error:", error);
     throw error;
   }
 };
@@ -973,7 +952,6 @@ export const handleCreateSocialMedia = async (formData) => {
     toast.success(res.data.message)
     return res.data;
   } catch (error) {
-    console.error("Create social media error:", error);
   }
 };
 
@@ -986,7 +964,6 @@ export const handleUpdateSocialMedia = async (id, formData) => {
     });
     return res.data;
   } catch (error) {
-    console.error("Update social media error:", error);
   }
 };
 
@@ -1022,7 +999,6 @@ export const handleGetTopTeacher = async () => {
     const res = await api.get('/topteacher');
     return res.data;
   } catch (error) {
-    console.error('Error decrypting top teachers:', error);
     return { success: false, data: [] };
   }
 };
@@ -1032,7 +1008,6 @@ export const handleUpdateTopTeacher = async (id, formData) => {
     const res = await api.put(`/topteacher/${id}`, formData);
     return { success: true, data: res.data };
   } catch (error) {
-    console.error('Error updating teacher:', error.response?.data || error.message);
     return { success: false, error: error.response?.data || error.message };
   }
 };
@@ -1071,7 +1046,6 @@ export const handleDeleteTopStudent = async (id) => {
     const res = await api.delete(`/topstudents/${id}`);
     return res.data;
   } catch (error) {
-    console.error('Delete top student error:', error);
     return {
       success: false,
       message: error?.response?.data?.message || 'Failed to delete top student'
@@ -1088,7 +1062,6 @@ export const handleUpdateTopStudent = async (id, formData) => {
     });
     return { success: true, data: res.data };
   } catch (error) {
-    console.error('Error updating student:', error.response?.data || error.message);
     return { success: false, error: error.response?.data || error.message };
   }
 }
@@ -1102,7 +1075,6 @@ export const handleCreateBulkQuestion = async (formData) => {
     });
     return res.data;
   } catch (error) {
-    console.error('Create bulk question error:', error);
     return {
       success: false,
       message: error?.response?.data?.message || 'Failed to upload questions'
@@ -1115,7 +1087,6 @@ export const handleGetBulkQuestion = async () => {
     const res = await api.get('/api/bulkquestion/get-question');
     return res.data;
   } catch (error) {
-    console.error('Get bulk questions error:', error);
     return {
       success: false,
       message: error?.response?.data?.message || 'Failed to fetch questions'

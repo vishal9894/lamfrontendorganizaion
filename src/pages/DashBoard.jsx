@@ -73,13 +73,13 @@ const SkeletonActivity = () => (
 const DashBoard = () => {
   const { user } = useSelector((state) => state.user);
 
-  // Use React Query hooks with caching and real-time updates
+  // Use React Query hooks with caching (removed auto-refresh for better performance)
   const {
     data: dashboardData,
     isLoading: dashboardLoading,
     error: dashboardError,
     refetch: refetchDashboard
-  } = useDashboardStats({ refetchInterval: 30 * 1000 }); // Refresh every 30 seconds
+  } = useDashboardStats();
 
   const {
     data: walletData,

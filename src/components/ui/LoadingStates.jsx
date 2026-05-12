@@ -156,7 +156,7 @@ const LoadingState = ({
   // ============================================
   // LMS Specific Loader Renderers
   // ============================================
-  
+
   const renderCourseLoading = () => (
     <Box
       sx={{

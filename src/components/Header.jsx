@@ -1,50 +1,50 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { useDispatch } from "react-redux";
 import { setUser } from "../redux/features/userSlice";
 import { handleGetProfile, handleLgout } from "../api/allApi";
 
-const Header = () => {
+const Header = memo(() => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [user, setLocalUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const dispatch = useDispatch();
 
-  // Fetch profile when component mounts
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await handleGetProfile();
+  // Fetch profile when component mounts (optimized with useCallback)
+  const fetchProfile = useCallback(async () => {
+    try {
+      const res = await handleGetProfile();
 
-        // Extract the actual user data from the response
-        let userData = res?.data?.admin || res;
+      // Extract the actual user data from the response
+      let userData = res?.data?.admin || res;
 
-        // Fix: If name is an object, extract the name string
-        if (userData && userData.name && typeof userData.name === 'object') {
-          userData = {
-            ...userData,
-            name: userData.name.name || userData.name.value || JSON.stringify(userData.name)
-          };
-        }
-
-        // Fix: If email is an object, extract the email string
-        if (userData && userData.email && typeof userData.email === 'object') {
-          userData = {
-            ...userData,
-            email: userData.email.email || userData.email.value || ''
-          };
-        }
-
-        setLocalUser(userData);
-        dispatch(setUser(userData));
-      } catch (err) {
-        // Error handling without console.error
-      } finally {
-        setLoading(false);
+      // Fix: If name is an object, extract the name string
+      if (userData && userData.name && typeof userData.name === 'object') {
+        userData = {
+          ...userData,
+          name: userData.name.name || userData.name.value || JSON.stringify(userData.name)
+        };
       }
-    };
 
-    fetchProfile();
+      // Fix: If email is an object, extract the email string
+      if (userData && userData.email && typeof userData.email === 'object') {
+        userData = {
+          ...userData,
+          email: userData.email.email || userData.email.value || ''
+        };
+      }
+
+      setLocalUser(userData);
+      dispatch(setUser(userData));
+    } catch (err) {
+      // Error handling without console.error
+    } finally {
+      setLoading(false);
+    }
   }, [dispatch]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleLogout = () => {
     handleLgout();
@@ -151,6 +151,8 @@ const Header = () => {
       </div>
     </header>
   );
-};
+});
+
+Header.displayName = 'Header';
 
 export default Header;

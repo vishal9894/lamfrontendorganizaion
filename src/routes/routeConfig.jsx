@@ -1,77 +1,54 @@
 // Route Configuration - Centralized route definitions
 import { Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 
-// Auth components
-import Login from "../auth/Login";
+// Lazy loaded components for better performance
+const Login = lazy(() => import("../auth/Login"));
+const Homelayout = lazy(() => import("../layout/Homelayout"));
+const DashBoard = lazy(() => import("../pages/DashBoard"));
+const UserManagement = lazy(() => import("../pages/UserManagement"));
+const UserPage = lazy(() => import("../pages/UserPage"));
+const AdminUserPage = lazy(() => import("../pages/AdminUserPage"));
+const CourseManagement = lazy(() => import("../pages/CourseManagement"));
+const Course = lazy(() => import("../pages/Course"));
+const AddCourse = lazy(() => import("../pages/AddCourse"));
+const ViewCourse = lazy(() => import("../pages/ViewCourse"));
+const AssignmentManagement = lazy(() => import("../pages/AssignmentManagement"));
+const AddQuiz = lazy(() => import("../pages/AddQuiz"));
+const ViewQuiz = lazy(() => import("../pages/ViewQuiz"));
+const EnrollmentManagement = lazy(() => import("../pages/EnrollmentManagement"));
+const AssignCourse = lazy(() => import("../pages/AssignCourse"));
+const ViewAssignCourse = lazy(() => import("../pages/ViewAssignCourse"));
+const AddStream = lazy(() => import("../pages/AddStream"));
+const ViewStream = lazy(() => import("../pages/ViewStream"));
+const SuperStream = lazy(() => import("../pages/SuperStream"));
+const ViewSuperStream = lazy(() => import("../pages/ViewSuperStream"));
+const AddEvents = lazy(() => import("../pages/AddEvents"));
+const ViewEvents = lazy(() => import("../pages/ViewEvents"));
+const AddTeacher = lazy(() => import("../pages/AddTeacher"));
+const AddTopTeacher = lazy(() => import("../pages/AddTopTeacher"));
+const ViewTopTeacher = lazy(() => import("../pages/ViewTopTeacher"));
+const AddTopStudent = lazy(() => import("../pages/AddTopStudent"));
+const ViewTopStudent = lazy(() => import("../pages/ViewTopStudent"));
+const Ebook = lazy(() => import("../pages/Ebook"));
+const Role = lazy(() => import("../pages/Role"));
+const Banner = lazy(() => import("../pages/Banner"));
+const AddOmrSheet = lazy(() => import("../pages/AddOmrSheet"));
+const ViewOmrSheet = lazy(() => import("../pages/ViewOmrSheet"));
+const GeneralSetting = lazy(() => import("../pages/GeneralSettting"));
+const Addcoins = lazy(() => import("../pages/Addcoins"));
+const SocialMedia = lazy(() => import("../pages/SocialMedia"));
+const ImportBulkTest = lazy(() => import("../pages/ImportBulkTest"));
+const ViewQuizQuestion = lazy(() => import("../pages/ViewQuizQuestion"));
+const ManageQuestions = lazy(() => import("../components/ManageQuestions"));
+const ViewTestQuestions = lazy(() => import("../components/ViewTestQuestions"));
 
-
-// Layout components
-import Homelayout from "../layout/Homelayout";
-
-// Dashboard
-import DashBoard from "../pages/DashBoard";
-
-// User Management
-import UserManagement from "../pages/UserManagement";
-import UserPage from "../pages/UserPage";
-import AdminUserPage from "../pages/AdminUserPage";
-
-// Course Management
-import CourseManagement from "../pages/CourseManagement";
-import Course from "../pages/Course";
-import AddCourse from "../pages/AddCourse";
-import ViewCourse from "../pages/ViewCourse";
-
-// Assignment Management
-import AssignmentManagement from "../pages/AssignmentManagement";
-import AddQuiz from "../pages/AddQuiz";
-import ViewQuiz from "../pages/ViewQuiz";
-
-// Enrollment Management
-import EnrollmentManagement from "../pages/EnrollmentManagement";
-import AssignCourse from "../pages/AssignCourse";
-import ViewAssignCourse from "../pages/ViewAssignCourse";
-
-// Stream/Live session management
-import AddStream from "../pages/AddStream";
-import ViewStream from "../pages/ViewStream";
-import SuperStream from "../pages/SuperStream";
-import ViewSuperStream from "../pages/ViewSuperStream";
-
-// Events
-import AddEvents from "../pages/AddEvents";
-import ViewEvents from "../pages/ViewEvents";
-
-// Teacher management
-import AddTeacher from "../pages/AddTeacher";
-import AddTopTeacher from "../pages/AddTopTeacher";
-import ViewTopTeacher from "../pages/ViewTopTeacher";
-import AddTopStudent from "../pages/AddTopStudent";
-import ViewTopStudent from "../pages/ViewTopStudent";
-
-// Content management
-import Ebook from "../pages/Ebook";
-
-// Admin components
-import Role from "../pages/Role";
-
-// Banner management
-import Banner from "../pages/Banner";
-
-// OMR management
-import AddOmrSheet from "../pages/AddOmrSheet";
-import ViewOmrSheet from "../pages/ViewOmrSheet";
-
-// Settings
-import GeneralSetting from "../pages/GeneralSettting";
-import Addcoins from "../pages/Addcoins";
-import SocialMedia from "../pages/SocialMedia";
-
-// Other components
-import ImportBulkTest from "../pages/ImportBulkTest";
-import ViewQuizQuestion from "../pages/ViewQuizQuestion";
-import ManageQuestions from "../components/ManageQuestions";
-import ViewTestQuestions from "../components/ViewTestQuestions";
+// Loading component for lazy-loaded routes
+const RouteLoading = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+  </div>
+);
 
 // Public routes (no authentication required)
 export const publicRoutes = [
@@ -81,342 +58,353 @@ export const publicRoutes = [
   },
   {
     path: "/login",
-    element: <Login />,
+    element: (
+      <Suspense fallback={<RouteLoading />}>
+        <Login />
+      </Suspense>
+    ),
   },
 ];
+
+// Helper function to wrap lazy components with Suspense
+const withSuspense = (Component) => (
+  <Suspense fallback={<RouteLoading />}>
+    <Component />
+  </Suspense>
+);
 
 // Protected routes (authentication required)
 export const protectedRoutes = [
   // Dashboard
   {
     path: "/dashboard",
-    element: <DashBoard />,
+    element: withSuspense(DashBoard),
   },
 
   // User Management
   {
     path: "/organization/users",
-    element: <UserManagement />,
+    element: withSuspense(UserManagement),
   },
   {
     path: "/organization/users/create",
-    element: <UserManagement />,
+    element: withSuspense(UserManagement),
   },
   {
     path: "/organization/roles",
-    element: <UserManagement />,
+    element: withSuspense(UserManagement),
   },
   {
     path: "/organization/quiz/:id",
-    element: <ViewQuizQuestion />,
+    element: withSuspense(ViewQuizQuestion),
   },
   {
     path: "/manage-questions/:testId/:testName",
-    element: <ManageQuestions />,
+    element: withSuspense(ManageQuestions),
   },
   {
     path: "/manage-view-questions/:testId/:testName",
-    element: <ViewTestQuestions />,
+    element: withSuspense(ViewTestQuestions),
   },
 
   // Course Management
   {
     path: "/courses",
-    element: <CourseManagement />,
+    element: withSuspense(CourseManagement),
   },
   {
     path: "/courses/create",
-    element: <CourseManagement />,
+    element: withSuspense(CourseManagement),
   },
   {
     path: "/courses/categories",
-    element: <CourseManagement />,
+    element: withSuspense(CourseManagement),
   },
   {
     path: "/instructor/courses",
-    element: <CourseManagement />,
+    element: withSuspense(CourseManagement),
   },
   {
     path: "/instructor/courses/create",
-    element: <CourseManagement />,
+    element: withSuspense(CourseManagement),
   },
 
   // Instructor Routes
   {
     path: "/instructor/students",
-    element: <UserManagement />,
+    element: withSuspense(UserManagement),
   },
   {
     path: "/instructor/progress",
-    element: <EnrollmentManagement />,
+    element: withSuspense(EnrollmentManagement),
   },
   {
     path: "/instructor/assignments",
-    element: <AddQuiz />,
+    element: withSuspense(AddQuiz),
   },
   {
     path: "/instructor/assignments/create",
-    element: <AddQuiz />,
+    element: withSuspense(AddQuiz),
   },
   {
     path: "/instructor/assignments/grade",
-    element: <ViewQuiz />,
+    element: withSuspense(ViewQuiz),
   },
   {
     path: "/instructor/sessions/create",
-    element: <AddStream />,
+    element: withSuspense(AddStream),
   },
   {
     path: "/instructor/sessions",
-    element: <ViewStream />,
+    element: withSuspense(ViewStream),
   },
 
   // Learner Routes
   {
     path: "/learner/courses",
-    element: <Course />,
+    element: withSuspense(Course),
   },
   {
     path: "/learner/catalog",
-    element: <Course />,
+    element: withSuspense(Course),
   },
   {
     path: "/learner/assignments/pending",
-    element: <AddQuiz />,
+    element: withSuspense(AddQuiz),
   },
   {
     path: "/learner/assignments/submitted",
-    element: <ViewQuiz />,
+    element: withSuspense(ViewQuiz),
   },
   {
     path: "/learner/progress",
-    element: <EnrollmentManagement />,
+    element: withSuspense(EnrollmentManagement),
   },
   {
     path: "/learner/certificates",
-    element: <DashBoard />,
+    element: withSuspense(DashBoard),
   },
   {
     path: "/learner/schedule",
-    element: <ViewEvents />,
+    element: withSuspense(ViewEvents),
   },
   {
     path: "/learner/messages",
-    element: <DashBoard />,
+    element: withSuspense(DashBoard),
   },
 
   // Enrollment Management
   {
     path: "/enrollments",
-    element: <EnrollmentManagement />,
+    element: withSuspense(EnrollmentManagement),
   },
   {
     path: "/enrollments/bulk",
-    element: <EnrollmentManagement />,
+    element: withSuspense(EnrollmentManagement),
   },
 
   // Assignment Management
   {
     path: "/assignments",
-    element: <AssignmentManagement />,
+    element: withSuspense(AssignmentManagement),
   },
   {
     path: "/assignments/create",
-    element: <AssignmentManagement />,
+    element: withSuspense(AssignmentManagement),
   },
   {
     path: "/assignments/submitted",
-    element: <AssignmentManagement />,
+    element: withSuspense(AssignmentManagement),
   },
 
   // Analytics
   {
     path: "/analytics",
-    element: <DashBoard />,
+    element: withSuspense(DashBoard),
   },
   {
     path: "/analytics/courses",
-    element: <DashBoard />,
+    element: withSuspense(DashBoard),
   },
   {
     path: "/analytics/users",
-    element: <DashBoard />,
+    element: withSuspense(DashBoard),
   },
 
   // Reports
   {
     path: "/reports/courses",
-    element: <DashBoard />,
+    element: withSuspense(DashBoard),
   },
   {
     path: "/reports/users",
-    element: <UserManagement />,
+    element: withSuspense(UserManagement),
   },
   {
     path: "/reports/financial",
-    element: <DashBoard />,
+    element: withSuspense(DashBoard),
   },
 
   // Content
   {
     path: "/content/courses",
-    element: <Course />,
+    element: withSuspense(Course),
   },
   {
     path: "/content/ebook",
-    element: <Ebook />,
+    element: withSuspense(Ebook),
   },
 
   // Admin
   {
     path: "/admin/role",
-    element: <Role />,
+    element: withSuspense(Role),
   },
   {
     path: "/admin/users",
-    element: <AdminUserPage />,
+    element: withSuspense(AdminUserPage),
   },
 
   // Users
   {
     path: "/users",
-    element: <UserPage />,
+    element: withSuspense(UserPage),
   },
 
   // Banners
   {
     path: "/banners",
-    element: <Banner />,
+    element: withSuspense(Banner),
   },
 
   // Super Stream
   {
     path: "/super-stream/add",
-    element: <SuperStream />,
+    element: withSuspense(SuperStream),
   },
   {
     path: "/super-stream/view",
-    element: <ViewSuperStream />,
+    element: withSuspense(ViewSuperStream),
   },
 
   // Stream
   {
     path: "/stream/add",
-    element: <AddStream />,
+    element: withSuspense(AddStream),
   },
   {
     path: "/stream/view",
-    element: <ViewStream />,
+    element: withSuspense(ViewStream),
   },
 
   // Courses
   {
     path: "/courses/add",
-    element: <AddCourse />,
+    element: withSuspense(AddCourse),
   },
   {
     path: "/courses/view",
-    element: <ViewCourse />,
+    element: withSuspense(ViewCourse),
   },
 
   // Assign Courses
   {
     path: "/assign-course/new",
-    element: <AssignCourse />,
+    element: withSuspense(AssignCourse),
   },
   {
     path: "/assign-course/view",
-    element: <ViewAssignCourse />,
+    element: withSuspense(ViewAssignCourse),
   },
   {
     path: "/assign-course/enrolled",
-    element: <Course />,
+    element: withSuspense(Course),
   },
   {
     path: "/assign-course/payment",
-    element: <DashBoard />,
+    element: withSuspense(DashBoard),
   },
 
   // Live Events
   {
     path: "/live-event/add",
-    element: <AddEvents />,
+    element: withSuspense(AddEvents),
   },
   {
     path: "/live-event/view",
-    element: <ViewEvents />,
+    element: withSuspense(ViewEvents),
   },
   {
     path: "/live-event/chat",
-    element: <ViewEvents />,
+    element: withSuspense(ViewEvents),
   },
 
   // Permissions
   {
     path: "/permission/add-teacher",
-    element: <AddTopTeacher />,
+    element: withSuspense(AddTopTeacher),
   },
   {
     path: "/permission/view-teacher",
-    element: <ViewTopTeacher />,
+    element: withSuspense(ViewTopTeacher),
   },
   {
     path: "/permission/add-student",
-    element: <AddTopStudent />,
+    element: withSuspense(AddTopStudent),
   },
   {
     path: "/permission/view-student",
-    element: <ViewTopStudent />,
+    element: withSuspense(ViewTopStudent),
   },
 
   // Teacher
   {
     path: "/teacher",
-    element: <AddTeacher />,
+    element: withSuspense(AddTeacher),
   },
 
   // OMR Sheets
   {
     path: "/omr/add",
-    element: <AddOmrSheet />,
+    element: withSuspense(AddOmrSheet),
   },
   {
     path: "/omr/view",
-    element: <ViewOmrSheet />,
+    element: withSuspense(ViewOmrSheet),
   },
 
   // Quiz
   {
     path: "/quiz/add",
-    element: <AddQuiz />,
+    element: withSuspense(AddQuiz),
   },
   {
     path: "/quiz/view",
-    element: <ViewQuiz />,
+    element: withSuspense(ViewQuiz),
   },
   {
     path: "/edit-quiz/:id",
-    element: <AddQuiz />,
+    element: withSuspense(AddQuiz),
   },
 
   // Settings
   {
     path: "/settings/general",
-    element: <GeneralSetting />,
+    element: withSuspense(GeneralSetting),
   },
   {
     path: "/settings/coin",
-    element: <Addcoins />,
+    element: withSuspense(Addcoins),
   },
   {
     path: "/settings/social",
-    element: <SocialMedia />,
+    element: withSuspense(SocialMedia),
   },
 
   // Other
   {
     path: "/other",
-    element: <ImportBulkTest />,
+    element: withSuspense(ImportBulkTest),
   },
 ];
 

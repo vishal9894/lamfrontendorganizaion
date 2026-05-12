@@ -71,7 +71,7 @@ createRoot(document.getElementById("root")).render(
             </Provider>
           </UseApiProvider>
         </BrowserRouter>
-        <QueryDevTools />
+        {import.meta.env.DEV && <QueryDevTools />}
       </QueryClientProvider>
     </ErrorBoundary>
   </StrictMode>,
