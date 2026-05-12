@@ -1,62 +1,34 @@
-import { useState, useEffect, useCallback, memo } from "react";
-import { useDispatch } from "react-redux";
-import { setUser } from "../redux/features/userSlice";
-import { handleGetProfile, handleLgout } from "../api/allApi";
+import { useState, useEffect, memo } from "react";
+import { useNavigate } from "react-router-dom";
+import { handleLgout } from "../api/allApi";
+import { useProfile } from "../context/ProfileContext";
 
 const Header = memo(() => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [user, setLocalUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  // Fetch profile when component mounts (optimized with useCallback)
-  const fetchProfile = useCallback(async () => {
+  const { profile, loading, logout } = useProfile();
+
+  const handleLogout = async () => {
     try {
-      const res = await handleGetProfile();
-
-      // Extract the actual user data from the response
-      let userData = res?.data?.admin || res;
-
-      // Fix: If name is an object, extract the name string
-      if (userData && userData.name && typeof userData.name === 'object') {
-        userData = {
-          ...userData,
-          name: userData.name.name || userData.name.value || JSON.stringify(userData.name)
-        };
-      }
-
-      // Fix: If email is an object, extract the email string
-      if (userData && userData.email && typeof userData.email === 'object') {
-        userData = {
-          ...userData,
-          email: userData.email.email || userData.email.value || ''
-        };
-      }
-
-      setLocalUser(userData);
-      dispatch(setUser(userData));
-    } catch (err) {
-      // Error handling without console.error
-    } finally {
-      setLoading(false);
+      // Call API logout
+      await handleLgout();
+      // Call ProfileContext logout
+      logout();
+      // Navigate to login
+      navigate("/login", { replace: true });
+    } catch (error) {
+      // Still logout on error
+      logout();
+      navigate("/login", { replace: true });
     }
-  }, [dispatch]);
-
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
-
-  const handleLogout = () => {
-    handleLgout();
-    localStorage.removeItem("authToken");
-    window.location.reload();
   };
 
   useEffect(() => {
-    if (user && user.status === false) {
+    if (profile && profile.status === false) {
       handleLogout();
     }
-  }, [user]);
+  }, [profile]);
 
   // Show loading placeholder until user is fetched
   if (loading) {
@@ -79,18 +51,18 @@ const Header = memo(() => {
         >
           {/* Avatar */}
           <div className="h-8 w-8 bg-gray-300 rounded-full flex items-center justify-center text-gray-700 font-bold uppercase">
-            {user?.image ? (
-              <img src={user.image} alt="user" className="rounded-full" />
+            {profile?.image ? (
+              <img src={profile.image} alt="user" className="rounded-full" />
             ) : (
               <div className="avatar-fallback ">
-                {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                {profile?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
             )}
           </div>
 
           {/* Username */}
           <span className="text-gray-700 font-medium hidden sm:block">
-            {user?.name}
+            {profile?.name}
           </span>
 
           {/* Dropdown Arrow */}
@@ -121,9 +93,9 @@ const Header = memo(() => {
               <div className="px-4 py-3 border-b border-gray-200">
                 <p className="text-sm text-gray-500">Signed in as</p>
                 <p className="text-sm font-semibold text-gray-700 truncate">
-                  {user?.name}
+                  {profile?.name}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">{user?.email}</p>
+                <p className="text-xs text-gray-400 mt-1">{profile?.email}</p>
               </div>
 
               {/* Menu Items */}
