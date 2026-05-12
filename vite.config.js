@@ -7,12 +7,12 @@ export default defineConfig({
     port: 5174,
     host: true,
     strictPort: false,
-    open: true,
+    open: false,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://api.khansirlearning.com',
         changeOrigin: true,
-        secure: false,
+        secure: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
