@@ -1,24 +1,17 @@
 import { Navigate, Outlet } from "react-router-dom";
 
-import { useProfile } from "../context/ProfileContext";
-
 const ProtectRoutes = () => {
-  const { loading, isAuthenticated } =
-    useProfile();
+  // Change this logic to match how you store auth state
+  const token = localStorage.getItem('authToken') 
+  const isAuthenticated = !!token
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
+  // If not authenticated, redirect to login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
   }
 
-  return isAuthenticated ? (
-    <Outlet />
-  ) : (
-    <Navigate to="/login" replace />
-  );
-};
+  // If authenticated, render nested routes
+  return <Outlet />
+}
 
-export default ProtectRoutes;
+export default ProtectRoutes

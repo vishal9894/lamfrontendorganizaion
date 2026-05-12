@@ -28,8 +28,6 @@ import {
   FiX,
 } from "react-icons/fi";
 import { useSelector } from "react-redux";
-import { useProfile } from "../context/ProfileContext";
-import { handleLgout } from "../api/allApi";
 
 const Sidebar = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -38,7 +36,6 @@ const Sidebar = () => {
   const location = useLocation();
 
   const { user } = useSelector((state) => state.user);
-  const { logout } = useProfile();
 
   useEffect(() => {
     setIsMobileOpen(false);
@@ -353,19 +350,10 @@ const Sidebar = () => {
     setOpenDropdown(openDropdown === id ? null : id);
   };
 
-  const handleLogout = async () => {
-    try {
-      // Call API logout
-      await handleLgout();
-      // Call ProfileContext logout
-      logout();
-      // Navigate to login
-      navigate("/login", { replace: true });
-    } catch (error) {
-      // Still logout on error
-      logout();
-      navigate("/login", { replace: true });
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
   return (

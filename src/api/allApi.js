@@ -11,14 +11,16 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
+  withCredentials: false,
   crossdomain: true,
 });
 
 api.interceptors.request.use(
   (config) => {
-    // Token is now sent via HTTP-only cookie automatically
-    // No need to manually add Authorization header
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -31,25 +33,6 @@ api.interceptors.response.use(
     // Handle authentication errors directly
     const status = error.response?.status;
     const isAuthError = status === 401 || status === 403;
-
-    // Debug logging for development
-    if (import.meta.env.DEV && isAuthError) {
-      console.log('Auth Error Details:', {
-        status,
-        message: error.response?.data?.message,
-        url: error.config?.url,
-        headers: error.config?.headers
-      });
-    }
-
-    // If it's an auth error, redirect to login
-    if (isAuthError) {
-      // For token expiration (401), redirect to login immediately
-      if (status === 401) {
-        window.location.href = '/login';
-        return Promise.reject(new Error('Token expired - redirecting to login'));
-      }
-    }
 
     // If it's not an auth error, continue with normal error handling
     if (!isAuthError) {
@@ -108,10 +91,10 @@ export const handleDeleteUser = async (id) => {
 
 export const handleLgout = async () => {
   try {
-    const res = await api.post(`/admin/logout`);
+    const res = await api.post(`api/admin/logout`);
     return res.data;
+
   } catch (error) {
-    throw error;
   }
 }
 
@@ -1205,12 +1188,7 @@ export const handleGetRoutingAccount = async () => {
 // admin
 
 export const handleGetProfile = async () => {
-  const res = await axios.get(`${BaseUrl}/admin/profile`, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-    withCredentials: true
-  });
+  const res = await api.get('/admin/profile');
   return res.data.admin;
 };
 

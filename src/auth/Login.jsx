@@ -3,10 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import LoadingState, { LoadingVariants } from "../components/ui/LoadingStates";
-import { handleGetProfile } from "../api/allApi";
-import { useDispatch } from "react-redux";
-import { setUser } from "../redux/features/userSlice";
-import { useProfile } from "../context/ProfileContext";
 const BaseUrl = import.meta.env.VITE_BACKEND_API;
 
 const Login = () => {
@@ -17,8 +13,6 @@ const Login = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
-  const { refetchProfile } = useProfile();
 
   const from = location.state?.from?.pathname || "/";
 
@@ -31,22 +25,20 @@ const Login = () => {
       const response = await axios.post(`${BaseUrl}/admin/org-login`, {
         email,
         password,
-      },
-        {
-          withCredentials: true,
-        });
+      });
 
       const data = response.data;
+
       toast.success(data.message);
 
-      
-      try {
-        await refetchProfile(true); 
-        
-        navigate("/dashboard", { replace: true });
-      } catch (profileError) {
-       
-        navigate("/dashboard", { replace: true });
+      if (data.token) {
+        localStorage.setItem("authToken", data.token);
+
+        // Navigate to the intended destination or dashboard
+        const destination = from === "/" ? "/dashboard" : from;
+        navigate(destination, { replace: true });
+      } else {
+        throw new Error("No token received from login");
       }
 
     } catch (err) {

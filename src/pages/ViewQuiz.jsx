@@ -494,7 +494,7 @@ const ViewQuiz = () => {
                 </table>
               </div>
 
-             
+              {/* Mobile Card View */}
               <div className="md:hidden space-y-3 p-3">
                 {filteredQuizzes.map((quiz) => (
                   <div key={quiz.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">

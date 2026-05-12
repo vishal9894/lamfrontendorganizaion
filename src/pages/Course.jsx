@@ -352,7 +352,7 @@ const Course = () => {
     );
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8 lg:p-8 ">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8 lg:p-8 min-h-screen">
 
       {!selectedCourse && (
         <div>

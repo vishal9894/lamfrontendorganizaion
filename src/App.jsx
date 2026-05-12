@@ -1,7 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import ProtectRoutes from "./auth/ProtectRoutes";
 import Homelayout from "./layout/Homelayout";
-import { ProfileProvider } from "./context/ProfileContext";
 import {
   publicRoutes,
   protectedRoutes,
@@ -11,29 +10,27 @@ import {
 
 function App() {
   return (
-    <ProfileProvider>
-      <Routes>
-        {/* Public routes */}
-        {publicRoutes.map((route, index) => (
-          <Route key={index} path={route.path} element={route.element} />
-        ))}
+    <Routes>
+      {/* Public routes */}
+      {publicRoutes.map((route, index) => (
+        <Route key={index} path={route.path} element={route.element} />
+      ))}
 
-        {/* Default redirect */}
-        <Route {...defaultRoute} />
+      {/* Default redirect */}
+      <Route {...defaultRoute} />
 
-        {/* Protected routes with layout */}
-        <Route element={<ProtectRoutes />}>
-          <Route element={<Homelayout />}>
-            {protectedRoutes.map((route, index) => (
-              <Route key={index} path={route.path} element={route.element} />
-            ))}
-          </Route>
+      {/* Protected routes with layout */}
+      <Route element={<ProtectRoutes />}>
+        <Route element={<Homelayout />}>
+          {protectedRoutes.map((route, index) => (
+            <Route key={index} path={route.path} element={route.element} />
+          ))}
         </Route>
+      </Route>
 
-        {/* Catch-all route */}
-        <Route {...catchAllRoute} />
-      </Routes>
-    </ProfileProvider>
+      {/* Catch-all route */}
+      <Route {...catchAllRoute} />
+    </Routes>
   );
 }
 
