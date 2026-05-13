@@ -124,7 +124,7 @@ const Ebook = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 md:p-6 min-h-screen">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 md:p-6 ">
       <div className="max-w-7xl mx-auto">
 
         <div className="mb-6 md:mb-8">

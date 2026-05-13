@@ -188,7 +188,7 @@ const Banner = () => {
     } else if (activeTab === "banners") {
       fetchBanners();
     }
-  }, [activeTab]);
+  }, [activeTab, fetchBanners, fetchNews]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -433,7 +433,7 @@ const Banner = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-3 sm:p-4 lg:p-6">
+    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-3 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 sm:mb-8">

@@ -15,12 +15,11 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
-  Image as ImageIcon
+  Image as ImageIcon,
 } from "lucide-react";
 import { handleGetCourse, handlePublishCourse } from "../api/allApi";
 import DeleteModal from "../components/DeleteModal";
-
-
+import { useNavigate } from "react-router-dom";
 
 const ViewCourse = () => {
   const [activeTab, setActiveTab] = useState("regular_course");
@@ -34,12 +33,17 @@ const ViewCourse = () => {
   const [coursesData, setCoursesData] = useState({
     data: [],
     pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false },
-    total: 0
+    total: 0,
   });
   const [coursesLoading, setCoursesLoading] = useState(false);
+  const navigation = useNavigate();
 
   const courses = coursesData?.data || [];
-  const pagination = coursesData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const pagination = coursesData?.pagination || {
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  };
   const totalCourses = coursesData?.total || 0;
 
   // Course type tabs
@@ -55,8 +59,15 @@ const ViewCourse = () => {
   const fetchCourses = async () => {
     setCoursesLoading(true);
     try {
-      const response = await handleGetCourse(activeTab, currentPage, pageSize, searchTerm);
-      setCoursesData(response || { data: [], pagination: { totalPages: 1 }, total: 0 });
+      const response = await handleGetCourse(
+        activeTab,
+        currentPage,
+        pageSize,
+        searchTerm,
+      );
+      setCoursesData(
+        response || { data: [], pagination: { totalPages: 1 }, total: 0 },
+      );
     } catch (error) {
       setCoursesData({ data: [], pagination: { totalPages: 1 }, total: 0 });
     } finally {
@@ -90,11 +101,11 @@ const ViewCourse = () => {
   const handlePublishToggle = async (course) => {
     const newPublishStatus = !course.status;
     await handlePublishCourse(course.id, newPublishStatus);
-    fetchCourses()
+    fetchCourses();
   };
 
   const handleEdit = (course) => {
-    window.location.href = `/course/edit/${course.id}`;
+    navigation(`/courses/edit/${course.id}`);
   };
 
   const handleDeleteClick = (course) => {
@@ -143,7 +154,9 @@ const ViewCourse = () => {
                 <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm text-gray-500 font-medium truncate">Total</p>
+                <p className="text-xs sm:text-sm text-gray-500 font-medium truncate">
+                  Total
+                </p>
                 <p className="text-xl sm:text-2xl font-bold text-gray-800">
                   {totalCourses}
                 </p>
@@ -157,7 +170,9 @@ const ViewCourse = () => {
                 <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm text-gray-500 font-medium truncate">Published</p>
+                <p className="text-xs sm:text-sm text-gray-500 font-medium truncate">
+                  Published
+                </p>
                 <p className="text-xl sm:text-2xl font-bold text-gray-800">
                   {publishedCourses}
                 </p>
@@ -171,7 +186,9 @@ const ViewCourse = () => {
                 <XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm text-gray-500 font-medium truncate">Drafts</p>
+                <p className="text-xs sm:text-sm text-gray-500 font-medium truncate">
+                  Drafts
+                </p>
                 <p className="text-xl sm:text-2xl font-bold text-gray-800">
                   {draftCourses}
                 </p>
@@ -185,9 +202,12 @@ const ViewCourse = () => {
                 <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm text-gray-500 font-medium truncate">Active</p>
+                <p className="text-xs sm:text-sm text-gray-500 font-medium truncate">
+                  Active
+                </p>
                 <p className="text-lg sm:text-xl font-bold text-gray-800">
-                  {tabs.find((t) => t.id === activeTab)?.label.split(" ")[1] || "Courses"}
+                  {tabs.find((t) => t.id === activeTab)?.label.split(" ")[1] ||
+                    "Courses"}
                 </p>
               </div>
             </div>
@@ -205,14 +225,17 @@ const ViewCourse = () => {
                   setCurrentPage(1);
                   setSearchTerm("");
                 }}
-                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all mx-0.5 sm:mx-1 min-w-fit flex-shrink-0 ${activeTab === tab.id
-                  ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg transform scale-105"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-                  }`}
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all mx-0.5 sm:mx-1 min-w-fit flex-shrink-0 ${
+                  activeTab === tab.id
+                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg transform scale-105"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+                }`}
               >
                 <tab.icon className="w-4 h-4 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">{tab.label.split(' ')[0]}</span>
-                <span className="font-semibold">{tab.label.split(' ')[1]}</span>
+                <span className="hidden xs:inline">
+                  {tab.label.split(" ")[0]}
+                </span>
+                <span className="font-semibold">{tab.label.split(" ")[1]}</span>
               </button>
             ))}
           </div>
@@ -240,11 +263,13 @@ const ViewCourse = () => {
                 disabled={coursesLoading}
                 className="flex-1 px-4 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all flex items-center gap-2 justify-center font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <RefreshCw className={`w-5 h-5 ${coursesLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-5 h-5 ${coursesLoading ? "animate-spin" : ""}`}
+                />
                 <span className="hidden xs:inline">Refresh</span>
               </button>
               <button
-                onClick={() => (window.location.href = "/course/add")}
+                onClick={() => navigation("/courses/add")}
                 className="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2 justify-center font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <Plus className="w-5 h-5" />
@@ -292,7 +317,8 @@ const ViewCourse = () => {
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               e.target.onerror = null;
-                              e.target.src = "https://via.placeholder.com/80?text=No+Image";
+                              e.target.src =
+                                "https://via.placeholder.com/80?text=No+Image";
                             }}
                           />
                         ) : (
@@ -427,7 +453,8 @@ const ViewCourse = () => {
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
                                   e.target.onerror = null;
-                                  e.target.src = "https://via.placeholder.com/40?text=No+Image";
+                                  e.target.src =
+                                    "https://via.placeholder.com/40?text=No+Image";
                                 }}
                               />
                             ) : (
@@ -526,14 +553,14 @@ const ViewCourse = () => {
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-6">
                   {/* Page Info and Controls */}
                   <div className="flex flex-col lg:flex-row items-center justify-between gap-4 mb-6">
-                    <div className="text-sm text-gray-600 font-medium">
-                      Page <span className="font-bold text-gray-800">{currentPage}</span> of <span className="font-bold text-gray-800">{pagination.totalPages}</span>
-                    </div>
+                    
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-600">Show:</span>
                       <select
                         value={pageSize}
-                        onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                        onChange={(e) =>
+                          handlePageSizeChange(Number(e.target.value))
+                        }
                         className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       >
                         <option value={5}>5</option>
@@ -543,9 +570,7 @@ const ViewCourse = () => {
                       </select>
                       <span className="text-sm text-gray-600">per page</span>
                     </div>
-                  </div>
-
-                  {/* Pagination Navigation */}
+                    {/* Pagination Navigation */}
                   <div className="flex items-center justify-center gap-2">
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
@@ -562,62 +587,84 @@ const ViewCourse = () => {
                         <>
                           <button
                             onClick={() => handlePageChange(1)}
-                            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[40px] flex-shrink-0 ${1 === currentPage
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
-                              }`}
+                            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[40px] flex-shrink-0 ${
+                              1 === currentPage
+                                ? "bg-blue-600 text-white border-blue-600"
+                                : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                            }`}
                           >
                             1
                           </button>
-                          {currentPage > 4 && <span className="px-2 text-gray-400 flex-shrink-0">...</span>}
+                          {currentPage > 4 && (
+                            <span className="px-2 text-gray-400 flex-shrink-0">
+                              ...
+                            </span>
+                          )}
                         </>
                       )}
 
                       {/* Page numbers around current page */}
-                      {Array.from({ length: Math.min(pagination.totalPages, 5) }, (_, i) => {
-                        let pageNum;
-                        if (pagination.totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= pagination.totalPages - 2) {
-                          pageNum = pagination.totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
-                        }
+                      {Array.from(
+                        { length: Math.min(pagination.totalPages, 5) },
+                        (_, i) => {
+                          let pageNum;
+                          if (pagination.totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= pagination.totalPages - 2) {
+                            pageNum = pagination.totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
 
-                        // Skip if this page is already shown as first page
-                        if (currentPage > 3 && pagination.totalPages > 5 && pageNum === 1) return null;
+                          // Skip if this page is already shown as first page
+                          if (
+                            currentPage > 3 &&
+                            pagination.totalPages > 5 &&
+                            pageNum === 1
+                          )
+                            return null;
 
-                        return (
-                          <button
-                            key={pageNum}
-                            onClick={() => handlePageChange(pageNum)}
-                            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[40px] flex-shrink-0 ${pageNum === currentPage
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                          return (
+                            <button
+                              key={pageNum}
+                              onClick={() => handlePageChange(pageNum)}
+                              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[40px] flex-shrink-0 ${
+                                pageNum === currentPage
+                                  ? "bg-blue-600 text-white border-blue-600"
+                                  : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
                               }`}
-                          >
-                            {pageNum}
-                          </button>
-                        );
-                      })}
+                            >
+                              {pageNum}
+                            </button>
+                          );
+                        },
+                      )}
 
                       {/* Last page */}
-                      {currentPage < pagination.totalPages - 2 && pagination.totalPages > 5 && (
-                        <>
-                          {currentPage < pagination.totalPages - 3 && <span className="px-2 text-gray-400 flex-shrink-0">...</span>}
-                          <button
-                            onClick={() => handlePageChange(pagination.totalPages)}
-                            className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[40px] flex-shrink-0 ${pagination.totalPages === currentPage
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                      {currentPage < pagination.totalPages - 2 &&
+                        pagination.totalPages > 5 && (
+                          <>
+                            {currentPage < pagination.totalPages - 3 && (
+                              <span className="px-2 text-gray-400 flex-shrink-0">
+                                ...
+                              </span>
+                            )}
+                            <button
+                              onClick={() =>
+                                handlePageChange(pagination.totalPages)
+                              }
+                              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors min-w-[40px] flex-shrink-0 ${
+                                pagination.totalPages === currentPage
+                                  ? "bg-blue-600 text-white border-blue-600"
+                                  : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
                               }`}
-                          >
-                            {pagination.totalPages}
-                          </button>
-                        </>
-                      )}
+                            >
+                              {pagination.totalPages}
+                            </button>
+                          </>
+                        )}
                     </div>
 
                     <button
@@ -629,15 +676,12 @@ const ViewCourse = () => {
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
+                  </div>
+                  
                 </div>
               )}
 
-              {/* Show total items info */}
-              {totalCourses > 0 && (
-                <div className="mt-4 text-center text-sm text-gray-500 px-4">
-                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, totalCourses)} of {totalCourses} courses
-                </div>
-              )}
+             
             </>
           )}
         </div>

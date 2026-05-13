@@ -22,8 +22,9 @@ import {
   X,
   Save,
 } from "lucide-react";
-import { handleCreateCourse, handleGetStream, handleGetTeacher } from "../api/allApi";
+import { handleCreateCourse, handleGetCourseById, handleGetStream, handleGetTeacher, handleUpdateCourse } from "../api/allApi";
 import Toast from "../components/ui/Toast";
+import { useParams } from "react-router-dom";
 
 const AddCourse = () => {
   // Initial empty form state - FIXED with all required fields
@@ -86,6 +87,18 @@ const AddCourse = () => {
   const [currentChapter, setCurrentChapter] = useState("");
   const [selectedUnitIndex, setSelectedUnitIndex] = useState(null);
   const [expandedUnits, setExpandedUnits] = useState([]);
+
+  const id = useParams().id;
+
+  useEffect(() => {
+    if (id) {
+
+      
+      handleGetCourseById(id);
+      
+      
+    }
+  }, [id]);
 
   // Toast state
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
@@ -230,9 +243,7 @@ const AddCourse = () => {
         teacherId: selectedTeacher.id || selectedTeacher._id || ""
       }));
 
-      // Option 2: Store teacher ID (if API expects ID)
-      // Uncomment the line below if your API expects teacher ID instead of name
-      // setFormData(prev => ({ ...prev, teacher: selectedTeacher.id || selectedTeacher._id || "" }));
+     
     }
   };
 

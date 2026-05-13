@@ -562,7 +562,7 @@ const FolderManagement = ({
       <div className="mb-4 md:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm text-sm md:text-base"
+          className="flex items-center gap-2 px-3 md:px-4 py-2  border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm text-sm md:text-base"
         >
           ← {folderStack.length > 0 ? "Back" : "Back to Courses"}
         </button>

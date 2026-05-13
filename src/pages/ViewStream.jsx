@@ -22,8 +22,11 @@ import { useDispatch } from "react-redux";
 import { setStream } from "../redux/features/courseSlice";
 import DeleteModal from "../components/DeleteModal";
 import Toast from "../components/ui/Toast";
-import { handleDeleteStream, handleGetStream, handleUpdateStream } from "../api/allApi";
-
+import {
+  handleDeleteStream,
+  handleGetStream,
+  handleUpdateStream,
+} from "../api/allApi";
 
 const ViewStream = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -63,7 +66,10 @@ const ViewStream = () => {
     setToast({ show: false, message: "", type: "" });
   };
 
-  const [streamsData, setStreamsData] = useState({ data: [], pagination: { total: 0, page: 1, limit: 10, totalPages: 1 } });
+  const [streamsData, setStreamsData] = useState({
+    data: [],
+    pagination: { total: 0, page: 1, limit: 10, totalPages: 1 },
+  });
   const [streamsLoading, setStreamsLoading] = useState(false);
   const [streamsError, setStreamsError] = useState(null);
   const deleteStreamMutation = null;
@@ -76,7 +82,12 @@ const ViewStream = () => {
       if (response && response.data) {
         setStreamsData({
           data: response.data,
-          pagination: response.pagination || { total: 0, page: 1, limit: 10, totalPages: 1 }
+          pagination: response.pagination || {
+            total: 0,
+            page: 1,
+            limit: 10,
+            totalPages: 1,
+          },
         });
       }
     } catch (err) {
@@ -88,7 +99,11 @@ const ViewStream = () => {
   };
 
   const streams = streamsData?.data || [];
-  const pagination = streamsData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const pagination = streamsData?.pagination || {
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  };
   const totalStreams = streamsData?.total || 0;
 
   // Handle page change
@@ -121,7 +136,7 @@ const ViewStream = () => {
   const handleDelete = async (id) => {
     setDeleteLoading(true);
     try {
-      handleDeleteStream(id)
+      handleDeleteStream(id);
       setShowDeleteModal(false);
       setSelectedStream(null);
       refreshData();
@@ -161,9 +176,7 @@ const ViewStream = () => {
         formData.append("image", editFormData.image);
       }
 
-
       const response = await handleUpdateStream(selectedStream.id, formData);
-
 
       setShowEditModal(false);
       setSelectedStream(null);
@@ -175,24 +188,21 @@ const ViewStream = () => {
     }
   };
 
-
-
-
   const handleEditInputChange = (e) => {
     const { name, value } = e.target;
-    setEditFormData(prev => ({
+    setEditFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setEditFormData(prev => ({
+      setEditFormData((prev) => ({
         ...prev,
         image: file,
-        imagePreview: URL.createObjectURL(file)
+        imagePreview: URL.createObjectURL(file),
       }));
     }
   };
@@ -259,15 +269,18 @@ const ViewStream = () => {
   const totalPages = Math.ceil(sortedStreams.length / pageSize);
 
   // Stats
-  const activeStreams = streams?.filter((s) => s.status === "active").length || 0;
-  const totalCourses = streams?.reduce(
-    (acc, s) => acc + (s.courseCount || s.courses?.length || 0),
-    0,
-  ) || 0;
-  const totalStudents = streams?.reduce(
-    (acc, s) => acc + (s.studentCount || s.students?.length || 0),
-    0,
-  ) || 0;
+  const activeStreams =
+    streams?.filter((s) => s.status === "active").length || 0;
+  const totalCourses =
+    streams?.reduce(
+      (acc, s) => acc + (s.courseCount || s.courses?.length || 0),
+      0,
+    ) || 0;
+  const totalStudents =
+    streams?.reduce(
+      (acc, s) => acc + (s.studentCount || s.students?.length || 0),
+      0,
+    ) || 0;
 
   // Export to CSV
   const exportToCSV = () => {
@@ -323,7 +336,10 @@ const ViewStream = () => {
     setDeleteLoading(true);
     try {
       // Placeholder for bulk delete functionality
-      showToast(`${selectedRows.length} streams deleted successfully`, "success");
+      showToast(
+        `${selectedRows.length} streams deleted successfully`,
+        "success",
+      );
       setSelectedRows([]);
       setSelectAll(false);
       refreshData();
@@ -335,7 +351,7 @@ const ViewStream = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 sm:p-6">
+    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 h-full sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
@@ -372,72 +388,13 @@ const ViewStream = () => {
                 <span className="sm:hidden">↻</span>
               </button>
               <button
-                onClick={() => (window.location.href = "/steam/add")}
+                onClick={() => (window.location.href = "/stream/add")}
                 className="px-3 sm:px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 text-sm"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Add New Stream</span>
                 <span className="sm:hidden">Add Stream</span>
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <FolderTree className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-gray-500">Total Streams</p>
-                <p className="text-lg sm:text-2xl font-bold text-gray-800">
-                  {totalStreams}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-gray-500">Active</p>
-                <p className="text-lg sm:text-2xl font-bold text-gray-800">
-                  {activeStreams}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <BookOpen className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-gray-500">Total Courses</p>
-                <p className="text-lg sm:text-2xl font-bold text-gray-800">
-                  {totalCourses}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-gray-500">Students</p>
-                <p className="text-lg sm:text-2xl font-bold text-gray-800">
-                  {totalStudents.toLocaleString()}
-                </p>
-              </div>
             </div>
           </div>
         </div>
@@ -575,32 +532,38 @@ const ViewStream = () => {
                                   )}
                                 </div>
                                 <div>
-                                  <div className="font-medium text-gray-900">{stream.name}</div>
-
+                                  <div className="font-medium text-gray-900">
+                                    {stream.name}
+                                  </div>
                                 </div>
                               </div>
                             </td>
                             <td className="px-4 py-3">
                               <div className="text-sm text-gray-900">
-                                {stream.superstream?.name || 'N/A'}
+                                {stream.superstream?.name || "N/A"}
                               </div>
                             </td>
                             <td className="px-4 py-3">
                               <div className="text-sm text-gray-900 max-w-xs truncate">
-                                {stream.description || 'No description'}
+                                {stream.description || "No description"}
                               </div>
                             </td>
                             <td className="px-4 py-3">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${stream.status === 'active'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                {stream.status || 'inactive'}
+                              <span
+                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                  stream.status === "active"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {stream.status || "inactive"}
                               </span>
                             </td>
                             <td className="px-4 py-3">
                               <div className="text-sm text-gray-900">
-                                {new Date(stream.createdAt).toLocaleDateString()}
+                                {new Date(
+                                  stream.createdAt,
+                                ).toLocaleDateString()}
                               </div>
                             </td>
                             <td className="px-4 py-3">
@@ -679,14 +642,19 @@ const ViewStream = () => {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 truncate">{stream.name}</h3>
+                            <h3 className="font-semibold text-gray-900 truncate">
+                              {stream.name}
+                            </h3>
 
                             <div className="mt-2">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${stream.status === 'active'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                {stream.status || 'inactive'}
+                              <span
+                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                  stream.status === "active"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-gray-100 text-gray-800"
+                                }`}
+                              >
+                                {stream.status || "inactive"}
                               </span>
                             </div>
                           </div>
@@ -721,18 +689,26 @@ const ViewStream = () => {
                         <div className="flex justify-between text-sm">
                           <div>
                             <span className="text-gray-500">SuperStream:</span>
-                            <p className="text-gray-900 truncate">{stream.superstream?.name || 'N/A'}</p>
+                            <p className="text-gray-900 truncate">
+                              {stream.superstream?.name || "N/A"}
+                            </p>
                           </div>
                           <div>
                             <span className="text-gray-500">Created:</span>
-                            <p className="text-gray-900">{new Date(stream.createdAt).toLocaleDateString()}</p>
+                            <p className="text-gray-900">
+                              {new Date(stream.createdAt).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
 
                         {stream.description && (
                           <div>
-                            <span className="text-gray-500 text-sm">Description:</span>
-                            <p className="text-gray-900 text-sm mt-1 line-clamp-2">{stream.description}</p>
+                            <span className="text-gray-500 text-sm">
+                              Description:
+                            </span>
+                            <p className="text-gray-900 text-sm mt-1 line-clamp-2">
+                              {stream.description}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -753,11 +729,15 @@ const ViewStream = () => {
                   {/* Mobile View - Stacked Layout */}
                   <div className="sm:hidden space-y-3">
                     <div className="text-center text-sm text-gray-600">
-                      Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, sortedStreams.length)} of {sortedStreams.length} streams
+                      Showing {indexOfFirstItem + 1} to{" "}
+                      {Math.min(indexOfLastItem, sortedStreams.length)} of{" "}
+                      {sortedStreams.length} streams
                     </div>
                     <div className="flex items-center justify-center gap-2">
                       <button
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
                         disabled={currentPage === 1}
                         className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -767,7 +747,9 @@ const ViewStream = () => {
                         {currentPage} / {totalPages}
                       </span>
                       <button
-                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        onClick={() =>
+                          setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
                         disabled={currentPage === totalPages}
                         className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -781,10 +763,11 @@ const ViewStream = () => {
                           <button
                             key={pageNum}
                             onClick={() => setCurrentPage(pageNum)}
-                            className={`w-8 h-8 text-xs rounded-lg transition-colors ${currentPage === pageNum
-                              ? "bg-indigo-600 text-white"
-                              : "hover:bg-gray-100 text-gray-600"
-                              }`}
+                            className={`w-8 h-8 text-xs rounded-lg transition-colors ${
+                              currentPage === pageNum
+                                ? "bg-indigo-600 text-white"
+                                : "hover:bg-gray-100 text-gray-600"
+                            }`}
                           >
                             {pageNum}
                           </button>
@@ -805,7 +788,9 @@ const ViewStream = () => {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
                         disabled={currentPage === 1}
                         className="p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -816,10 +801,11 @@ const ViewStream = () => {
                         <button
                           key={i + 1}
                           onClick={() => setCurrentPage(i + 1)}
-                          className={`w-8 h-8 rounded-lg transition-colors ${currentPage === i + 1
-                            ? "bg-indigo-600 text-white"
-                            : "hover:bg-gray-100 text-gray-600"
-                            }`}
+                          className={`w-8 h-8 rounded-lg transition-colors ${
+                            currentPage === i + 1
+                              ? "bg-indigo-600 text-white"
+                              : "hover:bg-gray-100 text-gray-600"
+                          }`}
                         >
                           {i + 1}
                         </button>
@@ -847,7 +833,9 @@ const ViewStream = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-800">Edit Stream</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800">
+                  Edit Stream
+                </h2>
                 <button
                   onClick={() => setShowEditModal(false)}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
@@ -856,7 +844,10 @@ const ViewStream = () => {
                 </button>
               </div>
 
-              <form onSubmit={handleEditSubmit} className="p-4 sm:p-6 space-y-4">
+              <form
+                onSubmit={handleEditSubmit}
+                className="p-4 sm:p-6 space-y-4"
+              >
                 {/* Stream Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -904,7 +895,6 @@ const ViewStream = () => {
                     <option value="inactive">Inactive</option>
                   </select>
                 </div>
-
 
                 {/* Image Upload */}
                 <div>
@@ -970,7 +960,9 @@ const ViewStream = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-800">Stream Details</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800">
+                  Stream Details
+                </h2>
                 <button
                   onClick={() => setShowViewModal(false)}
                   className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
@@ -998,7 +990,9 @@ const ViewStream = () => {
                     <h3 className="text-lg sm:text-2xl font-bold text-gray-800 truncate">
                       {selectedStream.name}
                     </h3>
-                    <p className="text-xs sm:text-sm text-gray-500">ID: {selectedStream.id}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">
+                      ID: {selectedStream.id}
+                    </p>
                   </div>
                 </div>
 
@@ -1008,11 +1002,14 @@ const ViewStream = () => {
                       Status
                     </label>
                     <p className="mt-1">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${selectedStream.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                        }`}>
-                        {selectedStream.status || 'inactive'}
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          selectedStream.status === "active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {selectedStream.status || "inactive"}
                       </span>
                     </p>
                   </div>
@@ -1031,7 +1028,7 @@ const ViewStream = () => {
                       Description
                     </label>
                     <p className="mt-1 text-sm text-gray-900">
-                      {selectedStream.description || 'No description provided'}
+                      {selectedStream.description || "No description provided"}
                     </p>
                   </div>
 
@@ -1087,11 +1084,7 @@ const ViewStream = () => {
       </div>
 
       {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={hideToast}
-        />
+        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
       )}
     </div>
   );

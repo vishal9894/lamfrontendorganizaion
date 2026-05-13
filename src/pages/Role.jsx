@@ -254,7 +254,7 @@ const Role = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 via-gray-50 to-indigo-50/30 min-h-screen">
+    <div className="bg-gradient-to-br from-gray-50 via-gray-50 to-indigo-50/30 h-full ">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6">

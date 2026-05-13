@@ -160,40 +160,7 @@ export const protectedRoutes = [
     element: withSuspense(ViewStream),
   },
 
-  // Learner Routes
-  {
-    path: "/learner/courses",
-    element: withSuspense(Course),
-  },
-  {
-    path: "/learner/catalog",
-    element: withSuspense(Course),
-  },
-  {
-    path: "/learner/assignments/pending",
-    element: withSuspense(AddQuiz),
-  },
-  {
-    path: "/learner/assignments/submitted",
-    element: withSuspense(ViewQuiz),
-  },
-  {
-    path: "/learner/progress",
-    element: withSuspense(EnrollmentManagement),
-  },
-  {
-    path: "/learner/certificates",
-    element: withSuspense(DashBoard),
-  },
-  {
-    path: "/learner/schedule",
-    element: withSuspense(ViewEvents),
-  },
-  {
-    path: "/learner/messages",
-    element: withSuspense(DashBoard),
-  },
-
+  
   // Enrollment Management
   {
     path: "/enrollments",
@@ -218,33 +185,7 @@ export const protectedRoutes = [
     element: withSuspense(AssignmentManagement),
   },
 
-  // Analytics
-  {
-    path: "/analytics",
-    element: withSuspense(DashBoard),
-  },
-  {
-    path: "/analytics/courses",
-    element: withSuspense(DashBoard),
-  },
-  {
-    path: "/analytics/users",
-    element: withSuspense(DashBoard),
-  },
-
-  // Reports
-  {
-    path: "/reports/courses",
-    element: withSuspense(DashBoard),
-  },
-  {
-    path: "/reports/users",
-    element: withSuspense(UserManagement),
-  },
-  {
-    path: "/reports/financial",
-    element: withSuspense(DashBoard),
-  },
+  
 
   // Content
   {
@@ -306,6 +247,10 @@ export const protectedRoutes = [
   {
     path: "/courses/view",
     element: withSuspense(ViewCourse),
+  },
+  {
+    path: "/courses/edit/:id",
+    element: withSuspense(AddCourse),
   },
 
   // Assign Courses

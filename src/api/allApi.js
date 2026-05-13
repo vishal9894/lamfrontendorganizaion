@@ -270,9 +270,20 @@ export const handleCreateCourse = async (data) => {
   }
 };
 
-export const handleUpdateCourse = async (data) => {
+export const handleGetCourseById = async (id) => {
   try {
-    const res = await api.put("/api/course/update-course", data);
+    const res = await api.get(`/courses/${id}`);
+    return { success: true, data: res.data };
+  } catch (error) {
+    const message = error.response?.data?.message || "Failed to fetch course";
+   
+    return { success: false, message, data: null };
+  }
+};
+
+export const handleUpdateCourse = async (id, data) => {
+  try {
+    const res = await api.put(`/courses/${id}`, data);
     toast.success("Course updated successfully");
     return { success: true, data: res.data };
   } catch (error) {
