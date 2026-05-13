@@ -2,12 +2,24 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import LoadingState, { LoadingVariants } from "../components/ui/LoadingStates";
+import { motion } from "framer-motion";
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  GraduationCap,
+} from "lucide-react";
+
+import LoadingState from "../components/ui/LoadingStates";
+
 const BaseUrl = import.meta.env.VITE_BACKEND_API;
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -18,8 +30,9 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+
     setLoading(true);
+    setError("");
 
     try {
       const response = await axios.post(`${BaseUrl}/admin/org-login`, {
@@ -34,95 +47,176 @@ const Login = () => {
       if (data.token) {
         localStorage.setItem("authToken", data.token);
 
-        // Navigate to the intended destination or dashboard
         const destination = from === "/" ? "/dashboard" : from;
-        navigate(destination, { replace: true });
-      } else {
-        throw new Error("No token received from login");
-      }
 
+        setTimeout(() => {
+          navigate(destination, {
+            replace: true,
+          });
+        }, 1000);
+      }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Login failed");
-    } finally {
+      const message = err.response?.data?.message || "Login failed";
+      setError(message);
+      toast.error(message);
       setLoading(false);
     }
   };
 
+  // If loading is true, only show LoadingState
+  if (loading) {
+    return (
+      <LoadingState 
+        variant="full_page"
+        message="Signing in..."
+        subMessage="Please wait while we authenticate your account"
+      />
+    );
+  }
+
   return (
-    <>
-      {loading && (
-        <LoadingState
-          variant={LoadingVariants.FULL_PAGE}
-          message="Signing in..."
-          subMessage="Please wait while we authenticate your account"
-        />
-      )}
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-5">
-        <div className="bg-white rounded-xl p-10 w-full max-w-md shadow-xl">
-          <h1 className="text-3xl font-bold text-gray-800 text-center mb-2">
-            Organization Login
-          </h1>
+    <div className="relative min-h-screen overflow-hidden bg-[#f8fafc] flex items-center justify-center px-4">
+      {/* Background Blur */}
+      <div className="absolute top-[-120px] left-[-120px] w-[320px] h-[320px] bg-indigo-300/40 rounded-full blur-3xl" />
+      <div className="absolute bottom-[-120px] right-[-120px] w-[320px] h-[320px] bg-pink-300/40 rounded-full blur-3xl" />
 
-          <p className="text-gray-500 text-center mb-6 text-sm">
-            Sign in to your organization account
-          </p>
-
-          {error && (
-            <div className="bg-red-100 text-red-700 px-3 py-3 rounded-md mb-5 text-sm text-center">
-              {error}
+      {/* Login Card */}
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 40,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={{
+          duration: 0.5,
+        }}
+        className="relative z-10 w-full max-w-md"
+      >
+        <div className="bg-white/80 backdrop-blur-xl border border-gray-200 shadow-2xl rounded-[32px] p-8">
+          {/* Logo */}
+          <motion.div
+            initial={{
+              scale: 0,
+              rotate: -180,
+            }}
+            animate={{
+              scale: 1,
+              rotate: 0,
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 120,
+            }}
+            className="flex justify-center mb-6"
+          >
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <GraduationCap className="text-white w-10 h-10" />
             </div>
+          </motion.div>
+
+          {/* Heading */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900">Welcome Back</h1>
+            <p className="text-gray-500 mt-2 text-sm">
+              Login to continue to your LMS
+            </p>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <motion.div
+              initial={{
+                opacity: 0,
+                y: -10,
+              }}
+              animate={{
+                opacity: 1,
+                y: 0,
+              }}
+              className="mb-5 bg-red-50 border border-red-200 text-red-600 text-sm rounded-2xl px-4 py-3"
+            >
+              {error}
+            </motion.div>
           )}
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-5">
-              <label
-                htmlFor="email"
-                className="block mb-1.5 text-sm font-medium text-gray-600"
-              >
-                Email
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
+                Email Address
               </label>
-
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 box-border"
-              />
+              <div className="relative">
+                <Mail
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  className="w-full h-14 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white px-12 outline-none focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition-all"
+                />
+              </div>
             </div>
 
-            <div className="mb-5">
-              <label
-                htmlFor="password"
-                className="block mb-1.5 text-sm font-medium text-gray-600"
-              >
+            {/* Password */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 block mb-2">
                 Password
               </label>
-
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 box-border"
-              />
+              <div className="relative">
+                <Lock
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  className="w-full h-14 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white px-12 pr-14 outline-none focus:ring-4 focus:ring-purple-100 focus:border-purple-500 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                  aria-label={
+                    showPassword ? "Hide password" : "Show password"
+                  }
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
-            <button
+            {/* Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
-              className="w-full py-3.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-none rounded-lg text-base font-semibold cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-              disabled={loading}
+              className="w-full h-14 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold shadow-lg hover:shadow-indigo-300/50 transition-all flex items-center justify-center gap-2"
             >
-              {loading ? "Signing in..." : "Sign In"}
-            </button>
+              Sign In
+              <ArrowRight size={18} />
+            </motion.button>
           </form>
+
+          {/* Footer */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-400">
+              Secure login portal for your organization
+            </p>
+          </div>
         </div>
-      </div>
-    </>
+      </motion.div>
+    </div>
   );
 };
 

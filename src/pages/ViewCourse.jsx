@@ -216,7 +216,7 @@ const ViewCourse = () => {
 
         {/* Tabs */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
-          <div className="flex p-1 overflow-x-auto scrollbar-hide">
+          <div className="grid grid-cols-2 sm:grid-cols-7 p-1 overflow-x-auto scrollbar-hide">
             {tabs.map((tab) => (
               <button
                 key={tab.id}

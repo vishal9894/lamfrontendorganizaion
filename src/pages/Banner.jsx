@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { PAGINATION_CONFIG } from "../utils/pagination";
 import {
   Plus,
@@ -64,8 +64,8 @@ const Banner = () => {
   const [bannersPagination, setBannersPagination] = useState({ totalPages: 1, hasNextPage: false, hasPrevPage: false });
   const [totalBanners, setTotalBanners] = useState(0);
 
-  // Fetch banners function
-  const fetchBanners = async (page = 1, limit = pageSize) => {
+  // Fetch banners function - wrapped in useCallback
+  const fetchBanners = useCallback(async (page = currentPage, limit = pageSize) => {
     setBannersLoading(true);
     try {
       const response = await handleGetBanner(page, limit, { type: "banner" });
@@ -91,14 +91,13 @@ const Banner = () => {
       setTotalBanners(total);
     } catch (err) {
       console.error('Error fetching banners:', err);
-      setError(`Failed to fetch banners: ${err.response?.data?.message || err.message || 'Unknown error'}`);
       setBanners([]);
       setBannersPagination({ totalPages: 1, hasNextPage: false, hasPrevPage: false });
       setTotalBanners(0);
     } finally {
       setBannersLoading(false);
     }
-  };
+  }, [currentPage, pageSize]);
 
   // Pagination variables for banners
   const bannerTotalPages = bannersPagination.totalPages;
@@ -120,12 +119,11 @@ const Banner = () => {
     setCurrentPage(1);
   };
 
-
-
   const [courses, setCourses] = useState([]);
   const [news, setNews] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
 
+  // Fetch courses - runs only once
   useEffect(() => {
     const fetchCourses = async () => {
       setLoadingCourses(true);
@@ -157,7 +155,8 @@ const Banner = () => {
     fetchCourses();
   }, []);
 
-  const fetchNews = async () => {
+  // Fetch news function - wrapped in useCallback
+  const fetchNews = useCallback(async () => {
     setLoadingNews(true);
     try {
       const response = await handleGetBanner(1, 50, { type: "news" });
@@ -175,13 +174,14 @@ const Banner = () => {
     } finally {
       setLoadingNews(false);
     }
-  };
-
-  useEffect(() => {
-    // Initial fetch on component mount
-    fetchBanners();
   }, []);
 
+  // Initial fetch on component mount - runs once
+  useEffect(() => {
+    fetchBanners();
+  }, [fetchBanners]);
+
+  // Handle tab changes - separate effect for each tab
   useEffect(() => {
     if (activeTab === "news") {
       fetchNews();
@@ -300,17 +300,14 @@ const Banner = () => {
         formDataToSend.append("image", imageFile);
       }
 
-      // Call the actual API
       await handleCreateBanner(formDataToSend);
 
-      setSuccess(`${formData.type === "banner" ? "Banner" : "News"} created successfully!`);
       resetForm();
       if (formData.type === "news") {
         fetchNews();
       } else if (formData.type === "banner") {
         fetchBanners();
       }
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -358,8 +355,6 @@ const Banner = () => {
     try {
       await handleDeleteBanner(selectedItem.id);
 
-      setSuccess(`${selectedItem.type === "banner" ? "Banner" : "News"} deleted successfully!`);
-      setTimeout(() => setSuccess(null), 3000);
       setShowDeleteModal(false);
       setSelectedItem(null);
 
@@ -379,17 +374,13 @@ const Banner = () => {
       setPublishingId(item.id);
       const newStatus = !item.status;
 
-      const response = await handlePublishBanner(item.id, newStatus);
-
+      await handlePublishBanner(item.id, newStatus);
 
       if (item.type === "news") {
         fetchNews();
       } else if (item.type === "banner") {
         fetchBanners();
       }
-
-      setTimeout(() => setSuccess(null), 3000);
-
     } catch (error) {
       setError(error.message || "Failed to update status");
     } finally {
@@ -433,7 +424,7 @@ const Banner = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-3 sm:p-4 lg:p-6">
+    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-3 sm:p-4 h-full lg:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
@@ -738,7 +729,7 @@ const Banner = () => {
                   />
                 </div>
                 <button
-                  onClick={() => {/* Placeholder for refresh */ }}
+                  onClick={() => fetchBanners()}
                   className="px-3 sm:px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 text-sm"
                 >
                   <RefreshCw className={`w-4 h-4 ${bannersLoading ? "animate-spin" : ""}`} />
@@ -855,16 +846,16 @@ const Banner = () => {
                                 className="w-12 h-12 object-cover rounded-lg"
                               />
                             )}
-                          </td>
+                           </td>
                           <td className="px-6 py-4">
                             <div className="font-medium text-gray-800">{banner.title}</div>
                             {banner.description && (
                               <div className="text-xs text-gray-500 mt-1">{banner.description}</div>
                             )}
-                          </td>
+                           </td>
                           <td className="px-6 py-4 text-gray-600">
                             {getCourseDisplay(banner.courseId, banner.courseName)}
-                          </td>
+                           </td>
                           <td className="px-6 py-4">
                             {publishingId === banner.id ? (
                               <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">
@@ -888,10 +879,10 @@ const Banner = () => {
                                 Draft
                               </button>
                             )}
-                          </td>
+                           </td>
                           <td className="px-6 py-4 text-gray-600">
                             {banner.createdAt ? new Date(banner.createdAt).toLocaleDateString() : "N/A"}
-                          </td>
+                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <button
@@ -909,8 +900,8 @@ const Banner = () => {
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
-                          </td>
-                        </tr>
+                           </td>
+                         </tr>
                       ))}
                     </tbody>
                   </table>
@@ -1094,18 +1085,18 @@ const Banner = () => {
                                 className="w-12 h-12 object-cover rounded-lg"
                               />
                             )}
-                          </td>
+                           </td>
                           <td className="px-6 py-4">
                             <div className="font-medium text-gray-800">{item.title}</div>
-                          </td>
+                            </td>
                           <td className="px-6 py-4">
                             <div className="text-gray-600 text-xs max-w-xs truncate">
                               {item.description || "—"}
                             </div>
-                          </td>
+                            </td>
                           <td className="px-6 py-4 text-gray-600">
                             {getCourseDisplay(item.courseId, item.courseName)}
-                          </td>
+                            </td>
                           <td className="px-6 py-4">
                             {publishingId === item.id ? (
                               <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">
@@ -1129,10 +1120,10 @@ const Banner = () => {
                                 Draft
                               </button>
                             )}
-                          </td>
+                            </td>
                           <td className="px-6 py-4 text-gray-600">
                             {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "N/A"}
-                          </td>
+                            </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <button
@@ -1150,7 +1141,7 @@ const Banner = () => {
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
-                          </td>
+                            </td>
                         </tr>
                       ))}
                     </tbody>
