@@ -52,7 +52,7 @@ const CourseTable = ({ courses, onCourseSelect, loading }) => {
                       <div className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition">
                         {course.title}
                       </div>
-                      <div className="text-xs text-gray-500">ID: {course.id}</div>
+                     
                     </div>
                   </div>
                 </td>

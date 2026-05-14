@@ -19,11 +19,16 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
-  Search
+  Search,
 } from "lucide-react";
-import { handlePublishBanner, handleGetBanner, handleGetShortCourseDetails, handleCreateBanner, handleDeleteBanner } from "../api/allApi";
+import {
+  handlePublishBanner,
+  handleGetBanner,
+  handleGetShortCourseDetails,
+  handleCreateBanner,
+  handleDeleteBanner,
+} from "../api/allApi";
 import DeleteModal from "../components/DeleteModal";
-
 
 const Banner = () => {
   const [activeTab, setActiveTab] = useState("create");
@@ -61,43 +66,63 @@ const Banner = () => {
   // State for banners
   const [banners, setBanners] = useState([]);
   const [bannersLoading, setBannersLoading] = useState(false);
-  const [bannersPagination, setBannersPagination] = useState({ totalPages: 1, hasNextPage: false, hasPrevPage: false });
+  const [bannersPagination, setBannersPagination] = useState({
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
   const [totalBanners, setTotalBanners] = useState(0);
 
   // Fetch banners function - wrapped in useCallback
-  const fetchBanners = useCallback(async (page = currentPage, limit = pageSize) => {
-    setBannersLoading(true);
-    try {
-      const response = await handleGetBanner(page, limit, { type: "banner" });
-      let bannersData = [];
-      let paginationData = { totalPages: 1, hasNextPage: false, hasPrevPage: false };
-      let total = 0;
+  const fetchBanners = useCallback(
+    async (page = currentPage, limit = pageSize) => {
+      setBannersLoading(true);
+      try {
+        const response = await handleGetBanner(page, limit, { type: "banner" });
+        let bannersData = [];
+        let paginationData = {
+          totalPages: 1,
+          hasNextPage: false,
+          hasPrevPage: false,
+        };
+        let total = 0;
 
-      if (response && Array.isArray(response)) {
-        bannersData = response.filter((item) => item.type === "banner");
-        total = bannersData.length;
-      } else if (response && response.data && Array.isArray(response.data)) {
-        bannersData = response.data.filter((item) => item.type === "banner");
-        paginationData = response.pagination || paginationData;
-        total = response.total || bannersData.length;
-      } else if (response && response.success && response.data && Array.isArray(response.data)) {
-        bannersData = response.data.filter((item) => item.type === "banner");
-        paginationData = response.pagination || paginationData;
-        total = response.total || bannersData.length;
+        if (response && Array.isArray(response)) {
+          bannersData = response.filter((item) => item.type === "banner");
+          total = bannersData.length;
+        } else if (response && response.data && Array.isArray(response.data)) {
+          bannersData = response.data.filter((item) => item.type === "banner");
+          paginationData = response.pagination || paginationData;
+          total = response.total || bannersData.length;
+        } else if (
+          response &&
+          response.success &&
+          response.data &&
+          Array.isArray(response.data)
+        ) {
+          bannersData = response.data.filter((item) => item.type === "banner");
+          paginationData = response.pagination || paginationData;
+          total = response.total || bannersData.length;
+        }
+
+        setBanners(bannersData);
+        setBannersPagination(paginationData);
+        setTotalBanners(total);
+      } catch (err) {
+        console.error("Error fetching banners:", err);
+        setBanners([]);
+        setBannersPagination({
+          totalPages: 1,
+          hasNextPage: false,
+          hasPrevPage: false,
+        });
+        setTotalBanners(0);
+      } finally {
+        setBannersLoading(false);
       }
-
-      setBanners(bannersData);
-      setBannersPagination(paginationData);
-      setTotalBanners(total);
-    } catch (err) {
-      console.error('Error fetching banners:', err);
-      setBanners([]);
-      setBannersPagination({ totalPages: 1, hasNextPage: false, hasPrevPage: false });
-      setTotalBanners(0);
-    } finally {
-      setBannersLoading(false);
-    }
-  }, [currentPage, pageSize]);
+    },
+    [currentPage, pageSize],
+  );
 
   // Pagination variables for banners
   const bannerTotalPages = bannersPagination.totalPages;
@@ -134,7 +159,11 @@ const Banner = () => {
           const response = await handleGetShortCourseDetails();
           if (response && Array.isArray(response)) {
             allCourses = [...allCourses, ...response];
-          } else if (response && response.data && Array.isArray(response.data)) {
+          } else if (
+            response &&
+            response.data &&
+            Array.isArray(response.data)
+          ) {
             allCourses = [...allCourses, ...response.data];
           }
         } catch (err) {
@@ -165,7 +194,12 @@ const Banner = () => {
         newsData = response.filter((item) => item.type === "news");
       } else if (response && response.data && Array.isArray(response.data)) {
         newsData = response.data.filter((item) => item.type === "news");
-      } else if (response && response.success && response.data && Array.isArray(response.data)) {
+      } else if (
+        response &&
+        response.success &&
+        response.data &&
+        Array.isArray(response.data)
+      ) {
         newsData = response.data.filter((item) => item.type === "news");
       }
       setNews(newsData);
@@ -207,8 +241,8 @@ const Banner = () => {
       courseId: courseId,
       courseName: selectedCourse
         ? selectedCourse.title ||
-        selectedCourse.coursename ||
-        selectedCourse.name
+          selectedCourse.coursename ||
+          selectedCourse.name
         : "",
       courseUrl: selectedCourse ? `/course/${selectedCourse.id}` : "",
     });
@@ -311,8 +345,8 @@ const Banner = () => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-        err.message ||
-        "Failed to create item. Please check console for details.",
+          err.message ||
+          "Failed to create item. Please check console for details.",
       );
     } finally {
       setSubmitLoading(false);
@@ -392,7 +426,9 @@ const Banner = () => {
   const filteredBanners = banners.filter((banner) => {
     const matchesSearch =
       (banner.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (banner.courseName?.toLowerCase() || "").includes(searchTerm.toLowerCase());
+      (banner.courseName?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase(),
+      );
     return matchesSearch;
   });
 
@@ -409,7 +445,8 @@ const Banner = () => {
   const newsCurrentPage = 1;
   const newsTotalPages = Math.ceil(filteredNews.length / newsPageSize);
   const newsIndexFirst = (newsCurrentPage - 1) * newsPageSize;
-  const newsIndexLast = newsIndexFirst + Math.min(newsPageSize, filteredNews.length);
+  const newsIndexLast =
+    newsIndexFirst + Math.min(newsPageSize, filteredNews.length);
   const currentNews = filteredNews.slice(newsIndexFirst, newsIndexLast);
 
   const getCourseDisplay = (courseId, courseName) => {
@@ -446,10 +483,11 @@ const Banner = () => {
                 setCurrentPage(1);
                 setSearchTerm("");
               }}
-              className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${activeTab === "create"
-                ? "bg-indigo-600 text-white shadow-md"
-                : "text-gray-600 hover:bg-gray-100"
-                }`}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                activeTab === "create"
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Create Banner/News</span>
@@ -462,13 +500,16 @@ const Banner = () => {
                 setCurrentPage(1);
                 setSearchTerm("");
               }}
-              className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${activeTab === "banners"
-                ? "bg-indigo-600 text-white shadow-md"
-                : "text-gray-600 hover:bg-gray-100"
-                }`}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                activeTab === "banners"
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
             >
               <Image className="w-4 h-4" />
-              <span className="hidden sm:inline">Banners ({banners.length})</span>
+              <span className="hidden sm:inline">
+                Banners ({banners.length})
+              </span>
               <span className="sm:hidden">Banners</span>
             </button>
             <button
@@ -478,10 +519,11 @@ const Banner = () => {
                 setCurrentPage(1);
                 setSearchTerm("");
               }}
-              className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${activeTab === "news"
-                ? "bg-indigo-600 text-white shadow-md"
-                : "text-gray-600 hover:bg-gray-100"
-                }`}
+              className={`flex items-center justify-center gap-2 px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                activeTab === "news"
+                  ? "bg-indigo-600 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
             >
               <Newspaper className="w-4 h-4" />
               <span className="hidden sm:inline">News ({news.length})</span>
@@ -503,7 +545,10 @@ const Banner = () => {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+            <form
+              onSubmit={handleSubmit}
+              className="p-4 sm:p-6 space-y-4 sm:space-y-6"
+            >
               {/* Type Selection */}
               <div className="space-y-2">
                 <label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -618,7 +663,10 @@ const Banner = () => {
               <div className="space-y-2">
                 <label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-indigo-600" />
-                  {formData.type === "banner" ? "Banner Image" : "News Image"} <span className="text-red-500">*</span>
+                  {formData.type === "banner"
+                    ? "Banner Image"
+                    : "News Image"}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
 
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 sm:p-6 text-center hover:border-indigo-500 transition-colors">
@@ -732,7 +780,9 @@ const Banner = () => {
                   onClick={() => fetchBanners()}
                   className="px-3 sm:px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 text-sm"
                 >
-                  <RefreshCw className={`w-4 h-4 ${bannersLoading ? "animate-spin" : ""}`} />
+                  <RefreshCw
+                    className={`w-4 h-4 ${bannersLoading ? "animate-spin" : ""}`}
+                  />
                   <span className="hidden sm:inline">Refresh</span>
                 </button>
               </div>
@@ -745,14 +795,19 @@ const Banner = () => {
             ) : filteredBanners.length === 0 ? (
               <div className="text-center py-8 sm:py-12">
                 <Image className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-sm sm:text-base">No banners found</p>
+                <p className="text-gray-500 text-sm sm:text-base">
+                  No banners found
+                </p>
               </div>
             ) : (
               <>
                 {/* Mobile Card View */}
                 <div className="sm:hidden p-4 space-y-4">
                   {filteredBanners.map((banner) => (
-                    <div key={banner.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div
+                      key={banner.id}
+                      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                    >
                       <div className="flex items-start gap-3">
                         {banner.image && (
                           <img
@@ -762,13 +817,20 @@ const Banner = () => {
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-800 text-sm truncate">{banner.title}</h3>
+                          <h3 className="font-medium text-gray-800 text-sm truncate">
+                            {banner.title}
+                          </h3>
                           {banner.description && (
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{banner.description}</p>
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                              {banner.description}
+                            </p>
                           )}
                           <div className="mt-2 flex items-center justify-between">
                             <span className="text-xs text-gray-600">
-                              {getCourseDisplay(banner.courseId, banner.courseName)}
+                              {getCourseDisplay(
+                                banner.courseId,
+                                banner.courseName,
+                              )}
                             </span>
                             <div className="flex items-center gap-1">
                               {publishingId === banner.id ? (
@@ -797,7 +859,11 @@ const Banner = () => {
                           </div>
                           <div className="mt-3 flex items-center justify-between">
                             <span className="text-xs text-gray-500">
-                              {banner.createdAt ? new Date(banner.createdAt).toLocaleDateString() : "N/A"}
+                              {banner.createdAt
+                                ? new Date(
+                                    banner.createdAt,
+                                  ).toLocaleDateString()
+                                : "N/A"}
                             </span>
                             <div className="flex items-center gap-1">
                               <button
@@ -827,17 +893,29 @@ const Banner = () => {
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Image
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Title
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Created
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {filteredBanners.map((banner) => (
-                        <tr key={banner.id} className="hover:bg-gray-50 transition-colors">
+                        <tr
+                          key={banner.id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
                           <td className="px-6 py-4">
                             {banner.image && (
                               <img
@@ -846,16 +924,18 @@ const Banner = () => {
                                 className="w-12 h-12 object-cover rounded-lg"
                               />
                             )}
-                           </td>
+                          </td>
                           <td className="px-6 py-4">
-                            <div className="font-medium text-gray-800">{banner.title}</div>
+                            <div className="font-medium text-gray-800">
+                              {banner.title}
+                            </div>
                             {banner.description && (
-                              <div className="text-xs text-gray-500 mt-1">{banner.description}</div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {banner.description}
+                              </div>
                             )}
-                           </td>
-                          <td className="px-6 py-4 text-gray-600">
-                            {getCourseDisplay(banner.courseId, banner.courseName)}
-                           </td>
+                          </td>
+                         
                           <td className="px-6 py-4">
                             {publishingId === banner.id ? (
                               <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">
@@ -879,10 +959,12 @@ const Banner = () => {
                                 Draft
                               </button>
                             )}
-                           </td>
+                          </td>
                           <td className="px-6 py-4 text-gray-600">
-                            {banner.createdAt ? new Date(banner.createdAt).toLocaleDateString() : "N/A"}
-                           </td>
+                            {banner.createdAt
+                              ? new Date(banner.createdAt).toLocaleDateString()
+                              : "N/A"}
+                          </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <button
@@ -900,8 +982,8 @@ const Banner = () => {
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
-                           </td>
-                         </tr>
+                          </td>
+                        </tr>
                       ))}
                     </tbody>
                   </table>
@@ -912,11 +994,15 @@ const Banner = () => {
                   <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-200">
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                       <div className="text-xs sm:text-sm text-gray-600">
-                        Showing {bannerIndexFirst + 1} to {Math.min(bannerIndexLast, filteredBanners.length)} of {filteredBanners.length} banners
+                        Showing {bannerIndexFirst + 1} to{" "}
+                        {Math.min(bannerIndexLast, filteredBanners.length)} of{" "}
+                        {filteredBanners.length} banners
                       </div>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          onClick={() =>
+                            setCurrentPage((p) => Math.max(1, p - 1))
+                          }
                           disabled={currentPage === 1}
                           className="p-1.5 sm:p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -926,7 +1012,11 @@ const Banner = () => {
                           Page {currentPage} of {bannerTotalPages}
                         </span>
                         <button
-                          onClick={() => setCurrentPage((p) => Math.min(bannerTotalPages, p + 1))}
+                          onClick={() =>
+                            setCurrentPage((p) =>
+                              Math.min(bannerTotalPages, p + 1),
+                            )
+                          }
                           disabled={currentPage === bannerTotalPages}
                           className="p-1.5 sm:p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -970,7 +1060,9 @@ const Banner = () => {
                   onClick={fetchNews}
                   className="px-3 sm:px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-2 text-sm"
                 >
-                  <RefreshCw className={`w-4 h-4 ${loadingNews ? "animate-spin" : ""}`} />
+                  <RefreshCw
+                    className={`w-4 h-4 ${loadingNews ? "animate-spin" : ""}`}
+                  />
                   <span className="hidden sm:inline">Refresh</span>
                 </button>
               </div>
@@ -983,14 +1075,19 @@ const Banner = () => {
             ) : currentNews.length === 0 ? (
               <div className="text-center py-8 sm:py-12">
                 <Newspaper className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-sm sm:text-base">No news found</p>
+                <p className="text-gray-500 text-sm sm:text-base">
+                  No news found
+                </p>
               </div>
             ) : (
               <>
                 {/* Mobile Card View */}
                 <div className="sm:hidden p-4 space-y-4">
                   {currentNews.map((item) => (
-                    <div key={item.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div
+                      key={item.id}
+                      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                    >
                       <div className="flex items-start gap-3">
                         {item.image && (
                           <img
@@ -1000,14 +1097,16 @@ const Banner = () => {
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-800 text-sm truncate">{item.title}</h3>
+                          <h3 className="font-medium text-gray-800 text-sm truncate">
+                            {item.title}
+                          </h3>
                           {item.description && (
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">{item.description}</p>
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                              {item.description}
+                            </p>
                           )}
                           <div className="mt-2 flex items-center justify-between">
-                            <span className="text-xs text-gray-600">
-                              {getCourseDisplay(item.courseId, item.courseName)}
-                            </span>
+                           
                             <div className="flex items-center gap-1">
                               {publishingId === item.id ? (
                                 <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">
@@ -1035,7 +1134,9 @@ const Banner = () => {
                           </div>
                           <div className="mt-3 flex items-center justify-between">
                             <span className="text-xs text-gray-500">
-                              {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "N/A"}
+                              {item.createdAt
+                                ? new Date(item.createdAt).toLocaleDateString()
+                                : "N/A"}
                             </span>
                             <div className="flex items-center gap-1">
                               <button
@@ -1065,18 +1166,33 @@ const Banner = () => {
                   <table className="w-full text-sm">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Image
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Title
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Description
+                        </th>
+                       
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Created
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                       {currentNews.map((item) => (
-                        <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                        <tr
+                          key={item.id}
+                          className="hover:bg-gray-50 transition-colors"
+                        >
                           <td className="px-6 py-4">
                             {item.image && (
                               <img
@@ -1085,18 +1201,17 @@ const Banner = () => {
                                 className="w-12 h-12 object-cover rounded-lg"
                               />
                             )}
-                           </td>
+                          </td>
                           <td className="px-6 py-4">
-                            <div className="font-medium text-gray-800">{item.title}</div>
-                            </td>
+                            <div className="font-medium text-gray-800">
+                              {item.title}
+                            </div>
+                          </td>
                           <td className="px-6 py-4">
                             <div className="text-gray-600 text-xs max-w-xs truncate">
                               {item.description || "—"}
                             </div>
-                            </td>
-                          <td className="px-6 py-4 text-gray-600">
-                            {getCourseDisplay(item.courseId, item.courseName)}
-                            </td>
+                          </td>
                           <td className="px-6 py-4">
                             {publishingId === item.id ? (
                               <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">
@@ -1120,10 +1235,12 @@ const Banner = () => {
                                 Draft
                               </button>
                             )}
-                            </td>
+                          </td>
                           <td className="px-6 py-4 text-gray-600">
-                            {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "N/A"}
-                            </td>
+                            {item.createdAt
+                              ? new Date(item.createdAt).toLocaleDateString()
+                              : "N/A"}
+                          </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <button
@@ -1141,7 +1258,7 @@ const Banner = () => {
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
-                            </td>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -1153,11 +1270,15 @@ const Banner = () => {
                   <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-200">
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                       <div className="text-xs sm:text-sm text-gray-600">
-                        Showing {newsIndexFirst + 1} to {Math.min(newsIndexLast, filteredNews.length)} of {filteredNews.length} news
+                        Showing {newsIndexFirst + 1} to{" "}
+                        {Math.min(newsIndexLast, filteredNews.length)} of{" "}
+                        {filteredNews.length} news
                       </div>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                          onClick={() =>
+                            setCurrentPage((p) => Math.max(1, p - 1))
+                          }
                           disabled={currentPage === 1}
                           className="p-1.5 sm:p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -1167,7 +1288,11 @@ const Banner = () => {
                           Page {currentPage} of {newsTotalPages}
                         </span>
                         <button
-                          onClick={() => setCurrentPage((p) => Math.min(newsTotalPages, p + 1))}
+                          onClick={() =>
+                            setCurrentPage((p) =>
+                              Math.min(newsTotalPages, p + 1),
+                            )
+                          }
                           disabled={currentPage === newsTotalPages}
                           className="p-1.5 sm:p-2 border border-gray-200 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                         >

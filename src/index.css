@@ -44,3 +44,18 @@ textarea::placeholder {
   text-overflow: ellipsis;
 
 }
+
+:root {
+  --bg-color: white;
+  --text-color: black;
+}
+
+.dark {
+  --bg-color: #0f172a;
+  --text-color: white;
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+}

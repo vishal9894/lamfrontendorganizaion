@@ -22,7 +22,13 @@ import {
   X,
   Save,
 } from "lucide-react";
-import { handleCreateCourse, handleGetCourseById, handleGetStream, handleGetTeacher, handleUpdateCourse } from "../api/allApi";
+import {
+  handleCreateCourse,
+  handleGetCourseById,
+  handleGetStream,
+  handleGetTeacher,
+  handleUpdateCourse,
+} from "../api/allApi";
 import Toast from "../components/ui/Toast";
 import { useParams } from "react-router-dom";
 
@@ -46,6 +52,20 @@ const AddCourse = () => {
     upgradeDuration: "",
     upgradePrice: "",
     videoId: "",
+
+    // Form field names (lowercase) - these match the input name attributes
+    coursename: "",
+    coursetype: "",
+    coursedescription: "",
+    streamname: "",
+    teacher: "",
+    strikeoutprice: "",
+    currentprice: "",
+    productid: "",
+    courseduration: "",
+    upgradeduration: "",
+    upgradeprice: "",
+    introvideoid: "",
 
     // Additional fields for internal use
     coursefeatures: "[]",
@@ -77,6 +97,7 @@ const AddCourse = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [updateInProgress, setUpdateInProgress] = useState(false);
 
   // Track validation errors
   const [validationErrors, setValidationErrors] = useState({});
@@ -92,13 +113,94 @@ const AddCourse = () => {
 
   useEffect(() => {
     if (id) {
+      const fetchCourseData = async () => {
+        try {
+          const response = await handleGetCourseById(id);
+          console.log("Course data response:", response.data.data);
+          if (response.success && response.data.data) {
+            const course = response.data.data;
 
-      
-      handleGetCourseById(id);
-      
-      
+            // Populate form data with course information
+            setFormData({
+              ...initialFormState,
+              title: course.title || "",
+              type: course.type || "",
+              description: course.description || "",
+              streamId: course.streamId || "",
+              courseName: course.courseName || course.title || "",
+              teacherId: course.teacherId || "",
+              status: course.status || false,
+              strikeoutPrice: course.strikeoutPrice || "",
+              currentPrice: course.currentPrice || "",
+              productId: course.productId || "",
+              courseGroupUrl: course.courseGroupUrl || "",
+              durationDescription: course.durationDescription || "",
+              amount: course.amount || "",
+              upgradeDuration: course.upgradeDuration || "",
+              upgradePrice: course.upgradePrice || "",
+              videoId: course.videoId || "",
+              coursefeatures: course.coursefeatures || "[]",
+              syllabus: course.syllabus || "[]",
+              coursedescriptionamount: course.amount || "",
+              whatsappurl: course.courseGroupUrl || "",
+              publish: course.status || false,
+
+              coursename: course.courseName || course.title || "",
+              coursetype: course.type || "",
+              coursedescription: course.description || "",
+              streamname: "", // Will be set later when streams load
+              strikeoutprice: course.strikeoutPrice || "",
+              currentprice: course.currentPrice || "",
+              productid: course.productId || "",
+              courseduration: course.durationDescription || "",
+              upgradeduration: course.upgradeDuration || "",
+              upgradeprice: course.upgradePrice || "",
+              introvideoid: course.videoId || "",
+            });
+
+            // Set file previews if images exist
+            if (course.courseImage) {
+              setFilePreview((prev) => ({
+                ...prev,
+                courseimage: course.courseImage,
+              }));
+            }
+            if (course.timetable) {
+              setFilePreview((prev) => ({
+                ...prev,
+                timetable: course.timetable,
+              }));
+            }
+            if (course.batchinfo) {
+              setFilePreview((prev) => ({
+                ...prev,
+                batchinfo: course.batchinfo,
+              }));
+            }
+          }
+        } catch (error) {
+          showToast("Failed to load course data", "error");
+        }
+      };
+
+      fetchCourseData();
     }
-  }, [id]);
+  }, [id]); // Removed streams dependency
+
+  // Set stream name when streams are loaded and streamId is set
+  useEffect(() => {
+    if (formData.streamId && streams.length > 0 && !formData.streamname) {
+      const stream = streams.find(
+        (s) => s.id === formData.streamId || s._id === formData.streamId,
+      );
+      if (stream) {
+        setFormData((prev) => ({
+          ...prev,
+          streamname: stream.name || stream.streamname || "",
+        }));
+      }
+    }
+  }, [streams, formData.streamId, formData.streamname]);
 
   // Toast state
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
@@ -175,16 +277,16 @@ const AddCourse = () => {
   const handleChange = (e) => {
     e.preventDefault();
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
 
     // Clear validation error for this field
     if (validationErrors[name]) {
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
-        [name]: null
+        [name]: null,
       }));
     }
 
@@ -197,18 +299,21 @@ const AddCourse = () => {
     const selectedStreamId = e.target.value;
 
     const streamsArray = Array.isArray(streams) ? streams : [];
-    const selectedStream = streamsArray.find(s => s.id === selectedStreamId || s._id === selectedStreamId);
+    const selectedStream = streamsArray.find(
+      (s) => s.id === selectedStreamId || s._id === selectedStreamId,
+    );
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
+      streamId: selectedStreamId,
       streamname: selectedStream?.name || selectedStream?.streamname || "",
     }));
 
     // Clear validation error for streamname
     if (validationErrors.streamname) {
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
-        streamname: null
+        streamname: null,
       }));
     }
   };
@@ -218,10 +323,10 @@ const AddCourse = () => {
     const selectedTeacherId = e.target.value;
 
     if (!selectedTeacherId) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         teacher: "",
-        teacherId: ""
+        teacherId: "",
       }));
       return;
     }
@@ -229,21 +334,18 @@ const AddCourse = () => {
     const teachersArray = Array.isArray(teachers) ? teachers : [];
 
     // Find the selected teacher by ID (handle both id and _id)
-    const selectedTeacher = teachersArray.find(t =>
-      t.id === selectedTeacherId || t._id === selectedTeacherId
+    const selectedTeacher = teachersArray.find(
+      (t) => t.id === selectedTeacherId || t._id === selectedTeacherId,
     );
-
 
     if (selectedTeacher) {
       // Store both teacher name and ID based on what your API expects
       // Option 1: Store teacher name (if API expects name)
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         teacher: selectedTeacher.name || selectedTeacher.teachername || "",
-        teacherId: selectedTeacher.id || selectedTeacher._id || ""
+        teacherId: selectedTeacher.id || selectedTeacher._id || "",
       }));
-
-     
     }
   };
 
@@ -258,33 +360,36 @@ const AddCourse = () => {
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         showToast("File size should be less than 5MB", "error");
-        e.target.value = '';
+        e.target.value = "";
         return;
       }
 
       // Validate file type
       if (fileName === "courseimage" && !file.type.startsWith("image/")) {
         showToast("Please upload an image file", "error");
-        e.target.value = '';
+        e.target.value = "";
         return;
       }
 
-      if ((fileName === "timetable" || fileName === "batchinfo") && file.type !== "application/pdf") {
+      if (
+        (fileName === "timetable" || fileName === "batchinfo") &&
+        file.type !== "application/pdf"
+      ) {
         showToast("Please upload a PDF file", "error");
-        e.target.value = '';
+        e.target.value = "";
         return;
       }
 
-      setFiles(prev => ({
+      setFiles((prev) => ({
         ...prev,
         [fileName]: file,
       }));
 
       // Clear validation error for courseimage
       if (fileName === "courseimage" && validationErrors.courseimage) {
-        setValidationErrors(prev => ({
+        setValidationErrors((prev) => ({
           ...prev,
-          courseimage: null
+          courseimage: null,
         }));
       }
 
@@ -292,7 +397,7 @@ const AddCourse = () => {
       if (fileName === "courseimage") {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setFilePreview(prev => ({
+          setFilePreview((prev) => ({
             ...prev,
             [fileName]: reader.result,
           }));
@@ -303,20 +408,20 @@ const AddCourse = () => {
   };
 
   const removeFile = (fileName) => {
-    setFiles(prev => ({
+    setFiles((prev) => ({
       ...prev,
       [fileName]: null,
     }));
-    setFilePreview(prev => ({
+    setFilePreview((prev) => ({
       ...prev,
       [fileName]: null,
     }));
 
     // Set validation error for courseimage if it's being removed
     if (fileName === "courseimage") {
-      setValidationErrors(prev => ({
+      setValidationErrors((prev) => ({
         ...prev,
-        courseimage: "Course image is required"
+        courseimage: "Course image is required",
       }));
     }
   };
@@ -365,7 +470,7 @@ const AddCourse = () => {
       errors.coursetype = "Please select a course type";
     }
 
-    if (!formData.streamname) {
+    if (!formData.streamId) {
       errors.streamname = "Please select a stream";
     }
 
@@ -394,11 +499,14 @@ const AddCourse = () => {
       e.stopPropagation();
     }
     if (currentUnit.trim()) {
-      setUnits(prev => [...prev, {
-        name: currentUnit.trim(),
-        chapters: [],
-        id: Date.now().toString()
-      }]);
+      setUnits((prev) => [
+        ...prev,
+        {
+          name: currentUnit.trim(),
+          chapters: [],
+          id: Date.now().toString(),
+        },
+      ]);
       setCurrentUnit("");
     }
   };
@@ -408,7 +516,7 @@ const AddCourse = () => {
       e.preventDefault();
       e.stopPropagation();
     }
-    setUnits(prev => prev.filter((_, i) => i !== index));
+    setUnits((prev) => prev.filter((_, i) => i !== index));
     if (selectedUnitIndex === index) {
       setSelectedUnitIndex(null);
       setCurrentChapter("");
@@ -431,11 +539,11 @@ const AddCourse = () => {
       e.stopPropagation();
     }
     if (currentChapter.trim() && selectedUnitIndex !== null) {
-      setUnits(prev => {
+      setUnits((prev) => {
         const updatedUnits = [...prev];
         updatedUnits[selectedUnitIndex].chapters.push({
           name: currentChapter.trim(),
-          id: Date.now().toString() + Math.random()
+          id: Date.now().toString() + Math.random(),
         });
         return updatedUnits;
       });
@@ -448,11 +556,11 @@ const AddCourse = () => {
       e.preventDefault();
       e.stopPropagation();
     }
-    setUnits(prev => {
+    setUnits((prev) => {
       const updatedUnits = [...prev];
-      updatedUnits[unitIndex].chapters = updatedUnits[unitIndex].chapters.filter(
-        (_, i) => i !== chapterIndex
-      );
+      updatedUnits[unitIndex].chapters = updatedUnits[
+        unitIndex
+      ].chapters.filter((_, i) => i !== chapterIndex);
       return updatedUnits;
     });
   };
@@ -462,16 +570,16 @@ const AddCourse = () => {
       e.preventDefault();
       e.stopPropagation();
     }
-    setExpandedUnits(prev =>
+    setExpandedUnits((prev) =>
       prev.includes(unitIndex)
-        ? prev.filter(i => i !== unitIndex)
-        : [...prev, unitIndex]
+        ? prev.filter((i) => i !== unitIndex)
+        : [...prev, unitIndex],
     );
   };
 
   // Handle Enter key press in inputs
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       e.stopPropagation();
     }
@@ -481,18 +589,26 @@ const AddCourse = () => {
     e.preventDefault();
     e.stopPropagation();
 
+    // Prevent multiple submissions
+    if (submitting || updateInProgress) return;
+
     // Validate form before submission
     if (!validateForm()) {
       // If validation fails, switch to the tab with errors
       if (validationErrors.courseimage) {
         setActiveTab("media");
-      } else if (validationErrors.coursetype || validationErrors.streamname || validationErrors.coursename) {
+      } else if (
+        validationErrors.coursetype ||
+        validationErrors.streamname ||
+        validationErrors.coursename
+      ) {
         setActiveTab("basic");
       }
       return;
     }
 
     setSubmitting(true);
+    setUpdateInProgress(true);
     setSubmitError(null);
     setSubmitSuccess(false);
 
@@ -501,12 +617,11 @@ const AddCourse = () => {
 
       // Safely parse course features and syllabus
       const featuresArray = safeJSONParse(formData.coursefeatures);
-      const syllabusData = units.length > 0 ? units : safeJSONParse(formData.syllabus);
+      const syllabusData =
+        units.length > 0 ? units : safeJSONParse(formData.syllabus);
 
-      // Find stream ID from selected stream name
-      const streamsArray = Array.isArray(streams) ? streams : [];
-      const selectedStream = streamsArray.find(s => s.name === formData.streamname);
-      const streamId = selectedStream?.id || selectedStream?._id || "";
+      // Use streamId directly from formData
+      const streamId = formData.streamId || "";
 
       // Prepare data matching backend DTO exactly
       const courseData = {
@@ -517,22 +632,32 @@ const AddCourse = () => {
         courseName: formData.coursename,
         teacherId: formData.teacherId,
         status: formData.publish || false,
-        strikeoutPrice: formData.strikeoutprice ? Number(formData.strikeoutprice) : undefined,
-        currentPrice: formData.currentprice ? Number(formData.currentprice) : undefined,
+        strikeoutPrice: formData.strikeoutprice
+          ? Number(formData.strikeoutprice)
+          : undefined,
+        currentPrice: formData.currentprice
+          ? Number(formData.currentprice)
+          : undefined,
         productId: formData.productid,
         courseGroupUrl: formData.whatsappurl,
         durationDescription: formData.courseduration,
         amount: formData.coursedescriptionamount,
         upgradeDuration: formData.upgradeduration,
-        upgradePrice: formData.upgradeprice ? Number(formData.upgradeprice) : undefined,
+        upgradePrice: formData.upgradeprice
+          ? Number(formData.upgradeprice)
+          : undefined,
         videoId: formData.introvideoid,
         coursefeatures: JSON.stringify(featuresArray),
         syllabus: JSON.stringify(syllabusData),
       };
 
       // Append all course data to FormData
-      Object.keys(courseData).forEach(key => {
-        if (courseData[key] !== undefined && courseData[key] !== "" && courseData[key] !== null) {
+      Object.keys(courseData).forEach((key) => {
+        if (
+          courseData[key] !== undefined &&
+          courseData[key] !== "" &&
+          courseData[key] !== null
+        ) {
           data.append(key, courseData[key]);
         }
       });
@@ -548,19 +673,31 @@ const AddCourse = () => {
         data.append("batchinfo", files.batchinfo);
       }
 
-      const response = await handleCreateCourse(data);
+      let response;
+      if (id) {
+        // Update existing course
+        response = await handleUpdateCourse(id, data);
+      } else {
+        // Create new course
+        response = await handleCreateCourse(data);
+      }
 
       setSubmitSuccess(true);
 
-      // Reset form after successful submission
-      setTimeout(() => {
-        resetForm();
-      }, 2000);
-
+      // Reset form after successful submission (only for create)
+      if (!id) {
+        setTimeout(() => {
+          resetForm();
+        }, 2000);
+      }
     } catch (error) {
-      setSubmitError(error.message || "Failed to create course. Please try again.");
+      setSubmitError(
+        error.message ||
+          `Failed to ${id ? "update" : "create"} course. Please try again.`,
+      );
     } finally {
       setSubmitting(false);
+      setUpdateInProgress(false);
     }
   };
 
@@ -595,7 +732,12 @@ const AddCourse = () => {
 
   // Helper function to get teacher display name
   const getTeacherDisplayName = (teacher) => {
-    return teacher.name || teacher.teachername || teacher.fullName || "Unknown Teacher";
+    return (
+      teacher.name ||
+      teacher.teachername ||
+      teacher.fullName ||
+      "Unknown Teacher"
+    );
   };
 
   // Helper function to get teacher ID
@@ -610,23 +752,25 @@ const AddCourse = () => {
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
-              Create New Course
+              {id ? "Edit Course" : "Create New Course"}
             </h1>
             <p className="text-sm sm:text-base text-gray-600">
-              Fill in the details to create a new course
+              {id
+                ? "Update the course details"
+                : "Fill in the details to create a new course"}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={resetForm}
-            className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-            title="Reset form"
-          >
-            <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
+          {!id && (
+            <button
+              type="button"
+              onClick={resetForm}
+              className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+              title="Reset form"
+            >
+              <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+          )}
         </div>
-
-
 
         {/* Validation Summary */}
         {Object.keys(validationErrors).length > 0 && (
@@ -655,15 +799,18 @@ const AddCourse = () => {
                 key={tab.id}
                 type="button"
                 onClick={(e) => handleTabChange(tab.id, e)}
-                className={`flex-1 px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all relative whitespace-nowrap ${activeTab === tab.id
-                  ? "text-indigo-600"
-                  : "text-gray-500 hover:text-gray-700"
-                  }`}
+                className={`flex-1 px-2 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-all relative whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? "text-indigo-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
               >
                 <div className="flex items-center justify-center gap-1 sm:gap-2">
                   <tab.icon className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="hidden sm:inline">{tab.label}</span>
-                  <span className="sm:hidden text-xs">{tab.label.split(' ')[0]}</span>
+                  <span className="sm:hidden text-xs">
+                    {tab.label.split(" ")[0]}
+                  </span>
                 </div>
                 {activeTab === tab.id && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600"></div>
@@ -687,7 +834,9 @@ const AddCourse = () => {
                     Course Type <span className="text-red-500">*</span>
                   </label>
                   {validationErrors.coursetype && (
-                    <p className="text-xs text-red-500 mt-1">{validationErrors.coursetype}</p>
+                    <p className="text-xs text-red-500 mt-1">
+                      {validationErrors.coursetype}
+                    </p>
                   )}
                   <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3">
                     {courseTypes.map((type) => {
@@ -699,16 +848,23 @@ const AddCourse = () => {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            setFormData({ ...formData, coursetype: type.value });
+                            setFormData({
+                              ...formData,
+                              coursetype: type.value,
+                            });
                             // Clear validation error
                             if (validationErrors.coursetype) {
-                              setValidationErrors(prev => ({ ...prev, coursetype: null }));
+                              setValidationErrors((prev) => ({
+                                ...prev,
+                                coursetype: null,
+                              }));
                             }
                           }}
-                          className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${formData.coursetype === type.value
-                            ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                            : "border-gray-200 hover:border-indigo-300 hover:bg-gray-50"
-                            }`}
+                          className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${
+                            formData.coursetype === type.value
+                              ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                              : "border-gray-200 hover:border-indigo-300 hover:bg-gray-50"
+                          }`}
                         >
                           <div className="flex flex-col items-center text-center">
                             <Icon className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
@@ -730,32 +886,39 @@ const AddCourse = () => {
                       Select Stream <span className="text-red-500">*</span>
                     </label>
                     {validationErrors.streamname && (
-                      <p className="text-xs text-red-500 mt-1">{validationErrors.streamname}</p>
+                      <p className="text-xs text-red-500 mt-1">
+                        {validationErrors.streamname}
+                      </p>
                     )}
                     <select
-                      value={(() => {
-                        const streamsArray = Array.isArray(streams) ? streams : [];
-                        const found = streamsArray.find(s => s.name === formData.streamname);
-                        return found?.id || found?._id || "";
-                      })()}
+                      value={formData.streamId || ""}
                       onChange={handleStreamChange}
-                      className={`w-full px-4 py-3 rounded-xl border transition-all bg-white ${validationErrors.streamname
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-200"
-                        : "border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                        }`}
+                      className={`w-full px-4 py-3 rounded-xl border transition-all bg-white ${
+                        validationErrors.streamname
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-200"
+                          : "border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                      }`}
                       required
                     >
                       <option value="">-- Choose a stream --</option>
                       {loadingStreams ? (
-                        <option value="" disabled>Loading streams...</option>
+                        <option value="" disabled>
+                          Loading streams...
+                        </option>
                       ) : Array.isArray(streams) && streams.length > 0 ? (
                         streams.map((stream) => (
-                          <option key={stream.id || stream._id} value={stream.id || stream._id}>
-                            {stream.name || stream.streamname}  ({stream.superstream?.name || ''})
+                          <option
+                            key={stream.id || stream._id}
+                            value={stream.id || stream._id}
+                          >
+                            {stream.name || stream.streamname} (
+                            {stream.superstream?.name || ""})
                           </option>
                         ))
                       ) : (
-                        <option value="" disabled>No streams available</option>
+                        <option value="" disabled>
+                          No streams available
+                        </option>
                       )}
                     </select>
                     {formData.streamname && (
@@ -771,7 +934,9 @@ const AddCourse = () => {
                       Course Name <span className="text-red-500">*</span>
                     </label>
                     {validationErrors.coursename && (
-                      <p className="text-xs text-red-500 mt-1">{validationErrors.coursename}</p>
+                      <p className="text-xs text-red-500 mt-1">
+                        {validationErrors.coursename}
+                      </p>
                     )}
                     <input
                       type="text"
@@ -780,10 +945,11 @@ const AddCourse = () => {
                       onChange={handleChange}
                       onKeyDown={handleKeyPress}
                       placeholder="e.g., Full Stack Web Development"
-                      className={`w-full px-4 py-3 rounded-xl border transition-all ${validationErrors.coursename
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-200"
-                        : "border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                        }`}
+                      className={`w-full px-4 py-3 rounded-xl border transition-all ${
+                        validationErrors.coursename
+                          ? "border-red-500 focus:border-red-500 focus:ring-red-200"
+                          : "border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                      }`}
                       required
                     />
                   </div>
@@ -813,7 +979,9 @@ const AddCourse = () => {
                     Select Teacher
                   </label>
                   {validationErrors.teacher && (
-                    <p className="text-xs text-red-500 mt-1">{validationErrors.teacher}</p>
+                    <p className="text-xs text-red-500 mt-1">
+                      {validationErrors.teacher}
+                    </p>
                   )}
                   <select
                     value={formData.teacherId || formData.teacher}
@@ -822,7 +990,9 @@ const AddCourse = () => {
                   >
                     <option value="">-- Choose a teacher --</option>
                     {loadingTeachers ? (
-                      <option value="" disabled>Loading teachers...</option>
+                      <option value="" disabled>
+                        Loading teachers...
+                      </option>
                     ) : Array.isArray(teachers) && teachers.length > 0 ? (
                       teachers.map((teacher) => {
                         const teacherId = getTeacherId(teacher);
@@ -834,7 +1004,9 @@ const AddCourse = () => {
                         );
                       })
                     ) : (
-                      <option value="" disabled>No teachers available</option>
+                      <option value="" disabled>
+                        No teachers available
+                      </option>
                     )}
                   </select>
                   {formData.teacher && (
@@ -874,10 +1046,11 @@ const AddCourse = () => {
                               coursefeatures: JSON.stringify(newFeatures),
                             });
                           }}
-                          className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${isSelected
-                            ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                            : "border-gray-200 hover:border-indigo-300"
-                            }`}
+                          className={`p-3 sm:p-4 rounded-xl border-2 transition-all ${
+                            isSelected
+                              ? "border-indigo-600 bg-indigo-50 text-indigo-700"
+                              : "border-gray-200 hover:border-indigo-300"
+                          }`}
                         >
                           <div className="flex flex-col items-center">
                             <span className="text-xl sm:text-2xl mb-1 sm:mb-2">
@@ -952,10 +1125,11 @@ const AddCourse = () => {
                       {units.map((unit, index) => (
                         <div
                           key={unit.id}
-                          className={`border rounded-xl overflow-hidden ${selectedUnitIndex === index
-                            ? "border-indigo-500 ring-2 ring-indigo-200"
-                            : "border-gray-200"
-                            }`}
+                          className={`border rounded-xl overflow-hidden ${
+                            selectedUnitIndex === index
+                              ? "border-indigo-500 ring-2 ring-indigo-200"
+                              : "border-gray-200"
+                          }`}
                         >
                           <div className="flex items-center justify-between p-3 bg-gray-50">
                             <div className="flex items-center gap-2 flex-1">
@@ -1003,26 +1177,34 @@ const AddCourse = () => {
                             <div className="p-3 bg-white border-t border-gray-100">
                               {unit.chapters.length > 0 ? (
                                 <div className="space-y-2">
-                                  {unit.chapters.map((chapter, chapterIndex) => (
-                                    <div
-                                      key={chapter.id}
-                                      className="flex items-center justify-between pl-6 pr-2 py-2 bg-gray-50 rounded-lg"
-                                    >
-                                      <div className="flex items-center gap-2">
-                                        <BookOpen className="w-3 h-3 text-purple-600" />
-                                        <span className="text-sm text-gray-600">
-                                          {chapter.name}
-                                        </span>
-                                      </div>
-                                      <button
-                                        type="button"
-                                        onClick={(e) => removeChapter(index, chapterIndex, e)}
-                                        className="p-1 hover:bg-red-100 rounded text-red-600"
+                                  {unit.chapters.map(
+                                    (chapter, chapterIndex) => (
+                                      <div
+                                        key={chapter.id}
+                                        className="flex items-center justify-between pl-6 pr-2 py-2 bg-gray-50 rounded-lg"
                                       >
-                                        <X className="w-3 h-3" />
-                                      </button>
-                                    </div>
-                                  ))}
+                                        <div className="flex items-center gap-2">
+                                          <BookOpen className="w-3 h-3 text-purple-600" />
+                                          <span className="text-sm text-gray-600">
+                                            {chapter.name}
+                                          </span>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={(e) =>
+                                            removeChapter(
+                                              index,
+                                              chapterIndex,
+                                              e,
+                                            )
+                                          }
+                                          className="p-1 hover:bg-red-100 rounded text-red-600"
+                                        >
+                                          <X className="w-3 h-3" />
+                                        </button>
+                                      </div>
+                                    ),
+                                  )}
                                 </div>
                               ) : (
                                 <p className="text-xs text-gray-400 text-center py-2">
@@ -1082,26 +1264,30 @@ const AddCourse = () => {
                             Chapters in {units[selectedUnitIndex]?.name}
                           </h4>
                           <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
-                            {units[selectedUnitIndex].chapters.map((chapter, idx) => (
-                              <div
-                                key={chapter.id}
-                                className="flex items-center justify-between p-3 bg-purple-50 rounded-xl border border-purple-100"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <BookOpen className="w-4 h-4 text-purple-600" />
-                                  <span className="text-sm text-gray-700">
-                                    {chapter.name}
-                                  </span>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={(e) => removeChapter(selectedUnitIndex, idx, e)}
-                                  className="p-1 hover:bg-red-100 rounded-lg text-red-600"
+                            {units[selectedUnitIndex].chapters.map(
+                              (chapter, idx) => (
+                                <div
+                                  key={chapter.id}
+                                  className="flex items-center justify-between p-3 bg-purple-50 rounded-xl border border-purple-100"
                                 >
-                                  <X className="w-4 h-4" />
-                                </button>
-                              </div>
-                            ))}
+                                  <div className="flex items-center gap-2">
+                                    <BookOpen className="w-4 h-4 text-purple-600" />
+                                    <span className="text-sm text-gray-700">
+                                      {chapter.name}
+                                    </span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={(e) =>
+                                      removeChapter(selectedUnitIndex, idx, e)
+                                    }
+                                    className="p-1 hover:bg-red-100 rounded-lg text-red-600"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ),
+                            )}
                             {units[selectedUnitIndex].chapters.length === 0 && (
                               <p className="text-sm text-gray-500 italic text-center py-4">
                                 No chapters added to this unit yet
@@ -1137,7 +1323,10 @@ const AddCourse = () => {
                           {unit.chapters.length > 0 && (
                             <ul className="ml-6 mt-1 space-y-1">
                               {unit.chapters.map((chapter, cidx) => (
-                                <li key={chapter.id} className="text-gray-600 flex items-start gap-2">
+                                <li
+                                  key={chapter.id}
+                                  className="text-gray-600 flex items-start gap-2"
+                                >
                                   <span className="text-indigo-400">•</span>
                                   <span>{chapter.name}</span>
                                 </li>
@@ -1318,12 +1507,17 @@ const AddCourse = () => {
                     Course Image <span className="text-red-500">*</span>
                   </label>
                   {validationErrors.courseimage && (
-                    <p className="text-xs text-red-500 mt-1">{validationErrors.courseimage}</p>
+                    <p className="text-xs text-red-500 mt-1">
+                      {validationErrors.courseimage}
+                    </p>
                   )}
-                  <div className={`border-2 border-dashed rounded-xl p-3 sm:p-6 text-center transition-colors ${validationErrors.courseimage
-                    ? "border-red-500 bg-red-50"
-                    : "border-gray-300 hover:border-indigo-500"
-                    }`}>
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-3 sm:p-6 text-center transition-colors ${
+                      validationErrors.courseimage
+                        ? "border-red-500 bg-red-50"
+                        : "border-gray-300 hover:border-indigo-500"
+                    }`}
+                  >
                     {filePreview.courseimage ? (
                       <div className="relative">
                         <img
@@ -1441,15 +1635,22 @@ const AddCourse = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  const tabs = ["basic", "content", "syllabus", "pricing", "media"];
+                  const tabs = [
+                    "basic",
+                    "content",
+                    "syllabus",
+                    "pricing",
+                    "media",
+                  ];
                   const currentIndex = tabs.indexOf(activeTab);
                   if (currentIndex > 0) {
                     setActiveTab(tabs[currentIndex - 1]);
                   }
                 }}
                 disabled={activeTab === "basic"}
-                className={`w-full sm:flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium order-2 sm:order-1 ${activeTab === "basic" ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
+                className={`w-full sm:flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium order-2 sm:order-1 ${
+                  activeTab === "basic" ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
                 Previous
               </button>
@@ -1460,7 +1661,13 @@ const AddCourse = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    const tabs = ["basic", "content", "syllabus", "pricing", "media"];
+                    const tabs = [
+                      "basic",
+                      "content",
+                      "syllabus",
+                      "pricing",
+                      "media",
+                    ];
                     const currentIndex = tabs.indexOf(activeTab);
                     if (currentIndex < tabs.length - 1) {
                       setActiveTab(tabs[currentIndex + 1]);
@@ -1480,12 +1687,12 @@ const AddCourse = () => {
                   {submitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Creating...
+                      {id ? "Updating..." : "Creating..."}
                     </>
                   ) : (
                     <>
                       <Save className="w-4 h-4" />
-                      Create Course
+                      {id ? "Update Course" : "Create Course"}
                     </>
                   )}
                 </button>
@@ -1494,36 +1701,6 @@ const AddCourse = () => {
           </form>
         </div>
       </div>
-
-      {/* Add custom animation */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-        @media (max-width: 480px) {
-          .xs\\:inline {
-            display: inline;
-          }
-        }
-      `}</style>
-
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={hideToast}
-        />
-      )}
     </div>
   );
 };
