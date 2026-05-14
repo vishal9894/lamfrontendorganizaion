@@ -264,7 +264,7 @@ const ViewTopTeacher = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-3 sm:p-6">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-3 h-full sm:p-6">
       <div className="max-w-7xl mx-auto">
 
 
@@ -405,7 +405,7 @@ const ViewTopTeacher = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-800 truncate">{teacher.name}</h3>
-                        <p className="text-xs text-gray-400">ID: {teacher.id?.substring(0, 8)}...</p>
+                       
                       </div>
                     </div>
 
@@ -414,18 +414,7 @@ const ViewTopTeacher = () => {
                     )}
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {(teacher.streamid || teacher.stream_id) ? (
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(teacher.streamid || teacher.stream_id)}`}>
-                            <BookOpen className="w-3 h-3 mr-1" />
-                            {(teacher.streamid || teacher.stream_id).length > 6
-                              ? `${(teacher.streamid || teacher.stream_id).substring(0, 6)}...`
-                              : (teacher.streamid || teacher.stream_id)}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 text-xs">No stream</span>
-                        )}
-                      </div>
+                      
 
                       <div className="flex items-center gap-1">
                         <button
@@ -469,9 +458,7 @@ const ViewTopTeacher = () => {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Bio
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Stream ID
-                      </th>
+                     
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Created At
                       </th>
@@ -502,23 +489,12 @@ const ViewTopTeacher = () => {
                         </td>
                         <td className="px-4 py-3">
                           <div className="font-medium text-gray-800">{teacher.name}</div>
-                          <div className="text-xs text-gray-400">ID: {teacher.id?.substring(0, 8)}...</div>
+                          
                         </td>
                         <td className="px-4 py-3">
                           <p className="text-gray-600 line-clamp-2 max-w-xs">{teacher.bio}</p>
                         </td>
-                        <td className="px-4 py-3">
-                          {(teacher.streamid || teacher.stream_id) ? (
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStreamBadge(teacher.streamid || teacher.stream_id)}`}>
-                              <BookOpen className="w-3 h-3 mr-1" />
-                              {(teacher.streamid || teacher.stream_id).length > 10
-                                ? `${(teacher.streamid || teacher.stream_id).substring(0, 10)}...`
-                                : (teacher.streamid || teacher.stream_id)}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400 text-xs">No stream</span>
-                          )}
-                        </td>
+                        
                         <td className="px-4 py-3 text-gray-600">
                           <div className="flex items-center">
                             <Calendar className="w-4 h-4 mr-1 text-gray-400" />

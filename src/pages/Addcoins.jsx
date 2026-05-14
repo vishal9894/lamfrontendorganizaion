@@ -26,17 +26,11 @@ const Addcoins = () => {
         amount: parseFloat(balance)
       };
 
-      // Call the API
+    
       const response = await handleAddBallance(data);
-
-
-
-      // Check if API call was successful
 
       setShowSuccess(true);
       setBalance("");
-
-      // Hide success message after 2 seconds
       setTimeout(() => {
         setShowSuccess(false);
       }, 2000);
@@ -49,7 +43,7 @@ const Addcoins = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
+    <div className=" bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 h-full px-4">
       <div className="max-w-md mx-auto">
 
 

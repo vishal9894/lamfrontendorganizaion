@@ -235,7 +235,7 @@ const SocialMedia = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 md:p-6">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 h-full md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-4 md:mb-8">

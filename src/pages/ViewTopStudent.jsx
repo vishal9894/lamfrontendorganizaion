@@ -286,7 +286,7 @@ const ViewTopStudent = () => {
   };
 
   return (
-    <div className=" bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+    <div className=" bg-gradient-to-br from-slate-50 via-white to-indigo-50 h-full">
       <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
 
         {/* Header */}
@@ -428,7 +428,7 @@ const ViewTopStudent = () => {
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
                             <h3 className="font-semibold text-gray-900 text-base truncate">{student.name}</h3>
-                            <p className="text-xs text-gray-400 mt-0.5">#{((currentPage - 1) * pageSize) + index + 1}</p>
+                            
                           </div>
                           <div className="flex gap-1 flex-shrink-0">
                             <button
@@ -452,14 +452,7 @@ const ViewTopStudent = () => {
                           </div>
                         </div>
                         <div className="mt-3 space-y-2">
-                          {student.streamid && (
-                            <div className="flex items-center gap-2">
-                              <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${getStreamBadge(student.streamid)}`}>
-                                {getStreamIcon(student.streamid)}
-                                {student.streamid.length > 15 ? `${student.streamid.substring(0, 15)}...` : student.streamid}
-                              </span>
-                            </div>
-                          )}
+                        
                           <div className="flex items-center gap-3 text-xs text-gray-500">
                             {student.video_url && (
                               <button
@@ -488,7 +481,7 @@ const ViewTopStudent = () => {
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">S.No</th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Avatar</th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Stream ID</th>
+                    
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Video</th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created At</th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
@@ -509,16 +502,9 @@ const ViewTopStudent = () => {
                         </td>
                         <td className="px-6 py-4">
                           <div className="font-semibold text-gray-900">{student.name}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">{student.id?.substring(0, 8)}...</div>
+                         
                         </td>
-                        <td className="px-6 py-4">
-                          {student.streamid ? (
-                            <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold ${getStreamBadge(student.streamid)}`}>
-                              {getStreamIcon(student.streamid)}
-                              {student.streamid.length > 12 ? `${student.streamid.substring(0, 12)}...` : student.streamid}
-                            </span>
-                          ) : <span className="text-gray-400 text-sm">—</span>}
-                        </td>
+                        
                         <td className="px-6 py-4">
                           {student.video_url ? (
                             <button

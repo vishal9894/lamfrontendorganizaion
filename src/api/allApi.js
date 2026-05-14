@@ -999,7 +999,11 @@ export const handleDeleteSocialMedia = async (id) => {
 
 export const handleCreateTopTeacher = async (formData) => {
   try {
-    const res = await api.post(`/topteacher`, formData);
+    const res = await api.post(`/topteacher`, formData ,{
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return res.data;
   } catch (error) {
   }

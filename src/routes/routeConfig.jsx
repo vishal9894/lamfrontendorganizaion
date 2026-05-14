@@ -13,7 +13,7 @@ const CourseManagement = lazy(() => import("../pages/CourseManagement"));
 const Course = lazy(() => import("../pages/Course"));
 const AddCourse = lazy(() => import("../pages/AddCourse"));
 const ViewCourse = lazy(() => import("../pages/ViewCourse"));
-const AssignmentManagement = lazy(() => import("../pages/AssignmentManagement"));
+
 const AddQuiz = lazy(() => import("../pages/AddQuiz"));
 const ViewQuiz = lazy(() => import("../pages/ViewQuiz"));
 const EnrollmentManagement = lazy(() => import("../pages/EnrollmentManagement"));
@@ -171,19 +171,7 @@ export const protectedRoutes = [
     element: withSuspense(EnrollmentManagement),
   },
 
-  // Assignment Management
-  {
-    path: "/assignments",
-    element: withSuspense(AssignmentManagement),
-  },
-  {
-    path: "/assignments/create",
-    element: withSuspense(AssignmentManagement),
-  },
-  {
-    path: "/assignments/submitted",
-    element: withSuspense(AssignmentManagement),
-  },
+ 
 
   
 

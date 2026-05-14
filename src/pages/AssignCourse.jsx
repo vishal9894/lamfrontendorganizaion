@@ -3,6 +3,7 @@ import {
   handleGetAllUsers,
   handleGetShortCourseDetails,
   handleAssignMultipleCourses,
+  handleGetCourse,
 } from "../api/allApi";
 import {
   BookOpen,
@@ -162,12 +163,11 @@ const AssignMultipleCourses = () => {
     setLoading((prev) => ({ ...prev, courses: true }));
     setError((prev) => ({ ...prev, courses: null }));
     try {
-      const res = await handleGetShortCourseDetails();
+      const res = await handleGetCourse(type);
 
       // Handle different response structures
       let coursesData = [];
       if (res?.data && Array.isArray(res.data)) {
-        coursesData = res.data;
         coursesData = res.data;
       } else if (res && Array.isArray(res)) {
         coursesData = res;
@@ -175,13 +175,25 @@ const AssignMultipleCourses = () => {
         coursesData = [];
       }
 
-      setCourses(coursesData || []);
+      // Format courses to ensure consistent property names
+      const formattedCourses = coursesData.map(course => ({
+        ...course,
+        id: course.id,
+        courseName: course.courseName || course.title,
+        currentPrice: course.currentPrice || course.amount || 0,
+        description: course.description || "",
+        coursetitle: course.coursetitle || course.title,
+        coursedescription: course.coursedescription || course.description,
+      }));
+
+      setCourses(formattedCourses);
 
       // Show course results immediately if there are courses
-      if (coursesData && coursesData.length > 0) {
+      if (formattedCourses && formattedCourses.length > 0) {
         setShowCourseResults(true);
       }
     } catch (error) {
+      console.error("Error fetching courses:", error);
       setError((prev) => ({ ...prev, courses: "Failed to fetch courses" }));
     } finally {
       setLoading((prev) => ({ ...prev, courses: false }));
@@ -210,7 +222,13 @@ const AssignMultipleCourses = () => {
       const assignments = {
         userId: selectedUser.id,
         courseIds: selectedCourses.map((course) => course.id),
-        mode: "offline"
+        mode: "offline",
+        courses: selectedCourses.map((course) => ({
+          courseId: course.id,
+          packageType: course.packageType,
+          packageAmount: course.packageAmount,
+          about: course.about,
+        }))
       };
 
       const res = await handleAssignMultipleCourses(assignments);
@@ -223,6 +241,7 @@ const AssignMultipleCourses = () => {
           setSelectedCourses([]);
           setUserSearchQuery("");
           setCourseSearchQuery("");
+          setCourseTypeFilter("");
         }, 3000);
       } else {
         setError((prev) => ({
@@ -231,6 +250,7 @@ const AssignMultipleCourses = () => {
         }));
       }
     } catch (error) {
+      console.error("Error assigning courses:", error);
       setError((prev) => ({ ...prev, assign: "Failed to assign courses" }));
     } finally {
       setLoading((prev) => ({ ...prev, assign: false }));
@@ -250,13 +270,15 @@ const AssignMultipleCourses = () => {
       if (exists) {
         return prev.filter((c) => c.id !== course.id);
       } else {
+        // Get the correct price from API response
+        const coursePrice = course.currentPrice || course.amount || 0;
         return [
           ...prev,
           {
             ...course,
             packageType: "basic",
-            packageAmount: course.currentprice || course.coursedescriptionamount || "",
-            about: `${course.coursename || course.name || ''} - ${course.coursedescription || ""}`,
+            packageAmount: coursePrice,
+            about: `${course.courseName || course.title || ''} - ${course.description || ""}`,
           },
         ];
       }
@@ -279,8 +301,8 @@ const AssignMultipleCourses = () => {
     const newSelections = filteredCourses.map((course) => ({
       ...course,
       packageType: "basic",
-      packageAmount: course.currentprice || course.coursedescriptionamount || "",
-      about: `${course.coursename || course.name || ''} - ${course.coursedescription || ""}`,
+      packageAmount: course.currentPrice || course.amount || 0,
+      about: `${course.courseName || course.title || ''} - ${course.description || ""}`,
     }));
     setSelectedCourses(newSelections);
   };
@@ -309,8 +331,8 @@ const AssignMultipleCourses = () => {
 
   // Filter courses based on search
   const filteredCourses = courses.filter((course) => {
-    const courseName = course.coursename || course.name || '';
-    const courseDesc = course.coursedescription || '';
+    const courseName = course.courseName || course.title || '';
+    const courseDesc = course.description || '';
 
     const matchesSearch =
       courseSearchQuery === "" ||
@@ -330,7 +352,7 @@ const AssignMultipleCourses = () => {
   const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
 
   return (
-    <div className=" bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 md:p-6">
+    <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 h-full md:p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6 md:mb-8">
@@ -567,11 +589,10 @@ const AssignMultipleCourses = () => {
                     ) : currentCourses.length > 0 ? (
                       <>
                         {currentCourses.map((course) => {
-                          const typeInfo = getCourseTypeInfo(course.coursetype);
+                          const typeInfo = getCourseTypeInfo(course.type);
                           const isSelected = selectedCourses.some(
                             (c) => c.id === course.id,
                           );
-
 
                           return (
                             <div
@@ -699,7 +720,7 @@ const AssignMultipleCourses = () => {
                         <div className="flex items-center gap-2">
                           <BookOpen className="w-4 h-4 text-indigo-600" />
                           <span className="font-medium text-sm text-gray-800">
-                            {course.coursename || course.name}
+                            {course.courseName || course.title || course.name}
                           </span>
                         </div>
                         <button
@@ -728,14 +749,11 @@ const AssignMultipleCourses = () => {
                         >
                           {packageTypes.map((type) => (
                             <option key={type.value} value={type.value}>
-                              {type.label} {type.price && `- $${type.price}`}
+                              {type.label} {type.price && `- ₹${type.price}`}
                             </option>
                           ))}
                           <option value={`course_${course.id}`}>
-                            📚 Course Default - $
-                            {course.currentprice ||
-                              course.coursedescriptionamount ||
-                              "N/A"}
+                            📚 Course Default - ₹{course.currentPrice || course.amount || "N/A"}
                           </option>
                         </select>
                       </div>
@@ -743,7 +761,7 @@ const AssignMultipleCourses = () => {
                       {/* Package Amount */}
                       <div className="mb-3">
                         <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Package Amount
+                          Package Amount (₹)
                         </label>
                         <div className="relative">
                           <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
@@ -757,9 +775,9 @@ const AssignMultipleCourses = () => {
                                 e.target.value,
                               )
                             }
-                            placeholder="Enter amount"
+                            placeholder="Enter amount in ₹"
                             min="0"
-                            step="0.01"
+                            step="1"
                             className="w-full pl-7 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
                           />
                         </div>
@@ -856,7 +874,7 @@ const AssignMultipleCourses = () => {
                       Total Package Amount
                     </h3>
                     <p className="text-2xl font-bold text-green-600">
-                      ${selectedCourses
+                      ₹{selectedCourses
                         .reduce(
                           (sum, course) =>
                             sum + (parseFloat(course.packageAmount) || 0),
@@ -874,7 +892,7 @@ const AssignMultipleCourses = () => {
                     </h3>
                     <div className="space-y-2 max-h-32 overflow-y-auto">
                       {selectedCourses.map((course) => {
-                        const typeInfo = getCourseTypeInfo(course.coursetype);
+                        const typeInfo = getCourseTypeInfo(course.type);
                         return (
                           <div
                             key={course.id}
@@ -883,7 +901,7 @@ const AssignMultipleCourses = () => {
                             <div className="flex items-center gap-2">
                               <CheckCircle className="w-3 h-3 text-green-600" />
                               <span className="truncate max-w-[200px]">
-                                {course.coursename || course.name}
+                                {course.courseName || course.title || course.name}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -893,7 +911,7 @@ const AssignMultipleCourses = () => {
                                 {course.packageType}
                               </span>
                               <span className="font-medium text-gray-800">
-                                ${parseFloat(course.packageAmount || 0).toFixed(2)}
+                                ₹{parseFloat(course.packageAmount || 0).toFixed(2)}
                               </span>
                             </div>
                           </div>
