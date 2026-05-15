@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
-import { handleGetAllRoles, handleGetRoleById, handleCreateRole, handleUpdateRole, handleDeleteRoleById } from "../api/allApi";
+import {
+  handleGetAllRoles,
+  handleGetRoleById,
+  handleCreateRole,
+  handleUpdateRole,
+  handleDeleteRoleById,
+} from "../api/allApi";
 import { PAGINATION_CONFIG } from "../utils/pagination";
 import {
   FiEdit2,
@@ -18,15 +24,23 @@ const Role = () => {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGINATION_CONFIG.ROLES.default);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Roles data state
-  const [rolesData, setRolesData] = useState({ data: [], pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false }, total: 0 });
+  const [rolesData, setRolesData] = useState({
+    data: [],
+    pagination: { totalPages: 1, hasNextPage: false, hasPrevPage: false },
+    total: 0,
+  });
   const [rolesLoading, setRolesLoading] = useState(false);
   const [rolesError, setRolesError] = useState(null);
 
   const roles = rolesData?.data || [];
-  const pagination = rolesData?.pagination || { totalPages: 1, hasNextPage: false, hasPrevPage: false };
+  const pagination = rolesData?.pagination || {
+    totalPages: 1,
+    hasNextPage: false,
+    hasPrevPage: false,
+  };
   const totalRoles = rolesData?.total || 0;
   const [selectedRole, setSelectedRole] = useState(null);
   const [showPermissions, setShowPermissions] = useState(false);
@@ -45,7 +59,11 @@ const Role = () => {
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
 
   // Delete modal state
-  const [deleteModal, setDeleteModal] = useState({ isOpen: false, roleId: null, roleName: "" });
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    roleId: null,
+    roleName: "",
+  });
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const showToast = (message, type = "success") => {
@@ -62,7 +80,11 @@ const Role = () => {
       setRolesError(null);
       try {
         const additionalParams = searchTerm ? { search: searchTerm } : {};
-        const response = await handleGetAllRoles(currentPage, pageSize, additionalParams);
+        const response = await handleGetAllRoles(
+          currentPage,
+          pageSize,
+          additionalParams,
+        );
         setRolesData(response);
       } catch (error) {
         setRolesError(error.message || "Failed to fetch roles");
@@ -98,7 +120,11 @@ const Role = () => {
     setRolesError(null);
     try {
       const additionalParams = searchTerm ? { search: searchTerm } : {};
-      const response = await handleGetAllRoles(currentPage, pageSize, additionalParams);
+      const response = await handleGetAllRoles(
+        currentPage,
+        pageSize,
+        additionalParams,
+      );
       setRolesData(response);
     } catch (error) {
       setRolesError(error.message || "Failed to fetch roles");
@@ -113,14 +139,16 @@ const Role = () => {
       setLoadingRolePermissions(true);
       const response = await handleGetRoleById(id);
 
-      let permissionIds = response.data;
+      const roleData = response?.data || response?.role || response || {};
+      const permissionList = Array.isArray(roleData.permissions)
+        ? roleData.permissions
+        : Array.isArray(roleData.permissionIds)
+          ? roleData.permissionIds
+          : [];
 
-
-
-      setRolePermissions(permissionIds);
-      setSelectedPermissions(permissionIds.permissions); // This will be passed to PermissionsUI
-      setOriginalPermissions([...permissionIds.permissions]); // Store original permissions for reference
-
+      setRolePermissions(roleData);
+      setSelectedPermissions(permissionList);
+      setOriginalPermissions([...permissionList]);
     } catch (error) {
       console.error("Error fetching role permissions:", error);
       setRolePermissions([]);
@@ -132,6 +160,8 @@ const Role = () => {
   };
 
   const handleEditRole = async (role) => {
+    const roleId = role._id || role.id;
+
     setSelectedRole(role);
     setNewRoleName(role.name);
     setNewRoleDescription(role.description || "");
@@ -142,7 +172,7 @@ const Role = () => {
     setOriginalPermissions([]);
 
     // Fetch role permissions before opening modal
-    await fetchRolePermissions(role.id);
+    await fetchRolePermissions(roleId);
 
     setShowCreateRoleModal(true);
   };
@@ -157,7 +187,6 @@ const Role = () => {
     setOriginalPermissions([]);
   };
 
-
   const handleSaveRole = async () => {
     // Validate role name
     if (!newRoleName.trim()) {
@@ -165,35 +194,41 @@ const Role = () => {
       return;
     }
 
+    const normalizeIds = (ids) =>
+      ids
+        .filter((id) => id !== null && id !== undefined)
+        .map((id) => Number(id));
+
     setCreating(true);
     try {
       if (selectedRole) {
-        // Keep original permissions unchanged, only add newly selected ones
-        const newlyAddedPermissions = selectedPermissions.filter(id => !originalPermissions.includes(id));
+        const originalIds = normalizeIds(originalPermissions);
+        const selectedIds = normalizeIds(selectedPermissions);
 
-        // Filter out null values and convert to integers
-        const validNewPermissions = newlyAddedPermissions.filter(id => id !== null && id !== undefined);
-        const integerNewPermissions = validNewPermissions.map(id => parseInt(id));
-
-        // Send only original permissions + new ones
-        const finalPermissions = [...originalPermissions, ...integerNewPermissions];
+        // Preserve all original permissions, and add any newly selected ones.
+        // If a permission is unchecked, do not remove it from the role.
+        const newPermissions = selectedIds.filter(
+          (id) => !originalIds.includes(id),
+        );
+        const finalPermissions = Array.from(
+          new Set([...originalIds, ...newPermissions]),
+        );
 
         const roleData = {
           name: newRoleName,
           description: newRoleDescription,
-          permissionIds: finalPermissions
+          permissionIds: finalPermissions,
         };
-        await handleUpdateRole(selectedRole.id, roleData);
+        const roleId = selectedRole._id || selectedRole.id;
+        await handleUpdateRole(roleId, roleData);
         showToast("Role updated successfully");
       } else {
-        // Create new role
-        const integerPermissions = selectedPermissions.filter(id => id !== null && id !== undefined)
-          .map(id => parseInt(id));
+        const integerPermissions = normalizeIds(selectedPermissions);
 
         const roleData = {
           name: newRoleName,
           description: newRoleDescription,
-          permissionIds: integerPermissions
+          permissionIds: integerPermissions,
         };
         await handleCreateRole(roleData);
         showToast("Role created successfully");
@@ -205,7 +240,7 @@ const Role = () => {
         error.response?.data?.message || error.message || "An error occurred";
       showToast(
         Array.isArray(errorMessage) ? errorMessage.join(" ") : errorMessage,
-        "error"
+        "error",
       );
     } finally {
       setCreating(false);
@@ -213,11 +248,11 @@ const Role = () => {
   };
 
   const handleDeleteRole = async (roleId) => {
-    const role = roles.find(r => r._id === roleId);
+    const role = roles.find((r) => r._id === roleId || r.id === roleId);
     setDeleteModal({
       isOpen: true,
       roleId,
-      roleName: role?.name || "Unknown Role"
+      roleName: role?.name || "Unknown Role",
     });
   };
 
@@ -337,7 +372,7 @@ const Role = () => {
                   <tbody className="divide-y divide-gray-200">
                     {roles.map((role) => (
                       <tr
-                        key={role.id}
+                        key={role._id || role.id}
                         className="hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-6 py-4">
@@ -374,7 +409,9 @@ const Role = () => {
                             </button>
                             {!role.is_default && (
                               <button
-                                onClick={() => handleDeleteRole(role.id)}
+                                onClick={() =>
+                                  handleDeleteRole(role._id || role.id)
+                                }
                                 className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Delete Role"
                               >
@@ -392,7 +429,10 @@ const Role = () => {
               {/* Mobile Card View */}
               <div className="md:hidden">
                 {roles.map((role) => (
-                  <div key={role.id} className="p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors">
+                  <div
+                    key={role._id || role.id}
+                    className="p-4 border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -427,7 +467,7 @@ const Role = () => {
                       </button>
                       {!role.is_default && (
                         <button
-                          onClick={() => handleDeleteRole(role.id)}
+                          onClick={() => handleDeleteRole(role._id || role.id)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <FiTrash2 className="w-4 h-4" />
@@ -440,8 +480,6 @@ const Role = () => {
             </>
           )}
         </div>
-
-
       </div>
 
       {/* Create/Edit Role Modal */}
